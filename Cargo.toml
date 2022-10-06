@@ -1,0 +1,13 @@
+[package]
+name = "chipper8"
+version = "0.1.0"
+edition = "2021"
+description = "A CHIP-8 interpreter in Rust"
+repository = "https://github.com/fokoid/chipper8"
+readme = "README.md"
+license = "Apache-2.0"
+license-file = "LICENSE"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
