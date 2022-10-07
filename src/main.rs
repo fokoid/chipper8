@@ -163,6 +163,8 @@ impl eframe::App for ReplApp {
                             ui.label(RichText::new(format!("{}", instruction)).monospace().size(16.0));
                         };
                         ui.label(RichText::new(format!("IDX {:04X} {:04X}", self.machine.index, self.machine.at_index())).monospace().size(16.0));
+                        ui.label(RichText::new(format!("DELAY {:02X}", self.machine.delay_timer)).monospace().size(16.0));
+                        ui.label(RichText::new(format!("SOUND {:02X}", self.machine.sound_timer)).monospace().size(16.0));
                     })
                 });
             });
