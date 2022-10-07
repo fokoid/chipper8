@@ -7,7 +7,7 @@ use crate::tokens::{Token, Tokens};
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("parse int error")]
-    IoError(#[from] ParseIntError),
+    ParseIntError(#[from] ParseIntError),
     #[error("meta command syntax error")]
     MetaSyntaxError(String),
     #[error("syntax error")]
@@ -65,6 +65,7 @@ impl Display for MetaCommand {
 #[derive(Debug, Eq, PartialEq)]
 pub enum Instruction {
     ClearScreen,
+    Jump(u16),
 }
 
 impl Instruction {
@@ -72,6 +73,14 @@ impl Instruction {
         // todo: parse entire token stream
         match tokens.next() {
             Some(Token::Other("cls")) => Ok(Self::ClearScreen),
+            Some(Token::Other("jmp")) => match tokens.next() {
+                Some(Token::Other(s)) => Ok(Instruction::Jump(
+                    // todo: bounds checking (12 bit address)
+                    u16::from_str_radix(s, 16)?
+                )),
+                Some(x) => Err(Error::SyntaxError(format!("jmp requires an address but got {:?}", x))),
+                None => Err(Error::SyntaxError(format!("jmp requires an address"))),
+            }
             x => Err(Error::SyntaxError(format!("{:?}", x))),
         }
     }
@@ -82,6 +91,7 @@ impl From<&Instruction> for OpCode {
         OpCode(
             match instruction {
                 Instruction::ClearScreen => 0x00E0,
+                Instruction::Jump(address) => (address & 0xFFF) | 0x1000,
             }
         )
     }
@@ -94,6 +104,7 @@ impl OpCode {
                 0x0E0 => Ok(Instruction::ClearScreen),
                 _ => Err(Error::InvalidOpCode(OpCode(self.0))),
             },
+            0x1000 => Ok(Instruction::Jump(self.0 & 0x0FFF)),
             _ => Err(Error::InvalidOpCode(OpCode(self.0))),
         }
     }
@@ -103,6 +114,7 @@ impl Display for Instruction {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::ClearScreen => write!(f, "cls"),
+            Self::Jump(address) => write!(f, "jmp {:03X}", address),
         }
     }
 }
