@@ -40,8 +40,8 @@ impl eframe::App for ReplApp {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         egui::SidePanel::left("console")
             .resizable(false)
-            .min_width(160.0)
-            .max_width(160.0)
+            .min_width(180.0)
+            .max_width(180.0)
             .frame(Frame::default().stroke(Stroke::new(2.0, Color32::DARK_GRAY)))
             .show(ctx, |ui| {
                 egui::TopBottomPanel::top("history")
@@ -53,7 +53,7 @@ impl eframe::App for ReplApp {
                         let table = TableBuilder::new(ui)
                             .striped(true)
                             .column(Size::exact(40.0))
-                            .column(Size::exact(100.0))
+                            .column(Size::exact(120.0))
                             .resizable(false)
                             .scroll(false)
                             .stick_to_bottom(true);

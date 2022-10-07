@@ -119,6 +119,9 @@ impl Machine {
             },
             Instruction::Set(register, value) => {
                 self.registers[*register as usize] = *value;
+            },
+            Instruction::IndexSet(value) => {
+                self.index = *value as Pointer;
             }
         }
     }
