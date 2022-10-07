@@ -116,6 +116,9 @@ impl Machine {
             Instruction::ClearScreen => self.display.fill(0),
             Instruction::Jump(address) => {
                 self.program_counter = *address as Pointer;
+            },
+            Instruction::Set(register, value) => {
+                self.registers[*register as usize] = *value;
             }
         }
     }

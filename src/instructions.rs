@@ -66,6 +66,7 @@ impl Display for MetaCommand {
 pub enum Instruction {
     ClearScreen,
     Jump(u16),
+    Set(u8, u8),
 }
 
 impl Instruction {
@@ -81,6 +82,22 @@ impl Instruction {
                 Some(x) => Err(Error::SyntaxError(format!("jmp requires an address but got {:?}", x))),
                 None => Err(Error::SyntaxError(format!("jmp requires an address"))),
             }
+            Some(Token::Other("set")) => match tokens.next() {
+                Some(Token::Other(s)) => {
+                    // todo: bounds checking (12 bit address)
+                    let register = u8::from_str_radix(s, 16)?;
+                    match tokens.next() {
+                        Some(Token::Other(s)) => Ok(Instruction::Set(
+                            register,
+                            u8::from_str_radix(s, 16)?,
+                        )),
+                        Some(x) => Err(Error::SyntaxError(format!("set requires a value but got {:?}", x))),
+                        None => Err(Error::SyntaxError(format!("set requires a value"))),
+                    }
+                },
+                Some(x) => Err(Error::SyntaxError(format!("set requires a register but got {:?}", x))),
+                None => Err(Error::SyntaxError(format!("set requires a register"))),
+            },
             x => Err(Error::SyntaxError(format!("{:?}", x))),
         }
     }
@@ -91,7 +108,9 @@ impl From<&Instruction> for OpCode {
         OpCode(
             match instruction {
                 Instruction::ClearScreen => 0x00E0,
-                Instruction::Jump(address) => (address & 0xFFF) | 0x1000,
+                Instruction::Jump(address) => 0x1000 | (address & 0xFFF),
+                Instruction::Set(register, value) =>
+                    0x6000 | u16::from_be_bytes([*register, *value])
             }
         )
     }
@@ -105,6 +124,10 @@ impl OpCode {
                 _ => Err(Error::InvalidOpCode(OpCode(self.0))),
             },
             0x1000 => Ok(Instruction::Jump(self.0 & 0x0FFF)),
+            0x6000 => {
+                let [register, value] = (self.0 & 0x0FFF).to_be_bytes();
+                Ok(Instruction::Set(register, value))
+            },
             _ => Err(Error::InvalidOpCode(OpCode(self.0))),
         }
     }
@@ -115,6 +138,7 @@ impl Display for Instruction {
         match self {
             Self::ClearScreen => write!(f, "cls"),
             Self::Jump(address) => write!(f, "jmp {:03X}", address),
+            Self::Set(register, value) => write!(f, "set {:01X} {:02X}", register, value),
         }
     }
 }
