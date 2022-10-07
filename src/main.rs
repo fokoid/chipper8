@@ -87,6 +87,10 @@ impl eframe::App for ReplApp {
                                 match Command::parse(self.user_input.as_str().into()) {
                                     Ok(None) => {},
                                     Ok(Some(command)) => {
+                                        match &command {
+                                            Command::Instruction(instruction) => self.machine.execute(instruction),
+                                            _ => todo!(),
+                                        };
                                         self.history.push(command);
                                     },
                                     Err(error) => {

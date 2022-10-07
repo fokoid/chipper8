@@ -1,4 +1,5 @@
 use std::ops::RangeInclusive;
+use crate::instructions::Instruction;
 
 pub const MEMORY_SIZE: usize = 4096;
 pub const NUM_REGISTERS: usize = 16;
@@ -108,5 +109,14 @@ impl Machine {
 
     pub fn at_index(&self) -> u8 {
         self.memory[self.index]
+    }
+
+    pub fn execute(&mut self, instruction: &Instruction) {
+        match instruction {
+            Instruction::ClearScreen => self.display.fill(0),
+            Instruction::Jump(address) => {
+                self.program_counter = *address as Pointer;
+            }
+        }
     }
 }
