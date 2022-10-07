@@ -32,9 +32,9 @@ type Pointer = usize;
 type Timer = u8;
 
 #[derive(Debug)]
-struct Stack {
-    data: [u16; STACK_SIZE],
-    pointer: usize,
+pub struct Stack {
+    pub data: [u16; STACK_SIZE],
+    pub pointer: usize,
 }
 
 impl Stack {
@@ -65,14 +65,14 @@ impl Stack {
 
 #[derive(Debug)]
 pub struct Machine {
-    memory: [u8; MEMORY_SIZE],
-    stack: Stack,
-    display: [u32; DISPLAY_WIDTH * DISPLAY_HEIGHT],
-    pc: Pointer,
-    index: Pointer,
-    delay_timer: Timer,
-    sound_timer: Timer,
-    registers: [u8; NUM_REGISTERS],
+    pub registers: [u8; NUM_REGISTERS],
+    pub stack: Stack,
+    pub memory: [u8; MEMORY_SIZE],
+    pub display: [u32; DISPLAY_WIDTH * DISPLAY_HEIGHT],
+    pub program_counter: Pointer,
+    pub index: Pointer,
+    pub delay_timer: Timer,
+    pub sound_timer: Timer,
 }
 
 impl Machine {
@@ -81,7 +81,7 @@ impl Machine {
             memory: [0; MEMORY_SIZE],
             stack: Stack::new(),
             display: [0; DISPLAY_WIDTH * DISPLAY_HEIGHT],
-            pc: 0,
+            program_counter: 0,
             index: 0,
             delay_timer: 0,
             sound_timer: 0,
@@ -89,5 +89,24 @@ impl Machine {
         };
         machine.memory[FONT_RANGE].clone_from_slice(&FONT_GLYPHS);
         machine
+    }
+
+    pub fn demo() -> Self {
+        let mut machine = Self::new();
+        machine.program_counter = 1000;
+        machine.memory[machine.program_counter] = 0x00E0;
+        machine.stack.push(0xAAAA);
+        machine.stack.push(0xBBBB);
+        machine.registers[0] = 0x12;
+        machine.registers[1] = 0xAB;
+        machine
+    }
+
+    pub fn next_instruction(&self) -> u16 {
+        u16::from_le_bytes(self.memory[self.program_counter..self.program_counter + 2].try_into().unwrap())
+    }
+
+    pub fn at_index(&self) -> u8 {
+        self.memory[self.index]
     }
 }

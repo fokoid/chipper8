@@ -1,18 +1,17 @@
 use eframe::NativeOptions;
-use chipper8::instructions::{Command, MetaCommand};
+use chipper8::machine::{Machine, STACK_SIZE};
+use chipper8::instructions::{Command, MetaCommand, OpCode};
 use egui::{Color32, Frame, Stroke, TextStyle, Vec2};
 use egui::widgets::TextEdit;
 use egui::style::Margin;
 use egui::widget_text::RichText;
+use egui_extras::{Size, TableBuilder};
 use ringbuffer::{AllocRingBuffer, RingBufferExt, RingBufferWrite, RingBufferRead};
 
 // hard coded based on current (also hard coded) UI element sizes
 const REPL_HISTORY_SIZE: usize = 16;
 
 fn main() {
-    let machine = chipper8::machine::Machine::new();
-    println!("Hello, {:?}!", machine);
-
     let mut native_options = NativeOptions::default();
     native_options.resizable = false;
     native_options.initial_window_size = Some(Vec2 { x: 640.0, y: 375.0 });
@@ -24,6 +23,7 @@ fn main() {
 struct ReplApp {
     user_input: String,
     history: AllocRingBuffer<Command>,
+    machine: Machine,
 }
 
 impl ReplApp {
@@ -31,6 +31,7 @@ impl ReplApp {
         Self {
             user_input: String::new(),
             history: AllocRingBuffer::with_capacity(REPL_HISTORY_SIZE),
+            machine: Machine::demo(),
         }
     }
 }
@@ -49,8 +50,6 @@ impl eframe::App for ReplApp {
                     .max_height(335.0)
                     .frame(Frame::none().inner_margin(Margin::symmetric(5.0, 5.0)))
                     .show_inside(ui, |ui| {
-                        use egui_extras::{Size, TableBuilder};
-
                         let table = TableBuilder::new(ui)
                             .striped(true)
                             .column(Size::exact(40.0))
@@ -105,5 +104,63 @@ impl eframe::App for ReplApp {
             .show(ctx, |ui| {
             ui.label("machine goes here");
         });
+        egui::SidePanel::right("vm-visualizer")
+            .resizable(false)
+            .min_width(230.0)
+            .max_width(230.0)
+            .frame(Frame::default()
+                .inner_margin(Margin::symmetric(10.0, 5.0))
+                .stroke(Stroke::new(2.0, Color32::DARK_GRAY)))
+            .show(ctx, |ui| {
+                ui.horizontal(|ui| {
+                    ui.push_id(0, |ui| {
+                        TableBuilder::new(ui)
+                            .striped(true)
+                            .column(Size::exact(20.0))
+                            .column(Size::exact(20.0))
+                            .resizable(false)
+                            .scroll(false)
+                            .body(|mut body| {
+                                for (index, value) in self.machine.registers.iter().enumerate() {
+                                    body.row(18.0, |mut row| {
+                                        row.col(|ui| {
+                                            ui.label(RichText::new(format!("V{:1X}", index)).monospace().size(16.0));
+                                        });
+                                        row.col(|ui| { ui.label(RichText::new(format!("{:02X}", value)).monospace().size(16.0)); });
+                                    });
+                                };
+                            });
+                    });
+                    ui.push_id(1, |ui| {
+                        TableBuilder::new(ui)
+                            .striped(true)
+                            .column(Size::exact(40.0))
+                            .resizable(false)
+                            .scroll(false)
+                            .body(|mut body| {
+                                for index in 0..STACK_SIZE {
+                                    body.row(18.0, |mut row| {
+                                        row.col(|ui| {
+                                            let text = RichText::new(format!("{:04X}", self.machine.stack.data[index]))
+                                                .monospace().size(16.0);
+                                            ui.label(
+                                                if index == self.machine.stack.pointer {
+                                                    text.background_color(Color32::LIGHT_RED)
+                                                } else { text }
+                                            );
+                                        });
+                                    });
+                                }
+                            });
+                    });
+                    ui.vertical(|ui| {
+                        ui.label(RichText::new(format!("PC  {:04X} {:04X}", self.machine.program_counter, self.machine.next_instruction())).monospace().size(16.0));
+                        if let Ok(instruction) = OpCode(self.machine.next_instruction()).as_instruction() {
+                            ui.label(RichText::new(format!("{}", instruction)).monospace().size(16.0));
+                        };
+                        ui.label(RichText::new(format!("IDX {:04X} {:04X}", self.machine.index, self.machine.at_index())).monospace().size(16.0));
+                    })
+                });
+            });
     }
 }

@@ -107,7 +107,7 @@ impl Display for Instruction {
     }
 }
 
-pub struct OpCode(u16);
+pub struct OpCode(pub u16);
 
 impl OpCode {
     pub fn parse(mut tokens: Tokens) -> Result<Self> {
