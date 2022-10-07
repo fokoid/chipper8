@@ -100,6 +100,7 @@ impl Machine {
         machine.stack.push(0xBBBB);
         machine.registers[0] = 0x12;
         machine.registers[1] = 0xAB;
+        machine.sound_timer = 1;
         machine
     }
 
