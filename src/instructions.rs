@@ -68,6 +68,7 @@ pub enum Instruction {
     Jump(u16),
     Set(u8, u8),
     IndexSet(u16),
+    TimerSound(u8),
 }
 
 impl Instruction {
@@ -108,8 +109,19 @@ impl Instruction {
                     Some(x) => Err(Error::SyntaxError(format!("jmp requires an address but got {:?}", x))),
                     None => Err(Error::SyntaxError(format!("jmp requires an address"))),
                 },
-                None | Some(_)=> Err(Error::SyntaxError(String::from("allowed index sub commands: set"))),
-            }
+                None | Some(_) => Err(Error::SyntaxError(String::from("allowed index sub commands: set"))),
+            },
+            Some(Token::Other("timer")) => match tokens.next() {
+                Some(Token::Other("sound")) => match tokens.next() {
+                    Some(Token::Other(s)) => Ok(Instruction::TimerSound(
+                        u8::from_str_radix(s, 16)?
+                    )),
+                    Some(x) => Err(Error::SyntaxError(format!("timer sound requires a value but got {:?}", x))),
+                    None => Err(Error::SyntaxError(format!("timer sound requires a value"))),
+                },
+                Some(_) => Err(Error::SyntaxError(String::from("allowed timer sub commands: sound"))),
+                None => Err(Error::SyntaxError(String::from("timer requires a sub command"))),
+            },
             x => Err(Error::SyntaxError(format!("{:?}", x))),
         }
     }
@@ -124,6 +136,7 @@ impl From<&Instruction> for OpCode {
                 Instruction::Set(register, value) =>
                     0x6000 | u16::from_be_bytes([*register, *value]),
                 Instruction::IndexSet(value) => 0xA000 | (value & 0x0FFF),
+                Instruction::TimerSound(value) => 0xF018 | u16::from_be_bytes([*value, 0]),
             }
         )
     }
@@ -142,6 +155,12 @@ impl OpCode {
                 Ok(Instruction::Set(register, value))
             },
             0xA000 => Ok(Instruction::IndexSet(self.0 & 0x0FFF)),
+            0xF000 => {
+                match self.0 & 0x00FF {
+                    0x18 => Ok(Instruction::TimerSound((self.0 & 0x0F00).to_be_bytes()[0])),
+                    _ => Err(Error::InvalidOpCode(OpCode(self.0))),
+                }
+            }
             _ => Err(Error::InvalidOpCode(OpCode(self.0))),
         }
     }
@@ -154,6 +173,7 @@ impl Display for Instruction {
             Self::Jump(address) => write!(f, "jmp {:03X}", address),
             Self::Set(register, value) => write!(f, "set {:01X} {:02X}", register, value),
             Self::IndexSet(value) => write!(f, "index set {:03X}", value),
+            Self::TimerSound(value) => write!(f, "timer sound {:02X}", value),
         }
     }
 }
