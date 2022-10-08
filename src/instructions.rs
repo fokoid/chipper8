@@ -18,7 +18,7 @@ pub enum Error {
     InvalidOpCode(OpCode),
 }
 
-type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Command {
@@ -42,12 +42,35 @@ impl Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum MetaCommand {
+    Reset,
+    Load(String, u16),
+    Step,
+    Play,
+    Pause,
 }
 
 impl MetaCommand {
     pub fn parse(mut tokens: Tokens) -> Result<Self> {
         // todo: parse entire token stream
         match tokens.next() {
+            Some(Token::Meta(".reset")) => Ok(MetaCommand::Reset),
+            Some(Token::Meta(".load")) => match tokens.next() {
+                Some(Token::Other(s)) => {
+                    let path = String::from(s);
+                    match tokens.next() {
+                        Some(Token::Other(s)) => Ok(
+                            MetaCommand::Load(path, u16::from_str_radix(s, 16)?)
+                        ),
+                        Some(x) => Err(Error::MetaSyntaxError(format!(".load requires an address but got {:?}", x))),
+                        None => Err(Error::MetaSyntaxError(format!(".load requires an address"))),
+                    }
+                }
+                Some(x) => Err(Error::MetaSyntaxError(format!(".load requires a path but got {:?}", x))),
+                None => Err(Error::MetaSyntaxError(format!(".load requires a path"))),
+            }
+            Some(Token::Meta(".step")) => Ok(MetaCommand::Step),
+            Some(Token::Meta(".play")) => Ok(MetaCommand::Play),
+            Some(Token::Meta(".pause")) => Ok(MetaCommand::Pause),
             Some(Token::Meta(s)) => Err(Error::MetaSyntaxError(format!("invalid meta command '{}'", s))),
             s => Err(Error::MetaSyntaxError(format!("expected meta command token but found '{:?}'", s))),
         }
@@ -57,7 +80,11 @@ impl MetaCommand {
 impl Display for MetaCommand {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            _ => todo!("add some metacommands"),
+            Self::Reset => write!(f, ".reset"),
+            Self::Load(path, address) => write!(f, ".load {} {:03X}", path, address),
+            Self::Step => write!(f, ".step"),
+            Self::Play => write!(f, ".play"),
+            Self::Pause => write!(f, ".pause"),
         }
     }
 }

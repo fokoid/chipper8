@@ -1,6 +1,6 @@
 use std::cmp::min;
 use std::ops::RangeInclusive;
-use crate::instructions::Instruction;
+use crate::instructions::{self, Instruction, OpCode};
 
 pub const MEMORY_SIZE: usize = 4096;
 pub const NUM_REGISTERS: usize = 16;
@@ -64,6 +64,11 @@ impl Stack {
         self.data[self.pointer] = value;
         self.pointer += 1;
     }
+
+    fn reset(&mut self) {
+        self.data.fill(0);
+        self.pointer = 0;
+    }
 }
 
 #[derive(Debug)]
@@ -94,6 +99,26 @@ impl Machine {
         machine
     }
 
+    pub fn reset(&mut self) {
+        self.memory.fill(0);
+        self.stack.reset();
+        self.display.fill(0);
+        self.program_counter = 0;
+        self.index = 0;
+        self.delay_timer = 0;
+        self.sound_timer = 0;
+        self.registers.fill(0);
+        self.memory[FONT_RANGE].clone_from_slice(&FONT_GLYPHS);
+    }
+
+    pub fn load(&mut self, offset: Pointer, data: &[u8]) {
+        let overflow = if offset + data.len() > self.memory.len() {
+            offset + data.len() - self.memory.len()
+        } else { 0 };
+        let data = &data[..data.len() - overflow];
+        self.memory[offset..offset + data.len()].clone_from_slice(data);
+    }
+
     pub fn demo() -> Self {
         let mut machine = Self::new();
         machine.program_counter = 1000;
@@ -107,8 +132,12 @@ impl Machine {
         machine
     }
 
-    pub fn next_instruction(&self) -> u16 {
-        u16::from_le_bytes(self.memory[self.program_counter..self.program_counter + 2].try_into().unwrap())
+    pub fn at_program_counter(&self) -> u16 {
+        u16::from_be_bytes(self.memory[self.program_counter..self.program_counter + 2].try_into().unwrap())
+    }
+
+    pub fn next_instruction(&self) -> instructions::Result<Instruction >{
+        OpCode(self.at_program_counter()).as_instruction()
     }
 
     pub fn at_index(&self) -> u8 {
@@ -149,5 +178,12 @@ impl Machine {
                 self.sound_timer = *value;
             },
         }
+    }
+
+    pub fn step(&mut self) -> instructions::Result<()> {
+        let instruction = self.next_instruction().unwrap();
+        self.program_counter += 2;
+        self.execute(&instruction);
+        Ok(())
     }
 }
