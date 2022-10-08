@@ -71,6 +71,7 @@ pub enum Instruction {
     IndexSet(u16),
     TimerSound(u8),
     Draw(u8, u8, u8),
+    Font(u8),
 }
 
 impl Instruction {
@@ -162,6 +163,11 @@ impl Instruction {
                 Some(_) => Err(Error::SyntaxError(String::from("allowed timer sub commands: sound"))),
                 None => Err(Error::SyntaxError(String::from("timer requires a sub command"))),
             },
+            Some(Token::Other("font")) => match tokens.next() {
+                Some(Token::Other(s)) => Ok(Instruction::Font(u8::from_str_radix(s, 16)?)),
+                Some(x) => Err(Error::SyntaxError(format!("font requires a register but got {:?}", x))),
+                None => Err(Error::SyntaxError(format!("font requires a register"))),
+            },
             x => Err(Error::SyntaxError(format!("{:?}", x))),
         }
     }
@@ -181,6 +187,7 @@ impl From<&Instruction> for OpCode {
                 Instruction::Draw(vx, vy, height) =>
                     0xD000 | u16::from_be_bytes([*vx, vy.rotate_left(4) | *height]),
                 Instruction::TimerSound(value) => 0xF018 | u16::from_be_bytes([*value, 0]),
+                Instruction::Font(register) => 0xF029 | u16::from_be_bytes([*register, 0]),
             }
         )
     }
@@ -212,6 +219,7 @@ impl OpCode {
             0xF000 => {
                 match self.0 & 0x00FF {
                     0x18 => Ok(Instruction::TimerSound((self.0 & 0x0F00).to_be_bytes()[0])),
+                    0x29 => Ok(Instruction::Font((self.0 & 0x0F00).to_be_bytes()[0])),
                     _ => Err(Error::InvalidOpCode(OpCode(self.0))),
                 }
             }
@@ -229,6 +237,7 @@ impl Display for Instruction {
             Self::Add(register, value) => write!(f, "add {:01X} {:02X}", register, value),
             Self::IndexSet(value) => write!(f, "index set {:03X}", value),
             Self::Draw(vx, vy, height) => write!(f, "draw {:01X} {:01X} {:01X}", vx, vy, height),
+            Self::Font(vx) => write!(f, "font {:01X}", vx),
             Self::TimerSound(value) => write!(f, "timer sound {:02X}", value),
         }
     }

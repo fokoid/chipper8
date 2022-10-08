@@ -8,6 +8,7 @@ pub const STACK_SIZE: usize = 16;
 pub const DISPLAY_WIDTH: usize = 64;
 pub const DISPLAY_HEIGHT: usize = 32;
 pub const FONT_RANGE: RangeInclusive<usize> = 0x050..=0x09F;
+pub const FONT_SPRITE_HEIGHT: usize = 5;
 
 const FONT_GLYPHS: [u8; 80] = [
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -135,14 +136,18 @@ impl Machine {
                 for j in y..min(y + *height as usize, DISPLAY_HEIGHT) {
                     let mut byte = bytes[j - y];
                     for i in x..min(x + 8, DISPLAY_WIDTH) {
-                        self.display[i + j * DISPLAY_WIDTH] ^= if byte & 1 != 0 { 0xFF } else {0};
-                        byte = byte.rotate_right(1);
+                        self.display[i + j * DISPLAY_WIDTH] ^= if byte & 0b10000000 != 0 { 0xFF } else {0};
+                        byte = byte.rotate_left(1);
                     }
                 };
+            },
+            Instruction::Font(register) => {
+                let char = self.registers[*register as usize] as usize & 0x0F;
+                self.index = FONT_RANGE.start() + FONT_SPRITE_HEIGHT * char;
             }
             Instruction::TimerSound(value) => {
                 self.sound_timer = *value;
-            }
+            },
         }
     }
 }
