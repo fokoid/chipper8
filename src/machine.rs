@@ -111,6 +111,14 @@ impl Machine {
         self.memory[FONT_RANGE].clone_from_slice(&FONT_GLYPHS);
     }
 
+    pub fn load(&mut self, offset: Pointer, data: &[u8]) {
+        let overflow = if offset + data.len() > self.memory.len() {
+            offset + data.len() - self.memory.len()
+        } else { 0 };
+        let data = &data[..data.len() - overflow];
+        self.memory[offset..offset + data.len()].clone_from_slice(data);
+    }
+
     pub fn demo() -> Self {
         let mut machine = Self::new();
         machine.program_counter = 1000;

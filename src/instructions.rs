@@ -43,6 +43,7 @@ impl Command {
 #[derive(Debug, Eq, PartialEq)]
 pub enum MetaCommand {
     Reset,
+    Load(String, u16),
 }
 
 impl MetaCommand {
@@ -50,6 +51,20 @@ impl MetaCommand {
         // todo: parse entire token stream
         match tokens.next() {
             Some(Token::Meta(".reset")) => Ok(MetaCommand::Reset),
+            Some(Token::Meta(".load")) => match tokens.next() {
+                Some(Token::Other(s)) => {
+                    let path = String::from(s);
+                    match tokens.next() {
+                        Some(Token::Other(s)) => Ok(
+                            MetaCommand::Load(path, u16::from_str_radix(s, 16)?)
+                        ),
+                        Some(x) => Err(Error::MetaSyntaxError(format!(".load requires an address but got {:?}", x))),
+                        None => Err(Error::MetaSyntaxError(format!(".load requires an address"))),
+                    }
+                }
+                Some(x) => Err(Error::MetaSyntaxError(format!(".load requires a path but got {:?}", x))),
+                None => Err(Error::MetaSyntaxError(format!(".load requires a path"))),
+            }
             Some(Token::Meta(s)) => Err(Error::MetaSyntaxError(format!("invalid meta command '{}'", s))),
             s => Err(Error::MetaSyntaxError(format!("expected meta command token but found '{:?}'", s))),
         }
@@ -60,6 +75,7 @@ impl Display for MetaCommand {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Reset => write!(f, ".reset"),
+            Self::Load(path, address) => write!(f, ".load {} {:03X}", path, address),
         }
     }
 }

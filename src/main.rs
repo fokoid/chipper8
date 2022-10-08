@@ -1,3 +1,4 @@
+use std::fs;
 use eframe::NativeOptions;
 use chipper8::machine::{self, DISPLAY_WIDTH, Machine, STACK_SIZE};
 use chipper8::instructions::{Command, MetaCommand, OpCode};
@@ -94,7 +95,11 @@ impl eframe::App for ReplApp {
                                         match &command {
                                             Command::Instruction(instruction) => self.machine.execute(instruction),
                                             Command::Meta(MetaCommand::Reset) => self.machine.reset(),
-                                            _ => todo!(),
+                                            Command::Meta(MetaCommand::Load(path, address)) => {
+                                                let bytes = fs::read(path).unwrap();
+                                                self.machine.load(*address as usize, &bytes);
+                                                self.machine.program_counter = *address as usize;
+                                            }
                                         };
                                         self.history.push(command);
                                     },
