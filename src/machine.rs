@@ -128,6 +128,9 @@ impl Machine {
             Instruction::IndexSet(value) => {
                 self.index = *value as Pointer;
             },
+            Instruction::Draw(vx, vy, height) => {
+                println!("draw");
+            }
             Instruction::TimerSound(value) => {
                 self.sound_timer = *value;
             }

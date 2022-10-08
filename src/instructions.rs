@@ -70,6 +70,7 @@ pub enum Instruction {
     Add(u8, u8),
     IndexSet(u16),
     TimerSound(u8),
+    Draw(u8, u8, u8),
 }
 
 impl Instruction {
@@ -128,6 +129,28 @@ impl Instruction {
                 },
                 None | Some(_) => Err(Error::SyntaxError(String::from("allowed index sub commands: set"))),
             },
+            Some(Token::Other("draw")) => match tokens.next() {
+                Some(Token::Other(s)) => {
+                    // todo: bounds checking (12 bit address)
+                    let vx = u8::from_str_radix(s, 16)?;
+                    match tokens.next() {
+                        Some(Token::Other(s)) => {
+                            let vy = u8::from_str_radix(s, 16)?;
+                            match tokens.next() {
+                                Some(Token::Other(s)) => Ok(Instruction::Draw(
+                                    vx, vy, u8::from_str_radix(s, 16)?,
+                                )),
+                                Some(x) => Err(Error::SyntaxError(format!("draw requires a value {:?}", x))),
+                                None => Err(Error::SyntaxError(format!("draw requires a value"))),
+                            }
+                        },
+                        Some(x) => Err(Error::SyntaxError(format!("draw requires a second register but got {:?}", x))),
+                        None => Err(Error::SyntaxError(format!("draw requires a second register"))),
+                    }
+                },
+                Some(x) => Err(Error::SyntaxError(format!("draw requires a register but got {:?}", x))),
+                None => Err(Error::SyntaxError(format!("draw requires a register"))),
+            },
             Some(Token::Other("timer")) => match tokens.next() {
                 Some(Token::Other("sound")) => match tokens.next() {
                     Some(Token::Other(s)) => Ok(Instruction::TimerSound(
@@ -155,6 +178,8 @@ impl From<&Instruction> for OpCode {
                 Instruction::Add(register, value) =>
                     0x7000 | u16::from_be_bytes([*register, *value]),
                 Instruction::IndexSet(value) => 0xA000 | (value & 0x0FFF),
+                Instruction::Draw(vx, vy, height) =>
+                    0xD000 | u16::from_be_bytes([*vx, vy.rotate_left(4) | *height]),
                 Instruction::TimerSound(value) => 0xF018 | u16::from_be_bytes([*value, 0]),
             }
         )
@@ -178,6 +203,12 @@ impl OpCode {
                 Ok(Instruction::Add(register, value))
             },
             0xA000 => Ok(Instruction::IndexSet(self.0 & 0x0FFF)),
+            0xD000 => {
+                let [vx, lower] = (self.0 & 0xFFF).to_be_bytes();
+                let vy = lower.rotate_left(4) & 0x0F;
+                let height = lower & 0x0F;
+                Ok(Instruction::Draw(vx, vy, height))
+            }
             0xF000 => {
                 match self.0 & 0x00FF {
                     0x18 => Ok(Instruction::TimerSound((self.0 & 0x0F00).to_be_bytes()[0])),
@@ -197,6 +228,7 @@ impl Display for Instruction {
             Self::Set(register, value) => write!(f, "set {:01X} {:02X}", register, value),
             Self::Add(register, value) => write!(f, "add {:01X} {:02X}", register, value),
             Self::IndexSet(value) => write!(f, "index set {:03X}", value),
+            Self::Draw(vx, vy, height) => write!(f, "draw {:01X} {:01X} {:01X}", vx, vy, height),
             Self::TimerSound(value) => write!(f, "timer sound {:02X}", value),
         }
     }
