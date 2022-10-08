@@ -1,5 +1,4 @@
 use std::fs;
-use std::time::Duration;
 use eframe::NativeOptions;
 use chipper8::machine::{self, Machine};
 use chipper8::instructions::{Command, MetaCommand};
@@ -248,11 +247,11 @@ impl eframe::App for ReplApp {
         // if VM main loop is running, and timer is up, execute next command
         if self.running {
             // todo make timing here configurable
-            if ctx.input().time - self.last_time > 0.1 {
+            if ctx.input().time - self.last_time > machine::FRAME_TIME.as_secs_f64() {
                 self.last_time = ctx.input().time;
                 self.machine.step().unwrap();
             }
-            ctx.request_repaint_after(Duration::from_millis(100));
+            ctx.request_repaint_after(machine::FRAME_TIME);
         }
     }
 }
