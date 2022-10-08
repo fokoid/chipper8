@@ -143,8 +143,8 @@ impl Instruction {
                         None => Err(Error::SyntaxError(format!("add requires a value"))),
                     }
                 },
-                Some(x) => Err(Error::SyntaxError(format!("addset requires a register but got {:?}", x))),
-                None => Err(Error::SyntaxError(format!("addset requires a register"))),
+                Some(x) => Err(Error::SyntaxError(format!("add requires a register but got {:?}", x))),
+                None => Err(Error::SyntaxError(format!("add requires a register"))),
             },
             Some(Token::Other("index")) => match tokens.next() {
                 Some(Token::Other("set")) => match tokens.next() {

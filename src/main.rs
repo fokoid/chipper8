@@ -1,14 +1,14 @@
 use std::fs;
 use std::time::Duration;
 use eframe::NativeOptions;
-use chipper8::machine::{self, DISPLAY_WIDTH, Machine, STACK_SIZE};
-use chipper8::instructions::{Command, MetaCommand, OpCode};
+use chipper8::machine::{self, Machine};
+use chipper8::instructions::{Command, MetaCommand};
 use egui::{Color32, ColorImage, Frame, Stroke, TextStyle, TextureFilter, TextureHandle, Vec2};
 use egui::widgets::TextEdit;
 use egui::style::Margin;
 use egui::widget_text::RichText;
 use egui_extras::{Size, TableBuilder};
-use ringbuffer::{AllocRingBuffer, RingBufferExt, RingBufferWrite, RingBufferRead};
+use ringbuffer::{AllocRingBuffer, RingBufferExt, RingBufferWrite};
 
 // hard coded based on current (also hard coded) UI element sizes
 const REPL_HISTORY_SIZE: usize = 16;
@@ -33,7 +33,7 @@ struct ReplApp {
 }
 
 impl ReplApp {
-    fn new(cc: &eframe::CreationContext<'_>) -> Self {
+    fn new(_cc: &eframe::CreationContext<'_>) -> Self {
         Self {
             user_input: String::new(),
             history: AllocRingBuffer::with_capacity(REPL_HISTORY_SIZE),
@@ -47,7 +47,7 @@ impl ReplApp {
 }
 
 impl eframe::App for ReplApp {
-    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::SidePanel::left("console")
             .resizable(false)
             .min_width(180.0)
@@ -169,7 +169,7 @@ impl eframe::App for ReplApp {
                             .resizable(false)
                             .scroll(false)
                             .body(|mut body| {
-                                for index in 0..STACK_SIZE {
+                                for index in 0..machine::STACK_SIZE {
                                     body.row(18.0, |mut row| {
                                         row.col(|ui| {
                                             let text = RichText::new(format!("{:04X}", self.machine.stack.data[index]))
@@ -213,7 +213,7 @@ impl eframe::App for ReplApp {
                         for i in 0..4 {
                             for j in 0..4 {
                                 let [u, v] = [4 * x + i, 4 * y + j];
-                                display.pixels[u + 4 * v * DISPLAY_WIDTH] = Color32::from_gray(self.machine.display[x + y * DISPLAY_WIDTH]);
+                                display.pixels[u + 4 * v * machine::DISPLAY_WIDTH] = Color32::from_gray(self.machine.display[x + y * machine::DISPLAY_WIDTH]);
                             }
                         }
                     }
