@@ -122,17 +122,15 @@ impl Machine {
         self.memory[offset..offset + data.len()].clone_from_slice(data);
     }
 
-    pub fn demo() -> Self {
-        let mut machine = Self::new();
-        machine.program_counter = 1000;
-        machine.memory[machine.program_counter] = 0x00E0;
-        machine.stack.push(0xAAAA);
-        machine.stack.push(0xBBBB);
-        machine.registers[0] = 0x12;
-        machine.registers[1] = 0xAB;
-        machine.sound_timer = 1;
-        machine.display[1000] = 0xFF;
-        machine
+    pub fn demo(&mut self) {
+        self.program_counter = 1000;
+        self.memory[self.program_counter] = 0x00E0;
+        self.stack.push(0xAAAA);
+        self.stack.push(0xBBBB);
+        self.registers[0] = 0x12;
+        self.registers[1] = 0xAB;
+        self.sound_timer = 1;
+        self.display[1000] = 0xFF;
     }
 
     pub fn at_program_counter(&self) -> u16 {

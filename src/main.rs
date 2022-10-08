@@ -1,7 +1,7 @@
 use std::fs;
 use eframe::NativeOptions;
 use chipper8::machine::{self, Machine};
-use chipper8::instructions::{Command, MetaCommand};
+use chipper8::instructions::{Command, MetaCommand, MachineState};
 use egui::{Color32, ColorImage, Frame, Stroke, TextStyle, TextureFilter, TextureHandle, Vec2};
 use egui::widgets::TextEdit;
 use egui::style::Margin;
@@ -36,7 +36,7 @@ impl ReplApp {
         Self {
             user_input: String::new(),
             history: AllocRingBuffer::with_capacity(REPL_HISTORY_SIZE),
-            machine: Machine::demo(),
+            machine: Machine::new(),
             display: None,
             mem_display: None,
             running: false,
@@ -103,9 +103,14 @@ impl eframe::App for ReplApp {
                                                 self.running = false;
                                                 self.machine.execute(instruction)
                                             },
-                                            Command::Meta(MetaCommand::Reset) => {
+                                            Command::Meta(MetaCommand::Reset(state)) => {
                                                 self.running = false;
                                                 self.machine.reset();
+                                                if let Some(state) = state {
+                                                    match state {
+                                                        MachineState::Demo => self.machine.demo(),
+                                                    }
+                                                }
                                             },
                                             Command::Meta(MetaCommand::Load(path, address)) => {
                                                 let bytes = fs::read(path).unwrap();

@@ -41,8 +41,31 @@ impl Command {
 }
 
 #[derive(Debug, Eq, PartialEq)]
+pub enum MachineState {
+    Demo,
+}
+
+impl MachineState {
+    pub fn parse(mut tokens: Tokens) -> Result<Option<MachineState>> {
+        match tokens.next() {
+            Some(Token::Other("demo")) => Ok(Some(MachineState::Demo)),
+            None => Ok(None),
+            Some(x) => Err(Error::MetaSyntaxError(format!("not a valid machine state identifier: {:?}", x))),
+        }
+    }
+}
+
+impl Display for MachineState {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Demo => write!(f, "{}", "demo"),
+        }
+    }
+}
+
+#[derive(Debug, Eq, PartialEq)]
 pub enum MetaCommand {
-    Reset,
+    Reset(Option<MachineState>),
     Load(String, u16),
     Step,
     Play,
@@ -53,7 +76,7 @@ impl MetaCommand {
     pub fn parse(mut tokens: Tokens) -> Result<Self> {
         // todo: parse entire token stream
         match tokens.next() {
-            Some(Token::Meta(".reset")) => Ok(MetaCommand::Reset),
+            Some(Token::Meta(".reset")) => Ok(MetaCommand::Reset(MachineState::parse(tokens)?)),
             Some(Token::Meta(".load")) => match tokens.next() {
                 Some(Token::Other(s)) => {
                     let path = String::from(s);
@@ -80,7 +103,10 @@ impl MetaCommand {
 impl Display for MetaCommand {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Reset => write!(f, ".reset"),
+            Self::Reset(state) => write!(f, ".reset {}", match state {
+                None => String::new(),
+                Some(state) => format!("{}", state),
+            }),
             Self::Load(path, address) => write!(f, ".load {} {:03X}", path, address),
             Self::Step => write!(f, ".step"),
             Self::Play => write!(f, ".play"),
