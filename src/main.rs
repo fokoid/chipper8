@@ -1,7 +1,7 @@
 use eframe::NativeOptions;
-use chipper8::machine::{Machine, STACK_SIZE};
+use chipper8::machine::{self, DISPLAY_WIDTH, Machine, STACK_SIZE};
 use chipper8::instructions::{Command, MetaCommand, OpCode};
-use egui::{Color32, Frame, Stroke, TextStyle, Vec2};
+use egui::{Color32, ColorImage, Frame, Stroke, TextStyle, TextureFilter, TextureHandle, Vec2};
 use egui::widgets::TextEdit;
 use egui::style::Margin;
 use egui::widget_text::RichText;
@@ -14,7 +14,7 @@ const REPL_HISTORY_SIZE: usize = 16;
 fn main() {
     let mut native_options = NativeOptions::default();
     native_options.resizable = false;
-    native_options.initial_window_size = Some(Vec2 { x: 640.0, y: 375.0 });
+    native_options.initial_window_size = Some(Vec2 { x: 680.0, y: 395.0 });
     eframe::run_native("CHIPPER-8", native_options,
                        Box::new(|cc| Box::new(ReplApp::new(cc))));
 }
@@ -24,6 +24,8 @@ struct ReplApp {
     user_input: String,
     history: AllocRingBuffer<Command>,
     machine: Machine,
+    display: Option<TextureHandle>,
+    mem_display: Option<TextureHandle>,
 }
 
 impl ReplApp {
@@ -32,6 +34,8 @@ impl ReplApp {
             user_input: String::new(),
             history: AllocRingBuffer::with_capacity(REPL_HISTORY_SIZE),
             machine: Machine::demo(),
+            display: None,
+            mem_display: None,
         }
     }
 }
@@ -103,11 +107,6 @@ impl eframe::App for ReplApp {
                         });
                     });
             });
-        egui::CentralPanel::default()
-            .frame(Frame::none())
-            .show(ctx, |ui| {
-            ui.label("machine goes here");
-        });
         egui::SidePanel::right("vm-visualizer")
             .resizable(false)
             .min_width(230.0)
@@ -168,6 +167,55 @@ impl eframe::App for ReplApp {
                         ui.label(if self.machine.sound_timer > 0 { sound_label.background_color(Color32::LIGHT_RED) } else { sound_label });
                     })
                 });
+            });
+        egui::CentralPanel::default()
+            .frame(Frame::none().inner_margin(Margin::same(5.0)).fill(Color32::DARK_GRAY))
+            .show(ctx, |ui| {
+                let texture = self.display.get_or_insert_with(|| {
+                    ui.ctx().load_texture(
+                        "display",
+                        ColorImage::new([machine::DISPLAY_WIDTH * 4, machine::DISPLAY_HEIGHT * 4], Color32::BLACK),
+                        TextureFilter::Linear,
+                    )
+                });
+                // build color image from machine video memory
+                let mut display = ColorImage::new([machine::DISPLAY_WIDTH * 4, machine::DISPLAY_HEIGHT * 4], Color32::BLACK);
+                for x in 0..machine::DISPLAY_WIDTH {
+                    for y in 0..machine::DISPLAY_HEIGHT {
+                        for i in 0..4 {
+                            for j in 0..4 {
+                                let [u, v] = [4 * x + i, 4 * y + j];
+                                display.pixels[u + 4 * v * DISPLAY_WIDTH] = Color32::from_gray(self.machine.display[x + y * DISPLAY_WIDTH]);
+                            }
+                        }
+                    }
+                }
+                texture.set(display, TextureFilter::Linear);
+                let size = texture.size_vec2();
+                ui.image(texture, size);
+
+                let mem_texture = self.mem_display.get_or_insert_with(|| {
+                    ui.ctx().load_texture(
+                        "mem-display",
+                        ColorImage::new([64 * 4, 64 * 4], Color32::BLACK),
+                        TextureFilter::Linear,
+                    )
+                });
+                // build color image from machine video memory
+                let mut mem_display = ColorImage::new([ 64 * 4, 64 * 4], Color32::BLACK);
+                for x in 0..64 {
+                    for y in 0..64 {
+                        for i in 0..4 {
+                            for j in 0..4 {
+                                let [u, v] = [4 * x + i, 4 * y + j];
+                                mem_display.pixels[u + 4 * v * 64] = Color32::from_gray(self.machine.memory[x + y * 64]);
+                            }
+                        }
+                    }
+                }
+                mem_texture.set(mem_display, TextureFilter::Linear);
+                let size = mem_texture.size_vec2();
+                ui.image(mem_texture, size);
             });
     }
 }

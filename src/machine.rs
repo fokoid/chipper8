@@ -69,7 +69,7 @@ pub struct Machine {
     pub registers: [u8; NUM_REGISTERS],
     pub stack: Stack,
     pub memory: [u8; MEMORY_SIZE],
-    pub display: [u32; DISPLAY_WIDTH * DISPLAY_HEIGHT],
+    pub display: [u8; DISPLAY_WIDTH * DISPLAY_HEIGHT],
     pub program_counter: Pointer,
     pub index: Pointer,
     pub delay_timer: Timer,
@@ -101,6 +101,7 @@ impl Machine {
         machine.registers[0] = 0x12;
         machine.registers[1] = 0xAB;
         machine.sound_timer = 1;
+        machine.display[1000] = 0xFF;
         machine
     }
 
