@@ -1,4 +1,6 @@
+use std::cmp::min;
 use std::ops::RangeInclusive;
+use crate::instructions::Instruction;
 
 pub const MEMORY_SIZE: usize = 4096;
 pub const NUM_REGISTERS: usize = 16;
@@ -6,6 +8,7 @@ pub const STACK_SIZE: usize = 16;
 pub const DISPLAY_WIDTH: usize = 64;
 pub const DISPLAY_HEIGHT: usize = 32;
 pub const FONT_RANGE: RangeInclusive<usize> = 0x050..=0x09F;
+pub const FONT_SPRITE_HEIGHT: usize = 5;
 
 const FONT_GLYPHS: [u8; 80] = [
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -32,9 +35,9 @@ type Pointer = usize;
 type Timer = u8;
 
 #[derive(Debug)]
-struct Stack {
-    data: [u16; STACK_SIZE],
-    pointer: usize,
+pub struct Stack {
+    pub data: [u16; STACK_SIZE],
+    pub pointer: usize,
 }
 
 impl Stack {
@@ -65,14 +68,14 @@ impl Stack {
 
 #[derive(Debug)]
 pub struct Machine {
-    memory: [u8; MEMORY_SIZE],
-    stack: Stack,
-    display: [u32; DISPLAY_WIDTH * DISPLAY_HEIGHT],
-    pc: Pointer,
-    index: Pointer,
-    delay_timer: Timer,
-    sound_timer: Timer,
-    registers: [u8; NUM_REGISTERS],
+    pub registers: [u8; NUM_REGISTERS],
+    pub stack: Stack,
+    pub memory: [u8; MEMORY_SIZE],
+    pub display: [u8; DISPLAY_WIDTH * DISPLAY_HEIGHT],
+    pub program_counter: Pointer,
+    pub index: Pointer,
+    pub delay_timer: Timer,
+    pub sound_timer: Timer,
 }
 
 impl Machine {
@@ -81,7 +84,7 @@ impl Machine {
             memory: [0; MEMORY_SIZE],
             stack: Stack::new(),
             display: [0; DISPLAY_WIDTH * DISPLAY_HEIGHT],
-            pc: 0,
+            program_counter: 0,
             index: 0,
             delay_timer: 0,
             sound_timer: 0,
@@ -89,5 +92,62 @@ impl Machine {
         };
         machine.memory[FONT_RANGE].clone_from_slice(&FONT_GLYPHS);
         machine
+    }
+
+    pub fn demo() -> Self {
+        let mut machine = Self::new();
+        machine.program_counter = 1000;
+        machine.memory[machine.program_counter] = 0x00E0;
+        machine.stack.push(0xAAAA);
+        machine.stack.push(0xBBBB);
+        machine.registers[0] = 0x12;
+        machine.registers[1] = 0xAB;
+        machine.sound_timer = 1;
+        machine.display[1000] = 0xFF;
+        machine
+    }
+
+    pub fn next_instruction(&self) -> u16 {
+        u16::from_le_bytes(self.memory[self.program_counter..self.program_counter + 2].try_into().unwrap())
+    }
+
+    pub fn at_index(&self) -> u8 {
+        self.memory[self.index]
+    }
+
+    pub fn execute(&mut self, instruction: &Instruction) {
+        match instruction {
+            Instruction::ClearScreen => self.display.fill(0),
+            Instruction::Jump(address) => {
+                self.program_counter = *address as Pointer;
+            },
+            Instruction::Set(register, value) => {
+                self.registers[*register as usize] = *value;
+            },
+            Instruction::Add(register, value) => {
+                self.registers[*register as usize] += *value;
+            },
+            Instruction::IndexSet(value) => {
+                self.index = *value as Pointer;
+            },
+            Instruction::Draw(vx, vy, height) => {
+                let [x, y] = [self.registers[*vx as usize] as usize % DISPLAY_WIDTH, self.registers[*vy as usize] as usize % DISPLAY_HEIGHT];
+                let bytes = &self.memory[self.index..self.index + *height as usize];
+                for j in y..min(y + *height as usize, DISPLAY_HEIGHT) {
+                    let mut byte = bytes[j - y];
+                    for i in x..min(x + 8, DISPLAY_WIDTH) {
+                        self.display[i + j * DISPLAY_WIDTH] ^= if byte & 0b10000000 != 0 { 0xFF } else {0};
+                        byte = byte.rotate_left(1);
+                    }
+                };
+            },
+            Instruction::Font(register) => {
+                let char = self.registers[*register as usize] as usize & 0x0F;
+                self.index = FONT_RANGE.start() + FONT_SPRITE_HEIGHT * char;
+            }
+            Instruction::TimerSound(value) => {
+                self.sound_timer = *value;
+            },
+        }
     }
 }
