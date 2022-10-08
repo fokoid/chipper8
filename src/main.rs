@@ -15,7 +15,7 @@ const REPL_HISTORY_SIZE: usize = 16;
 fn main() {
     let mut native_options = NativeOptions::default();
     native_options.resizable = false;
-    native_options.initial_window_size = Some(Vec2 { x: 680.0, y: 395.0 });
+    native_options.initial_window_size = Some(Vec2 { x: 720.0, y: 395.0 });
     eframe::run_native("CHIPPER-8", native_options,
                        Box::new(|cc| Box::new(ReplApp::new(cc))));
 }
@@ -49,8 +49,8 @@ impl eframe::App for ReplApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::SidePanel::left("console")
             .resizable(false)
-            .min_width(180.0)
-            .max_width(180.0)
+            .min_width(220.0)
+            .max_width(220.0)
             .frame(Frame::default().stroke(Stroke::new(2.0, Color32::DARK_GRAY)))
             .show(ctx, |ui| {
                 egui::TopBottomPanel::top("history")
@@ -62,7 +62,7 @@ impl eframe::App for ReplApp {
                         let table = TableBuilder::new(ui)
                             .striped(true)
                             .column(Size::exact(40.0))
-                            .column(Size::exact(120.0))
+                            .column(Size::exact(160.0))
                             .resizable(false)
                             .scroll(false)
                             .stick_to_bottom(true);
