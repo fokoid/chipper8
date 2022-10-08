@@ -42,12 +42,14 @@ impl Command {
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum MetaCommand {
+    Reset,
 }
 
 impl MetaCommand {
     pub fn parse(mut tokens: Tokens) -> Result<Self> {
         // todo: parse entire token stream
         match tokens.next() {
+            Some(Token::Meta(".reset")) => Ok(MetaCommand::Reset),
             Some(Token::Meta(s)) => Err(Error::MetaSyntaxError(format!("invalid meta command '{}'", s))),
             s => Err(Error::MetaSyntaxError(format!("expected meta command token but found '{:?}'", s))),
         }
@@ -57,7 +59,7 @@ impl MetaCommand {
 impl Display for MetaCommand {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            _ => todo!("add some metacommands"),
+            Self::Reset => write!(f, ".reset"),
         }
     }
 }

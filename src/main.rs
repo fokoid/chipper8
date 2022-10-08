@@ -93,6 +93,7 @@ impl eframe::App for ReplApp {
                                     Ok(Some(command)) => {
                                         match &command {
                                             Command::Instruction(instruction) => self.machine.execute(instruction),
+                                            Command::Meta(MetaCommand::Reset) => self.machine.reset(),
                                             _ => todo!(),
                                         };
                                         self.history.push(command);

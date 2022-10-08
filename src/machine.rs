@@ -64,6 +64,11 @@ impl Stack {
         self.data[self.pointer] = value;
         self.pointer += 1;
     }
+
+    fn reset(&mut self) {
+        self.data.fill(0);
+        self.pointer = 0;
+    }
 }
 
 #[derive(Debug)]
@@ -92,6 +97,18 @@ impl Machine {
         };
         machine.memory[FONT_RANGE].clone_from_slice(&FONT_GLYPHS);
         machine
+    }
+
+    pub fn reset(&mut self) {
+        self.memory.fill(0);
+        self.stack.reset();
+        self.display.fill(0);
+        self.program_counter = 0;
+        self.index = 0;
+        self.delay_timer = 0;
+        self.sound_timer = 0;
+        self.registers.fill(0);
+        self.memory[FONT_RANGE].clone_from_slice(&FONT_GLYPHS);
     }
 
     pub fn demo() -> Self {
