@@ -1,6 +1,6 @@
 use std::cmp::min;
 use std::ops::RangeInclusive;
-use crate::instructions::Instruction;
+use crate::instructions::{self, Instruction, OpCode};
 
 pub const MEMORY_SIZE: usize = 4096;
 pub const NUM_REGISTERS: usize = 16;
@@ -132,8 +132,12 @@ impl Machine {
         machine
     }
 
-    pub fn next_instruction(&self) -> u16 {
-        u16::from_le_bytes(self.memory[self.program_counter..self.program_counter + 2].try_into().unwrap())
+    pub fn at_program_counter(&self) -> u16 {
+        u16::from_be_bytes(self.memory[self.program_counter..self.program_counter + 2].try_into().unwrap())
+    }
+
+    pub fn next_instruction(&self) -> instructions::Result<Instruction >{
+        OpCode(self.at_program_counter()).as_instruction()
     }
 
     pub fn at_index(&self) -> u8 {
@@ -174,5 +178,12 @@ impl Machine {
                 self.sound_timer = *value;
             },
         }
+    }
+
+    pub fn step(&mut self) -> instructions::Result<()> {
+        let instruction = self.next_instruction().unwrap();
+        self.program_counter += 2;
+        self.execute(&instruction);
+        Ok(())
     }
 }

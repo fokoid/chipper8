@@ -18,7 +18,7 @@ pub enum Error {
     InvalidOpCode(OpCode),
 }
 
-type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Command {
@@ -44,6 +44,9 @@ impl Command {
 pub enum MetaCommand {
     Reset,
     Load(String, u16),
+    Step,
+    Play,
+    Pause,
 }
 
 impl MetaCommand {
@@ -65,6 +68,9 @@ impl MetaCommand {
                 Some(x) => Err(Error::MetaSyntaxError(format!(".load requires a path but got {:?}", x))),
                 None => Err(Error::MetaSyntaxError(format!(".load requires a path"))),
             }
+            Some(Token::Meta(".step")) => Ok(MetaCommand::Step),
+            Some(Token::Meta(".play")) => Ok(MetaCommand::Play),
+            Some(Token::Meta(".pause")) => Ok(MetaCommand::Pause),
             Some(Token::Meta(s)) => Err(Error::MetaSyntaxError(format!("invalid meta command '{}'", s))),
             s => Err(Error::MetaSyntaxError(format!("expected meta command token but found '{:?}'", s))),
         }
@@ -76,6 +82,9 @@ impl Display for MetaCommand {
         match self {
             Self::Reset => write!(f, ".reset"),
             Self::Load(path, address) => write!(f, ".load {} {:03X}", path, address),
+            Self::Step => write!(f, ".step"),
+            Self::Play => write!(f, ".play"),
+            Self::Pause => write!(f, ".pause"),
         }
     }
 }

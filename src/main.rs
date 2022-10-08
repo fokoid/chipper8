@@ -1,4 +1,5 @@
 use std::fs;
+use std::time::Duration;
 use eframe::NativeOptions;
 use chipper8::machine::{self, DISPLAY_WIDTH, Machine, STACK_SIZE};
 use chipper8::instructions::{Command, MetaCommand, OpCode};
@@ -27,6 +28,8 @@ struct ReplApp {
     machine: Machine,
     display: Option<TextureHandle>,
     mem_display: Option<TextureHandle>,
+    running: bool,
+    last_time: f64,
 }
 
 impl ReplApp {
@@ -37,6 +40,8 @@ impl ReplApp {
             machine: Machine::demo(),
             display: None,
             mem_display: None,
+            running: false,
+            last_time: 0.0,
         }
     }
 }
@@ -93,13 +98,30 @@ impl eframe::App for ReplApp {
                                     Ok(None) => {},
                                     Ok(Some(command)) => {
                                         match &command {
-                                            Command::Instruction(instruction) => self.machine.execute(instruction),
-                                            Command::Meta(MetaCommand::Reset) => self.machine.reset(),
+                                            Command::Instruction(instruction) => {
+                                                // user entered a machine instruction at the prompt
+                                                // so we should suspend the VM main loop if running
+                                                self.running = false;
+                                                self.machine.execute(instruction)
+                                            },
+                                            Command::Meta(MetaCommand::Reset) => {
+                                                self.running = false;
+                                                self.machine.reset();
+                                            },
                                             Command::Meta(MetaCommand::Load(path, address)) => {
                                                 let bytes = fs::read(path).unwrap();
                                                 self.machine.load(*address as usize, &bytes);
                                                 self.machine.program_counter = *address as usize;
                                             }
+                                            Command::Meta(MetaCommand::Step) => {
+                                                self.machine.step().unwrap();
+                                            },
+                                            Command::Meta(MetaCommand::Play) => {
+                                                self.running = true;
+                                            },
+                                            Command::Meta(MetaCommand::Pause) => {
+                                                self.running = false;
+                                            },
                                         };
                                         self.history.push(command);
                                     },
@@ -163,8 +185,8 @@ impl eframe::App for ReplApp {
                             });
                     });
                     ui.vertical(|ui| {
-                        ui.label(RichText::new(format!("PC  {:04X} {:04X}", self.machine.program_counter, self.machine.next_instruction())).monospace().size(16.0));
-                        if let Ok(instruction) = OpCode(self.machine.next_instruction()).as_instruction() {
+                        ui.label(RichText::new(format!("PC  {:04X} {:04X}", self.machine.program_counter, self.machine.at_program_counter())).monospace().size(16.0));
+                        if let Ok(instruction) = self.machine.next_instruction() {
                             ui.label(RichText::new(format!("{}", instruction)).monospace().size(16.0));
                         };
                         ui.label(RichText::new(format!("IDX {:04X} {:04X}", self.machine.index, self.machine.at_index())).monospace().size(16.0));
@@ -223,5 +245,14 @@ impl eframe::App for ReplApp {
                 let size = mem_texture.size_vec2();
                 ui.image(mem_texture, size);
             });
+        // if VM main loop is running, and timer is up, execute next command
+        if self.running {
+            // todo make timing here configurable
+            if ctx.input().time - self.last_time > 0.1 {
+                self.last_time = ctx.input().time;
+                self.machine.step().unwrap();
+            }
+            ctx.request_repaint_after(Duration::from_millis(100));
+        }
     }
 }
