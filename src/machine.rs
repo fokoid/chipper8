@@ -1,3 +1,4 @@
+use std::cmp::min;
 use std::ops::RangeInclusive;
 use crate::instructions::Instruction;
 
@@ -129,7 +130,15 @@ impl Machine {
                 self.index = *value as Pointer;
             },
             Instruction::Draw(vx, vy, height) => {
-                println!("draw");
+                let [x, y] = [self.registers[*vx as usize] as usize % DISPLAY_WIDTH, self.registers[*vy as usize] as usize % DISPLAY_HEIGHT];
+                let bytes = &self.memory[self.index..self.index + *height as usize];
+                for j in y..min(y + *height as usize, DISPLAY_HEIGHT) {
+                    let mut byte = bytes[j - y];
+                    for i in x..min(x + 8, DISPLAY_WIDTH) {
+                        self.display[i + j * DISPLAY_WIDTH] ^= if byte & 1 != 0 { 0xFF } else {0};
+                        byte = byte.rotate_right(1);
+                    }
+                };
             }
             Instruction::TimerSound(value) => {
                 self.sound_timer = *value;
