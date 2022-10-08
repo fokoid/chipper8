@@ -328,6 +328,13 @@ impl Command {
             Self::Instruction(instruction) => Some(instruction.into()),
         }
     }
+
+    pub fn is_meta(&self) -> bool {
+        match self {
+            Self::Meta(_) => true,
+            Self::Instruction(_) => false,
+        }
+    }
 }
 
 impl Display for Command {

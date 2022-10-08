@@ -15,15 +15,20 @@ const REPL_HISTORY_SIZE: usize = 16;
 fn main() {
     let mut native_options = NativeOptions::default();
     native_options.resizable = false;
-    native_options.initial_window_size = Some(Vec2 { x: 720.0, y: 395.0 });
+    native_options.initial_window_size = Some(Vec2 { x: 740.0, y: 395.0 });
     eframe::run_native("CHIPPER-8", native_options,
                        Box::new(|cc| Box::new(ReplApp::new(cc))));
 }
 
 
+struct HistoryItem {
+    command: Command,
+    user: bool,
+}
+
 struct ReplApp {
     user_input: String,
-    history: AllocRingBuffer<Command>,
+    history: AllocRingBuffer<HistoryItem>,
     machine: Machine,
     display: Option<TextureHandle>,
     mem_display: Option<TextureHandle>,
@@ -49,8 +54,8 @@ impl eframe::App for ReplApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::SidePanel::left("console")
             .resizable(false)
-            .min_width(220.0)
-            .max_width(220.0)
+            .min_width(240.0)
+            .max_width(240.0)
             .frame(Frame::default().stroke(Stroke::new(2.0, Color32::DARK_GRAY)))
             .show(ctx, |ui| {
                 egui::TopBottomPanel::top("history")
@@ -61,21 +66,27 @@ impl eframe::App for ReplApp {
                     .show_inside(ui, |ui| {
                         let table = TableBuilder::new(ui)
                             .striped(true)
+                            .column(Size::exact(10.0))
                             .column(Size::exact(40.0))
                             .column(Size::exact(160.0))
                             .resizable(false)
                             .scroll(false)
                             .stick_to_bottom(true);
                         table.body(|mut body| {
-                            for command in self.history.iter() {
+                            for item in self.history.iter() {
                                 body.row(18.0, |mut row| {
                                     row.col(|ui| {
-                                        ui.label(RichText::new(match command.opcode() {
-                                            None => String::from("META"),
+                                        ui.label(RichText::new(
+                                             if item.command.is_meta() { "M" } else if item.user { "U" } else { " " }
+                                        ).monospace().size(16.0));
+                                    });
+                                    row.col(|ui| {
+                                        ui.label(RichText::new(match item.command.opcode() {
+                                            None => String::from(""),
                                             Some(opcode) => format!("{}", opcode),
                                         }).monospace().size(16.0));
                                     });
-                                    row.col(|ui| { ui.label(RichText::new(format!("{}", command)).monospace().size(16.0)); });
+                                    row.col(|ui| { ui.label(RichText::new(format!("{}", item.command)).monospace().size(16.0)); });
                                 });
                             };
                         });
@@ -127,7 +138,7 @@ impl eframe::App for ReplApp {
                                                 self.running = false;
                                             },
                                         };
-                                        self.history.push(command);
+                                        self.history.push(HistoryItem { command, user: true });
                                     },
                                     Err(error) => {
                                         println!("{:?}", error);
@@ -254,6 +265,8 @@ impl eframe::App for ReplApp {
             // todo make timing here configurable
             if ctx.input().time - self.last_time > machine::FRAME_TIME.as_secs_f64() {
                 self.last_time = ctx.input().time;
+                let instruction = self.machine.next_instruction().unwrap();
+                self.history.push(HistoryItem { command: Command::Instruction(instruction), user: false });
                 self.machine.step().unwrap();
             }
             ctx.request_repaint_after(machine::FRAME_TIME);
