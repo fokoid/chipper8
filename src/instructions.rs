@@ -67,6 +67,7 @@ pub enum Instruction {
     ClearScreen,
     Jump(u16),
     Set(u8, u8),
+    Add(u8, u8),
     IndexSet(u16),
     TimerSound(u8),
 }
@@ -99,6 +100,22 @@ impl Instruction {
                 },
                 Some(x) => Err(Error::SyntaxError(format!("set requires a register but got {:?}", x))),
                 None => Err(Error::SyntaxError(format!("set requires a register"))),
+            },
+            Some(Token::Other("add")) => match tokens.next() {
+                Some(Token::Other(s)) => {
+                    // todo: bounds checking (12 bit address)
+                    let register = u8::from_str_radix(s, 16)?;
+                    match tokens.next() {
+                        Some(Token::Other(s)) => Ok(Instruction::Add(
+                            register,
+                            u8::from_str_radix(s, 16)?,
+                        )),
+                        Some(x) => Err(Error::SyntaxError(format!("add requires a value but got {:?}", x))),
+                        None => Err(Error::SyntaxError(format!("add requires a value"))),
+                    }
+                },
+                Some(x) => Err(Error::SyntaxError(format!("addset requires a register but got {:?}", x))),
+                None => Err(Error::SyntaxError(format!("addset requires a register"))),
             },
             Some(Token::Other("index")) => match tokens.next() {
                 Some(Token::Other("set")) => match tokens.next() {
@@ -135,6 +152,8 @@ impl From<&Instruction> for OpCode {
                 Instruction::Jump(address) => 0x1000 | (address & 0x0FFF),
                 Instruction::Set(register, value) =>
                     0x6000 | u16::from_be_bytes([*register, *value]),
+                Instruction::Add(register, value) =>
+                    0x7000 | u16::from_be_bytes([*register, *value]),
                 Instruction::IndexSet(value) => 0xA000 | (value & 0x0FFF),
                 Instruction::TimerSound(value) => 0xF018 | u16::from_be_bytes([*value, 0]),
             }
@@ -154,6 +173,10 @@ impl OpCode {
                 let [register, value] = (self.0 & 0x0FFF).to_be_bytes();
                 Ok(Instruction::Set(register, value))
             },
+            0x7000 => {
+                let [register, value] = (self.0 & 0x0FFF).to_be_bytes();
+                Ok(Instruction::Add(register, value))
+            },
             0xA000 => Ok(Instruction::IndexSet(self.0 & 0x0FFF)),
             0xF000 => {
                 match self.0 & 0x00FF {
@@ -172,6 +195,7 @@ impl Display for Instruction {
             Self::ClearScreen => write!(f, "cls"),
             Self::Jump(address) => write!(f, "jmp {:03X}", address),
             Self::Set(register, value) => write!(f, "set {:01X} {:02X}", register, value),
+            Self::Add(register, value) => write!(f, "add {:01X} {:02X}", register, value),
             Self::IndexSet(value) => write!(f, "index set {:03X}", value),
             Self::TimerSound(value) => write!(f, "timer sound {:02X}", value),
         }
