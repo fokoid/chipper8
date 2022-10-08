@@ -10,7 +10,7 @@ pub const DISPLAY_WIDTH: usize = 64;
 pub const DISPLAY_HEIGHT: usize = 32;
 pub const FONT_RANGE: RangeInclusive<usize> = 0x050..=0x09F;
 pub const FONT_SPRITE_HEIGHT: usize = 5;
-pub const FRAMES_PER_SECOND: u64 = 1;
+pub const FRAMES_PER_SECOND: u64 = 60;
 pub const FRAME_TIME: Duration = Duration::from_nanos(1_000_000_000 / FRAMES_PER_SECOND);
 
 const FONT_GLYPHS: [u8; 80] = [
