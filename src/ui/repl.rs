@@ -13,6 +13,7 @@ const REPL_HISTORY_SIZE: usize = 16;
 struct HistoryItem {
     command: Command,
     user: bool,
+    count: usize,
 }
 
 pub struct Repl {
@@ -29,15 +30,18 @@ impl Repl {
     }
 
     pub fn add_history(&mut self, command: &Command, user: bool) {
-        self.history.push(HistoryItem { command: command.clone(), user });
+        match self.history.back_mut() {
+            Some(item) if item.command == *command && item.user == user => item.count += 1,
+            _ => self.history.push(HistoryItem { command: command.clone(), user, count: 1 }),
+        }
     }
 
     pub fn draw(&mut self, ctx: &Context) -> instructions::Result<Option<Command>> {
         let mut result = Ok(None);
         egui::SidePanel::left("console")
             .resizable(false)
-            .min_width(240.0)
-            .max_width(240.0)
+            .min_width(265.0)
+            .max_width(265.0)
             .frame(Frame::default().stroke(Stroke::new(2.0, Color32::DARK_GRAY)))
             .show(ctx, |ui| {
                 egui::TopBottomPanel::top("history")
@@ -51,6 +55,7 @@ impl Repl {
                             .column(Size::exact(10.0))
                             .column(Size::exact(40.0))
                             .column(Size::exact(160.0))
+                            .column(Size::exact(20.0))
                             .resizable(false)
                             .scroll(false)
                             .stick_to_bottom(true);
@@ -76,6 +81,16 @@ impl Repl {
                                     });
                                     row.col(|ui| {
                                         ui.label(util::monospace(&format!("{}", item.command)));
+                                    });
+                                    row.col(|ui| {
+                                        ui.label(util::monospace(
+                                            & if item.count == 1 {
+                                                String::from("  ")
+                                            } else if item.count < 100
+                                            {
+                                                format!("{}", item.count)
+                                            } else { String::from("+ ") }
+                                        ));
                                     });
                                 });
                             };

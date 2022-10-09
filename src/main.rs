@@ -10,7 +10,7 @@ use ui::Ui;
 fn main() {
     let mut native_options = NativeOptions::default();
     native_options.resizable = false;
-    native_options.initial_window_size = Some(Vec2 { x: 740.0, y: 395.0 });
+    native_options.initial_window_size = Some(Vec2 { x: 765.0, y: 395.0 });
     eframe::run_native("CHIPPER-8", native_options,
                        Box::new(|cc| Box::new(ReplApp::new(cc))));
 }
