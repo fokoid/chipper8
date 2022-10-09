@@ -137,7 +137,7 @@ impl Machine {
         u16::from_be_bytes(self.memory[self.program_counter..self.program_counter + 2].try_into().unwrap())
     }
 
-    pub fn next_instruction(&self) -> instructions::Result<Instruction >{
+    pub fn next_instruction(&self) -> instructions::Result<Instruction> {
         OpCode(self.at_program_counter()).as_instruction()
     }
 
@@ -150,34 +150,34 @@ impl Machine {
             Instruction::ClearScreen => self.display.fill(0),
             Instruction::Jump(address) => {
                 self.program_counter = *address as Pointer;
-            },
+            }
             Instruction::Set(register, value) => {
                 self.registers[*register as usize] = *value;
-            },
+            }
             Instruction::Add(register, value) => {
                 self.registers[*register as usize] += *value;
-            },
+            }
             Instruction::IndexSet(value) => {
                 self.index = *value as Pointer;
-            },
+            }
             Instruction::Draw(vx, vy, height) => {
                 let [x, y] = [self.registers[*vx as usize] as usize % DISPLAY_WIDTH, self.registers[*vy as usize] as usize % DISPLAY_HEIGHT];
                 let bytes = &self.memory[self.index..self.index + *height as usize];
                 for j in y..min(y + *height as usize, DISPLAY_HEIGHT) {
                     let mut byte = bytes[j - y];
                     for i in x..min(x + 8, DISPLAY_WIDTH) {
-                        self.display[i + j * DISPLAY_WIDTH] ^= if byte & 0b10000000 != 0 { 0xFF } else {0};
+                        self.display[i + j * DISPLAY_WIDTH] ^= if byte & 0b10000000 != 0 { 0xFF } else { 0 };
                         byte = byte.rotate_left(1);
                     }
                 };
-            },
+            }
             Instruction::Font(register) => {
                 let char = self.registers[*register as usize] as usize & 0x0F;
                 self.index = FONT_RANGE.start() + FONT_SPRITE_HEIGHT * char;
             }
             Instruction::TimerSound(value) => {
                 self.sound_timer = *value;
-            },
+            }
         }
     }
 

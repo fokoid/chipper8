@@ -54,7 +54,7 @@ impl ReplApp {
                         MachineState::Demo => self.machine.demo(),
                     };
                 };
-            },
+            }
             MetaCommand::Load(path, address) => {
                 let bytes = fs::read(path).unwrap();
                 self.machine.load(*address as usize, &bytes);
@@ -62,13 +62,13 @@ impl ReplApp {
             }
             MetaCommand::Step => {
                 self.machine.step().unwrap();
-            },
+            }
             MetaCommand::Play => {
                 self.running = true;
-            },
+            }
             MetaCommand::Pause => {
                 self.running = false;
-            },
+            }
         }
     }
 }
@@ -76,11 +76,11 @@ impl ReplApp {
 impl eframe::App for ReplApp {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
         match self.ui.draw(ctx, &self.machine) {
-            Ok(None) => {},
+            Ok(None) => {}
             Ok(Some(command)) => self.execute(&command),
             Err(error) => {
                 println!("{:?}", error);
-            },
+            }
         };
         // if VM main loop is running, and timer is up, execute next command
         if self.running {
@@ -88,7 +88,7 @@ impl eframe::App for ReplApp {
             if ctx.input().time - self.last_time > machine::FRAME_TIME.as_secs_f64() {
                 self.last_time = ctx.input().time;
                 let instruction = self.machine.next_instruction().unwrap();
-                self.ui.add_history(&Command::Instruction(instruction), false );
+                self.ui.add_history(&Command::Instruction(instruction), false);
                 self.machine.step().unwrap();
             }
             ctx.request_repaint_after(machine::FRAME_TIME);

@@ -157,7 +157,7 @@ impl History {
                     .stick_to_bottom(true);
                 table.body(|mut body| {
                     self.items.iter().for_each(|item| {
-                        body.row(18.0, |mut row| item.draw_row(&mut row) );
+                        body.row(18.0, |mut row| item.draw_row(&mut row));
                     })
                 });
             });

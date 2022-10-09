@@ -33,7 +33,7 @@ impl Command {
             Some(Token::Hex(_)) => {
                 let opcode = &OpCode::parse(tokens)?;
                 Ok(Some(Self::Instruction(opcode.as_instruction()?)))
-            },
+            }
             Some(Token::Meta(_)) => Ok(Some(Self::Meta(MetaCommand::parse(tokens)?))),
             Some(Token::Other(_)) => Ok(Some(Self::Instruction(Instruction::parse(tokens)?))),
         }
@@ -152,7 +152,7 @@ impl Instruction {
                         Some(x) => Err(Error::SyntaxError(format!("set requires a value but got {:?}", x))),
                         None => Err(Error::SyntaxError(format!("set requires a value"))),
                     }
-                },
+                }
                 Some(x) => Err(Error::SyntaxError(format!("set requires a register but got {:?}", x))),
                 None => Err(Error::SyntaxError(format!("set requires a register"))),
             },
@@ -168,7 +168,7 @@ impl Instruction {
                         Some(x) => Err(Error::SyntaxError(format!("add requires a value but got {:?}", x))),
                         None => Err(Error::SyntaxError(format!("add requires a value"))),
                     }
-                },
+                }
                 Some(x) => Err(Error::SyntaxError(format!("add requires a register but got {:?}", x))),
                 None => Err(Error::SyntaxError(format!("add requires a register"))),
             },
@@ -197,11 +197,11 @@ impl Instruction {
                                 Some(x) => Err(Error::SyntaxError(format!("draw requires a value {:?}", x))),
                                 None => Err(Error::SyntaxError(format!("draw requires a value"))),
                             }
-                        },
+                        }
                         Some(x) => Err(Error::SyntaxError(format!("draw requires a second register but got {:?}", x))),
                         None => Err(Error::SyntaxError(format!("draw requires a second register"))),
                     }
-                },
+                }
                 Some(x) => Err(Error::SyntaxError(format!("draw requires a register but got {:?}", x))),
                 None => Err(Error::SyntaxError(format!("draw requires a register"))),
             },
@@ -257,11 +257,11 @@ impl OpCode {
             0x6000 => {
                 let [register, value] = (self.0 & 0x0FFF).to_be_bytes();
                 Ok(Instruction::Set(register, value))
-            },
+            }
             0x7000 => {
                 let [register, value] = (self.0 & 0x0FFF).to_be_bytes();
                 Ok(Instruction::Add(register, value))
-            },
+            }
             0xA000 => Ok(Instruction::IndexSet(self.0 & 0x0FFF)),
             0xD000 => {
                 let [vx, lower] = (self.0 & 0xFFF).to_be_bytes();
@@ -303,7 +303,7 @@ impl OpCode {
         match tokens.next() {
             Some(Token::Hex(s)) => {
                 Ok(OpCode(u16::from_str_radix(&s[2..], 16)?))
-            },
+            }
             x => Err(Error::OpCodeSyntaxError(format!("{:?}", x))),
         }
     }

@@ -29,7 +29,7 @@ impl ImageBuilder {
                 self.set_pixel(
                     &mut image,
                     &[x, y],
-                    Color32::from_gray(memory[x + y * self.width])
+                    Color32::from_gray(memory[x + y * self.width]),
                 );
             }
         };
