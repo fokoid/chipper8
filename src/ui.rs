@@ -3,6 +3,7 @@ mod memory;
 mod repl;
 mod util;
 mod image_builder;
+mod table;
 
 use egui::Context;
 use cpu::Cpu;
