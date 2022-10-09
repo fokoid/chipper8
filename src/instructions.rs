@@ -20,7 +20,7 @@ pub enum Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Command {
     Meta(MetaCommand),
     Instruction(Instruction),
@@ -40,7 +40,7 @@ impl Command {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum MachineState {
     Demo,
 }
@@ -63,7 +63,7 @@ impl Display for MachineState {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum MetaCommand {
     Reset(Option<MachineState>),
     Load(String, u16),
@@ -115,7 +115,7 @@ impl Display for MetaCommand {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Instruction {
     ClearScreen,
     Jump(u16),
