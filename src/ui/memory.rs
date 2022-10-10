@@ -1,6 +1,8 @@
 use egui::{Color32, Context, Frame, TextureFilter, TextureHandle, Ui};
 use egui::style::Margin;
+
 use chipper8::machine::{self, Machine};
+
 use crate::ui::image_builder::ImageBuilder;
 
 pub struct Memory {

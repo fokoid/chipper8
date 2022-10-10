@@ -1,11 +1,13 @@
-mod ui;
-
 use std::fs;
+
 use eframe::NativeOptions;
-use chipper8::machine::{self, Machine};
-use chipper8::instructions::{Command, MetaCommand, MachineState};
 use egui::{Context, Vec2};
+
+use chipper8::instructions::{Command, MachineState, MetaCommand};
+use chipper8::machine::{self, Machine};
 use ui::Ui;
+
+mod ui;
 
 fn main() {
     let mut native_options = NativeOptions::default();

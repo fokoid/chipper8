@@ -1,10 +1,11 @@
 use egui::{Color32, Context, Frame, Stroke, TextStyle, Ui};
-use egui::widgets::TextEdit;
 use egui::style::Margin;
+use egui::widgets::TextEdit;
 use egui_extras::{Size, TableBuilder, TableRow};
 use ringbuffer::{AllocRingBuffer, RingBufferExt, RingBufferWrite};
 
 use chipper8::instructions::{self, Command};
+
 use crate::ui::util;
 
 // hard coded based on current (also hard coded) UI element sizes

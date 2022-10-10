@@ -14,7 +14,7 @@ pub fn build(ui: &mut Ui, size: Vec<f32>, data: impl TabularData) {
             .resizable(false)
             .scroll(false)
             .stick_to_bottom(true),
-        |builder, size| builder.column(Size::exact(*size))
+        |builder, size| builder.column(Size::exact(*size)),
     ).body(|mut body| {
         data.rows().into_iter().for_each(|record| {
             if record.len() != num_cols {
@@ -25,7 +25,7 @@ pub fn build(ui: &mut Ui, size: Vec<f32>, data: impl TabularData) {
             }
             body.row(18.0, |mut row| {
                 record.into_iter().for_each(|cell| {
-                    row.col(|ui| { ui.add(cell); } );
+                    row.col(|ui| { ui.add(cell); });
                 });
             })
         });

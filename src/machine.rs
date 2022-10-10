@@ -1,6 +1,7 @@
 use std::cmp::min;
 use std::ops::RangeInclusive;
 use std::time::Duration;
+
 use crate::instructions::{self, Instruction, OpCode};
 
 pub const MEMORY_SIZE: usize = 4096;

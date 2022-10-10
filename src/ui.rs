@@ -1,16 +1,17 @@
+use egui::Context;
+
+use chipper8::instructions::{self, Command};
+use chipper8::machine::Machine;
+use cpu::Cpu;
+use memory::Memory;
+use repl::Repl;
+
 mod cpu;
 mod memory;
 mod repl;
 mod util;
 mod image_builder;
 mod table;
-
-use egui::Context;
-use cpu::Cpu;
-use memory::Memory;
-use repl::Repl;
-use chipper8::instructions::{self, Command};
-use chipper8::machine::Machine;
 
 pub struct Ui {
     cpu: Cpu,

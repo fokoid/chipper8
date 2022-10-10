@@ -1,8 +1,10 @@
 use egui::{Color32, Context, Frame, Label, Stroke, Ui};
 use egui::style::Margin;
-use crate::ui::util;
-use crate::ui::table::{self, TabularData};
+
 use chipper8::machine::Machine;
+
+use crate::ui::table::{self, TabularData};
+use crate::ui::util;
 
 struct RegistersHelper<'a> {
     machine: &'a Machine,
@@ -51,7 +53,7 @@ impl Cpu {
                         vec![20.0, 20.0],
                         RegistersHelper::new(machine),
                     ));
-                    ui.push_id(1 , |ui| table::build(
+                    ui.push_id(1, |ui| table::build(
                         ui,
                         vec![40.0],
                         StackHelper::new(machine),
