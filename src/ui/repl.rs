@@ -6,8 +6,8 @@ use ringbuffer::{AllocRingBuffer, RingBufferExt, RingBufferWrite};
 
 use chipper8::instructions::{self, Command};
 
-use crate::ui::util;
 use crate::ui::util::MonoLabel;
+use crate::ui::table::{self, TabularData};
 
 // hard coded based on current (also hard coded) UI element sizes
 const REPL_HISTORY_SIZE: usize = 16;
@@ -18,38 +18,34 @@ struct HistoryItem {
     count: usize,
 }
 
-impl HistoryItem {
-    fn draw_row(&self, row: &mut TableRow) {
-        row.col(|ui| {
-            ui.add(MonoLabel::new(
-                if self.command.is_meta() {
-                    "M"
-                } else if self.user {
-                    "U"
-                } else {
-                    " "
-                }
-            ));
-        });
-        row.col(|ui| {
-            ui.add(MonoLabel::new(match self.command.opcode() {
-                None => String::from(""),
-                Some(opcode) => format!("{}", opcode),
-            }));
-        });
-        row.col(|ui| {
-            ui.add(MonoLabel::new(format!("{}", self.command)));
-        });
-        row.col(|ui| {
-            ui.add(MonoLabel::new(
-                if self.count == 1 {
-                    String::from("  ")
-                } else if self.count < 100
-                {
-                    format!("{}", self.count)
-                } else { String::from("💯") }
-            ));
-        });
+impl TabularData for &AllocRingBuffer<HistoryItem> {
+    fn rows(&self) -> Vec<Vec<MonoLabel>> {
+        self.iter().map(|item| {
+            vec![
+                MonoLabel::new(
+                    if item.command.is_meta() {
+                        "M"
+                    } else if item.user {
+                        "U"
+                    } else {
+                        " "
+                    }
+                ),
+                MonoLabel::new(match item.command.opcode() {
+                    None => String::from(""),
+                    Some(opcode) => format!("{}", opcode),
+                }),
+                MonoLabel::new(format!("{}", item.command)),
+                MonoLabel::new(
+                    if item.count == 1 {
+                        String::from("  ")
+                    } else if item.count < 100
+                    {
+                        format!("{}", item.count)
+                    } else { String::from("💯") }
+                ),
+            ]
+        }).collect()
     }
 }
 
@@ -148,20 +144,11 @@ impl History {
             .max_height(335.0)
             .frame(Frame::none().inner_margin(Margin::symmetric(5.0, 5.0)))
             .show_inside(ui, |ui| {
-                let table = TableBuilder::new(ui)
-                    .striped(true)
-                    .column(Size::exact(10.0))
-                    .column(Size::exact(40.0))
-                    .column(Size::exact(160.0))
-                    .column(Size::exact(20.0))
-                    .resizable(false)
-                    .scroll(false)
-                    .stick_to_bottom(true);
-                table.body(|mut body| {
-                    self.items.iter().for_each(|item| {
-                        body.row(18.0, |mut row| item.draw_row(&mut row));
-                    })
-                });
+                table::build(
+                    ui,
+                    vec![10.0, 40.0, 160.0, 20.0],
+                    &self.items,
+                )
             });
     }
 }
