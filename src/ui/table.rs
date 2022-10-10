@@ -1,9 +1,11 @@
-use egui::{Label, Ui};
+use egui::Ui;
 use egui_extras::{self, Size};
+
+use crate::ui::util::MonoLabel;
 
 // todo: figure out how to make the outer Vec an Iterator
 pub trait TabularData {
-    fn rows(&self) -> Vec<Vec<Label>>;
+    fn rows(&self) -> Vec<Vec<MonoLabel>>;
 }
 
 pub fn build(ui: &mut Ui, size: Vec<f32>, data: impl TabularData) {
@@ -21,7 +23,7 @@ pub fn build(ui: &mut Ui, size: Vec<f32>, data: impl TabularData) {
                 panic!("table has {} columns but record has {}: {:?}",
                        num_cols,
                        record.len(),
-                       record.iter().map(|label| label.text()).collect::<Vec<_>>());
+                       record.iter().collect::<Vec<_>>());
             }
             body.row(18.0, |mut row| {
                 record.into_iter().for_each(|cell| {

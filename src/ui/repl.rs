@@ -7,6 +7,7 @@ use ringbuffer::{AllocRingBuffer, RingBufferExt, RingBufferWrite};
 use chipper8::instructions::{self, Command};
 
 use crate::ui::util;
+use crate::ui::util::MonoLabel;
 
 // hard coded based on current (also hard coded) UI element sizes
 const REPL_HISTORY_SIZE: usize = 16;
@@ -20,7 +21,7 @@ struct HistoryItem {
 impl HistoryItem {
     fn draw_row(&self, row: &mut TableRow) {
         row.col(|ui| {
-            ui.label(util::monospace(
+            ui.add(MonoLabel::new(
                 if self.command.is_meta() {
                     "M"
                 } else if self.user {
@@ -31,17 +32,17 @@ impl HistoryItem {
             ));
         });
         row.col(|ui| {
-            ui.label(util::monospace(&match self.command.opcode() {
+            ui.add(MonoLabel::new(match self.command.opcode() {
                 None => String::from(""),
                 Some(opcode) => format!("{}", opcode),
             }));
         });
         row.col(|ui| {
-            ui.label(util::monospace(&format!("{}", self.command)));
+            ui.add(MonoLabel::new(format!("{}", self.command)));
         });
         row.col(|ui| {
-            ui.label(util::monospace(
-                &if self.count == 1 {
+            ui.add(MonoLabel::new(
+                if self.count == 1 {
                     String::from("  ")
                 } else if self.count < 100
                 {

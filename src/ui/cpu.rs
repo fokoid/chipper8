@@ -1,10 +1,10 @@
-use egui::{Color32, Context, Frame, Label, Stroke, Ui};
+use egui::{Color32, Context, Frame, Stroke, Ui};
 use egui::style::Margin;
 
 use chipper8::machine::Machine;
 
 use crate::ui::table::{self, TabularData};
-use crate::ui::util;
+use crate::ui::util::{self, MonoLabel};
 
 struct RegistersHelper<'a> {
     machine: &'a Machine,
@@ -17,11 +17,11 @@ impl<'a> RegistersHelper<'a> {
 }
 
 impl<'a> TabularData for RegistersHelper<'a> {
-    fn rows(&self) -> Vec<Vec<Label>> {
+    fn rows(&self) -> Vec<Vec<MonoLabel>> {
         self.machine.registers.iter().enumerate().map(|(index, value)| {
             vec![
-                Label::new(util::monospace(&format!("V{:1X}", index))),
-                Label::new(util::monospace(&format!("{:02X}", value))),
+                MonoLabel::new(format!("V{:1X}", index)),
+                MonoLabel::new(format!("{:02X}", value)),
             ]
         }).collect()
     }
@@ -75,13 +75,14 @@ impl<'a> StackHelper<'a> {
 }
 
 impl<'a> TabularData for StackHelper<'a> {
-    fn rows(&self) -> Vec<Vec<Label>> {
+    fn rows(&self) -> Vec<Vec<MonoLabel>> {
         self.machine.stack.data.iter().enumerate().map(|(index, value)| {
-            let text = util::monospace(&format!("{:04X}", value));
+            let mut label = MonoLabel::new(format!("{:04X}", value));
             vec![
-                Label::new(if index == self.machine.stack.pointer {
-                    text.background_color(Color32::LIGHT_RED)
-                } else { text })
+                label.background_color(
+                if index == self.machine.stack.pointer {
+                    Some(Color32::LIGHT_RED)
+                } else { None })
             ]
         }).collect()
     }
@@ -94,14 +95,14 @@ impl Other {
 
     fn draw(&self, ui: &mut Ui, machine: &Machine) {
         ui.vertical(|ui| {
-            ui.label(util::monospace(&format!("PC  {:04X} {:04X}", machine.program_counter, machine.at_program_counter())));
+            ui.add(MonoLabel::new(format!("PC  {:04X} {:04X}", machine.program_counter, machine.at_program_counter())));
             if let Ok(instruction) = machine.next_instruction() {
-                ui.label(util::monospace(&format!("{}", instruction)));
+                ui.add(MonoLabel::new(format!("{}", instruction)));
             };
-            ui.label(util::monospace(&format!("IDX {:04X} {:04X}", machine.index, machine.at_index())));
-            ui.label(util::monospace(&format!("DELAY {:02X}", machine.delay_timer)));
-            let sound_label = util::monospace(&format!("SOUND {:02X}", machine.sound_timer));
-            ui.label(if machine.sound_timer > 0 { sound_label.background_color(Color32::LIGHT_RED) } else { sound_label });
+            ui.add(MonoLabel::new(format!("IDX {:04X} {:04X}", machine.index, machine.at_index())));
+            ui.add(MonoLabel::new(format!("DELAY {:02X}", machine.delay_timer)));
+            ui.add(MonoLabel::new(format!("SOUND {:02X}", machine.sound_timer))
+                .background_color(if machine.sound_timer > 0 { Some(Color32::LIGHT_RED) } else { None }));
         });
     }
 }
