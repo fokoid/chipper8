@@ -77,12 +77,10 @@ impl ReplApp {
 
 impl eframe::App for ReplApp {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
-        match self.ui.draw(ctx, &self.machine) {
-            Ok(None) => {}
-            Ok(Some(command)) => self.execute(&command),
-            Err(error) => {
-                println!("{:?}", error);
-            }
+        let mut command = None;
+        self.ui.draw(ctx, &self.machine, &mut command);
+        if let Some(command) = &command {
+            self.execute(command);
         };
         // if VM main loop is running, and timer is up, execute next command
         if self.running {

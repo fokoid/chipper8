@@ -1,10 +1,9 @@
-use egui::{Color32, Context, Frame, Stroke, TextStyle, Ui};
+use egui::{Align, Color32, Context, Frame, Layout, Response, Stroke, TextStyle, Ui};
 use egui::style::Margin;
 use egui::widgets::TextEdit;
-use egui_extras::{Size, TableBuilder, TableRow};
 use ringbuffer::{AllocRingBuffer, RingBufferExt, RingBufferWrite};
 
-use chipper8::instructions::{self, Command};
+use chipper8::instructions::Command;
 
 use crate::ui::util::MonoLabel;
 use crate::ui::table::{self, TabularData};
@@ -50,105 +49,72 @@ impl TabularData for &AllocRingBuffer<HistoryItem> {
 }
 
 pub struct Repl {
-    input: Input,
-    history: History,
+    input: String,
+    history: AllocRingBuffer<HistoryItem>,
 }
 
 impl Repl {
     pub fn new() -> Self {
         Self {
-            input: Input::new(),
-            history: History::new(),
+            history: AllocRingBuffer::with_capacity(REPL_HISTORY_SIZE),
+            input: String::new(),
         }
     }
 
-    // todo: get rid of this
     pub fn add_history(&mut self, command: &Command, user: bool) {
-        self.history.add(command, user);
+        match self.history.back_mut() {
+            Some(item) if item.command == *command && item.user == user => item.count += 1,
+            _ => self.history.push(HistoryItem { command: command.clone(), user, count: 1 }),
+        }
     }
 
-    pub fn draw(&mut self, ctx: &Context) -> instructions::Result<Option<Command>> {
+    // todo: make this fit better with egui idioms
+    pub fn ui(&mut self, ctx: &Context, command_buffer: &mut Option<Command>) -> Response {
         egui::SidePanel::left("console")
             .resizable(false)
             .min_width(265.0)
             .max_width(265.0)
-            .frame(Frame::default().stroke(Stroke::new(2.0, Color32::DARK_GRAY)))
-            .show(ctx, |ui| {
-                self.history.draw(ui);
-                Ok(self.input.draw(ui)?.map(|command| {
-                    self.history.add(&command, true);
-                    command
-                }))
-            }).inner
-    }
-}
-
-struct Input {
-    user_input: String,
-}
-
-impl Input {
-    fn new() -> Self {
-        Self { user_input: String::new() }
-    }
-
-    fn draw(&mut self, ui: &mut Ui) -> instructions::Result<Option<Command>> {
-        egui::TopBottomPanel::bottom("input")
-            .resizable(false)
-            .min_height(30.0)
-            .max_height(30.0)
             .frame(Frame::default()
-                .inner_margin(Margin::symmetric(5.0, 0.0))
-                .fill(Color32::DARK_GRAY))
-            .show_inside(ui, |ui| {
-                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                    let input = ui.add(TextEdit::singleline(&mut self.user_input)
-                        .font(TextStyle::Monospace)
-                        .desired_width(250.0));
-                    Ok(if input.lost_focus() {
-                        Command::parse(self.user_input.as_str().into())?.map(|command| {
-                            self.user_input.clear();
-                            input.request_focus();
-                            command
-                        })
-                    } else {
-                        None
-                    })
-                }).inner
-            }).inner
-    }
-}
-
-struct History {
-    items: AllocRingBuffer<HistoryItem>,
-}
-
-impl History {
-    fn new() -> Self {
-        Self {
-            items: AllocRingBuffer::with_capacity(REPL_HISTORY_SIZE),
-        }
-    }
-
-    pub fn add(&mut self, command: &Command, user: bool) {
-        match self.items.back_mut() {
-            Some(item) if item.command == *command && item.user == user => item.count += 1,
-            _ => self.items.push(HistoryItem { command: command.clone(), user, count: 1 }),
-        }
-    }
-
-    fn draw(&mut self, ui: &mut Ui) {
-        egui::TopBottomPanel::top("history")
-            .resizable(false)
-            .min_height(335.0)
-            .max_height(335.0)
-            .frame(Frame::none().inner_margin(Margin::symmetric(5.0, 5.0)))
-            .show_inside(ui, |ui| {
-                table::build(
-                    ui,
-                    vec![10.0, 40.0, 160.0, 20.0],
-                    &self.items,
+                .stroke(Stroke::new(2.0, Color32::DARK_GRAY))
+                .inner_margin(Margin::same(5.0))
+            )
+            .show(ctx, |ui| {
+                ui.with_layout(
+                    Layout::bottom_up(Align::LEFT),
+                    |ui| {
+                        let submitted = repl_input_ui(ui, &mut self.input).lost_focus();
+                        repl_history_ui(ui, &self.history);
+                        if submitted {
+                            match Command::parse(self.input.as_str().into()) {
+                                Ok(Some(command)) => {
+                                    self.input.clear();
+                                    self.add_history(&command, true);
+                                    command_buffer.replace(command);
+                                }
+                                Ok(None) => {}
+                                Err(error) => {
+                                    eprintln!("{:?}", error);
+                                }
+                            };
+                        };
+                    }
                 )
-            });
+            }).response
     }
+}
+
+fn repl_input_ui(ui: &mut Ui, text: &mut String) -> Response {
+    ui.add(TextEdit::singleline(text)
+        .font(TextStyle::Monospace)
+        .frame(false)
+        .hint_text(">>>")
+        .desired_width(250.0))
+}
+
+fn repl_history_ui(ui: &mut Ui, items: &AllocRingBuffer<HistoryItem>) -> () {
+    table::build(
+        ui,
+        vec![10.0, 40.0, 160.0, 20.0],
+        items,
+    )
 }

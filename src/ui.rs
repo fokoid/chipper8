@@ -1,6 +1,6 @@
-use egui::Context;
+use egui::{Context, Response};
 
-use chipper8::instructions::{self, Command};
+use chipper8::instructions::Command;
 use chipper8::machine::Machine;
 use cpu::Cpu;
 use memory::Memory;
@@ -32,10 +32,10 @@ impl Ui {
         self.repl.add_history(command, user);
     }
 
-    pub fn draw(&mut self, ctx: &Context, machine: &Machine) -> instructions::Result<Option<Command>> {
-        let result = self.repl.draw(ctx);
+    pub fn draw(&mut self, ctx: &Context, machine: &Machine, command_buffer: &mut Option<Command>) -> Response {
+        let response = self.repl.ui(ctx, command_buffer);
         self.cpu.draw(ctx, machine);
         self.memory.draw(ctx, machine);
-        result
+        response
     }
 }
