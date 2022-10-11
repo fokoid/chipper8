@@ -16,6 +16,14 @@ impl MonoLabel {
         self.background_color = background_color;
         self
     }
+
+    pub fn highlight_if(self, predicate: impl FnOnce() -> bool) -> Self {
+        if predicate() {
+            self.background_color(Some(Color32::LIGHT_RED))
+        } else {
+            self
+        }
+    }
 }
 
 impl Debug for MonoLabel {

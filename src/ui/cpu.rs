@@ -4,7 +4,7 @@ use egui::style::Margin;
 use chipper8::machine::Machine;
 
 use crate::ui::table::{self, TabularData};
-use crate::ui::util::{self, MonoLabel};
+use crate::ui::util::MonoLabel;
 
 struct RegistersHelper<'a> {
     machine: &'a Machine,
@@ -77,12 +77,9 @@ impl<'a> StackHelper<'a> {
 impl<'a> TabularData for StackHelper<'a> {
     fn rows(&self) -> Vec<Vec<MonoLabel>> {
         self.machine.stack.data.iter().enumerate().map(|(index, value)| {
-            let mut label = MonoLabel::new(format!("{:04X}", value));
+            let label = MonoLabel::new(format!("{:04X}", value));
             vec![
-                label.background_color(
-                if index == self.machine.stack.pointer {
-                    Some(Color32::LIGHT_RED)
-                } else { None })
+                label.highlight_if(|| index == self.machine.stack.pointer)
             ]
         }).collect()
     }
@@ -102,7 +99,7 @@ impl Other {
             ui.add(MonoLabel::new(format!("IDX {:04X} {:04X}", machine.index, machine.at_index())));
             ui.add(MonoLabel::new(format!("DELAY {:02X}", machine.delay_timer)));
             ui.add(MonoLabel::new(format!("SOUND {:02X}", machine.sound_timer))
-                .background_color(if machine.sound_timer > 0 { Some(Color32::LIGHT_RED) } else { None }));
+                .highlight_if(|| machine.sound_timer > 0));
         });
     }
 }
