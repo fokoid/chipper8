@@ -68,38 +68,27 @@ impl Repl {
         }
     }
 
-    // todo: make this fit better with egui idioms
-    pub fn ui(&mut self, ctx: &Context, command_buffer: &mut Option<Command>) -> Response {
-        egui::SidePanel::left("console")
-            .resizable(false)
-            .min_width(265.0)
-            .max_width(265.0)
-            .frame(Frame::default()
-                .stroke(Stroke::new(2.0, Color32::DARK_GRAY))
-                .inner_margin(Margin::same(5.0))
-            )
-            .show(ctx, |ui| {
-                ui.with_layout(
-                    Layout::bottom_up(Align::LEFT),
-                    |ui| {
-                        let submitted = repl_input_ui(ui, &mut self.input).lost_focus();
-                        repl_history_ui(ui, &self.history);
-                        if submitted {
-                            match Command::parse(self.input.as_str().into()) {
-                                Ok(Some(command)) => {
-                                    self.input.clear();
-                                    self.add_history(&command, true);
-                                    command_buffer.replace(command);
-                                }
-                                Ok(None) => {}
-                                Err(error) => {
-                                    eprintln!("{:?}", error);
-                                }
-                            };
-                        };
-                    }
-                )
-            }).response
+    pub fn ui(&mut self, ui: &mut Ui, command_buffer: &mut Option<Command>) -> Response {
+        ui.with_layout(
+            Layout::bottom_up(Align::LEFT),
+            |ui| {
+                let submitted = repl_input_ui(ui, &mut self.input).lost_focus();
+                repl_history_ui(ui, &self.history);
+                if submitted {
+                    match Command::parse(self.input.as_str().into()) {
+                        Ok(Some(command)) => {
+                            self.input.clear();
+                            self.add_history(&command, true);
+                            command_buffer.replace(command);
+                        }
+                        Ok(None) => {}
+                        Err(error) => {
+                            eprintln!("{:?}", error);
+                        }
+                    };
+                };
+            }
+        ).response
     }
 }
 
