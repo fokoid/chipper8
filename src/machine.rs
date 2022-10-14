@@ -134,8 +134,16 @@ impl Machine {
         self.display[1000] = 0xFF;
     }
 
+    pub fn byte_at_address(&self, address: usize) -> u8 {
+        self.memory[address]
+    }
+
+    pub fn word_at_address(&self, address: usize) -> u16 {
+        u16::from_be_bytes(self.memory[address..address + 2].try_into().unwrap())
+    }
+
     pub fn at_program_counter(&self) -> u16 {
-        u16::from_be_bytes(self.memory[self.program_counter..self.program_counter + 2].try_into().unwrap())
+        self.word_at_address(self.program_counter)
     }
 
     pub fn next_instruction(&self) -> instructions::Result<Instruction> {
@@ -143,7 +151,7 @@ impl Machine {
     }
 
     pub fn at_index(&self) -> u8 {
-        self.memory[self.index]
+        self.byte_at_address(self.index)
     }
 
     pub fn execute(&mut self, instruction: &Instruction) {

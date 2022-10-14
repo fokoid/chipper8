@@ -1,6 +1,7 @@
 use egui::{Align, Color32, Context, Frame, Layout, Response, Stroke, TextStyle, Ui};
 use egui::style::Margin;
 use egui::widgets::TextEdit;
+use egui_extras::TableBuilder;
 use ringbuffer::{AllocRingBuffer, RingBufferExt, RingBufferWrite};
 
 use chipper8::instructions::Command;
@@ -18,6 +19,15 @@ struct HistoryItem {
 }
 
 impl TabularData for &AllocRingBuffer<HistoryItem> {
+    fn header(&self) -> Option<Vec<MonoLabel>> {
+        Some(vec![
+            MonoLabel::new("Tag"),
+            MonoLabel::new("Opcode"),
+            MonoLabel::new("Command"),
+            MonoLabel::new("Count"),
+        ])
+    }
+
     fn rows(&self) -> Vec<Vec<MonoLabel>> {
         self.iter().map(|item| {
             vec![
@@ -28,23 +38,28 @@ impl TabularData for &AllocRingBuffer<HistoryItem> {
                         "U"
                     } else {
                         " "
-                    }
+                    },
                 ),
                 MonoLabel::new(match item.command.opcode() {
-                    None => String::from(""),
-                    Some(opcode) => format!("{}", opcode),
-                }),
-                MonoLabel::new(format!("{}", item.command)),
+                                    None => String::from(""),
+                                    Some(opcode) => format!("{}", opcode),
+                                },
+                ),
+                MonoLabel::new(format!("{}", item.command), ),
                 MonoLabel::new(
                     if item.count == 1 {
                         String::from("  ")
                     } else if item.count < 100
                     {
                         format!("{}", item.count)
-                    } else { String::from("💯") }
+                    } else { String::from("💯") },
                 ),
             ]
         }).collect()
+    }
+
+    fn display_rows(&self) -> usize {
+        16
     }
 }
 
@@ -68,27 +83,22 @@ impl Repl {
         }
     }
 
-    pub fn ui(&mut self, ui: &mut Ui, command_buffer: &mut Option<Command>) -> Response {
-        ui.with_layout(
-            Layout::bottom_up(Align::LEFT),
-            |ui| {
-                let submitted = repl_input_ui(ui, &mut self.input).lost_focus();
-                repl_history_ui(ui, &self.history);
-                if submitted {
-                    match Command::parse(self.input.as_str().into()) {
-                        Ok(Some(command)) => {
-                            self.input.clear();
-                            self.add_history(&command, true);
-                            command_buffer.replace(command);
-                        }
-                        Ok(None) => {}
-                        Err(error) => {
-                            eprintln!("{:?}", error);
-                        }
-                    };
-                };
-            }
-        ).response
+    // todo: return a Response?
+    pub fn ui(&mut self, ui: &mut Ui, command_buffer: &mut Option<Command>) {
+        repl_history_ui(ui, &self.history);
+        if repl_input_ui(ui, &mut self.input).lost_focus() {
+            match Command::parse(self.input.as_str().into()) {
+                Ok(Some(command)) => {
+                    self.input.clear();
+                    self.add_history(&command, true);
+                    command_buffer.replace(command);
+                }
+                Ok(None) => {}
+                Err(error) => {
+                    eprintln!("{:?}", error);
+                }
+            };
+        };
     }
 }
 
@@ -102,8 +112,12 @@ fn repl_input_ui(ui: &mut Ui, text: &mut String) -> Response {
 
 fn repl_history_ui(ui: &mut Ui, items: &AllocRingBuffer<HistoryItem>) -> () {
     table::build(
-        ui,
-        vec![10.0, 40.0, 160.0, 20.0],
+        TableBuilder::new(ui)
+            .resizable(false)
+            .striped(true)
+            .scroll(false)
+            .stick_to_bottom(true),
+        vec![30.0, 60.0, 160.0, 50.0],
         items,
     )
 }

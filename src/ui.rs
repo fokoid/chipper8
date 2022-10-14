@@ -35,7 +35,10 @@ impl Ui {
         Window::new("REPL").show(ctx, |ui| { self.repl.ui(ui, command_buffer); });
         Window::new("Display").show(ctx, |ui| self.display.ui(ui, &machine.display));
         Window::new("Memory").show(ctx, |ui| self.memory.ui(ui, &machine.memory));
-        Window::new("Registers").show(ctx, |ui| cpu::registers_ui(ui, machine));
+        Window::new("Registers")
+            .default_size([100.0, 600.0])
+            .resizable(false)
+            .show(ctx, |ui| cpu::registers_ui(ui, machine));
         Window::new("Stack").show(ctx, |ui| cpu::stack_ui(ui, machine));
         Window::new("Timers").show(ctx, |ui| cpu::timers_ui(ui, machine));
         Window::new("Pointers").show(ctx, |ui| cpu::pointers_ui(ui, machine));
