@@ -19,19 +19,6 @@ impl MonoLabel {
     pub fn new(text: impl Into<String>) -> Self {
         Self { text: text.into(), background_color: None }
     }
-
-    pub fn background_color(mut self, background_color: Option<Color32>) -> Self {
-        self.background_color = background_color;
-        self
-    }
-
-    pub fn highlight_if(self, predicate: impl FnOnce() -> bool) -> Self {
-        if predicate() {
-            self.background_color(Some(Color32::LIGHT_RED))
-        } else {
-            self
-        }
-    }
 }
 
 impl Debug for MonoLabel {

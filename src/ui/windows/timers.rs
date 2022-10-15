@@ -54,10 +54,8 @@ impl<'a> TabularData for TimersHelper<'a> {
                 MonoLabel::new(""),
             ],
             vec![
-                MonoLabel::new("SOUND")
-                    .highlight_if(|| sound),
-                MonoLabel::new(format!("{:02X}", self.machine.sound_timer))
-                    .highlight_if(|| sound),
+                MonoLabel::new("SOUND"),
+                MonoLabel::new(format!("{:02X}", self.machine.sound_timer)),
                 MonoLabel::new(if sound { "🔊" } else { "" }),
             ],
         ]
