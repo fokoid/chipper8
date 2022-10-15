@@ -5,8 +5,8 @@ use ringbuffer::RingBufferExt;
 
 use chipper8::instructions::Command;
 
-use crate::ui::util::{MonoLabel, table, TabularData};
 use crate::command_history::CommandHistory;
+use crate::ui::util::{MonoLabel, table, TabularData};
 
 impl TabularData for &CommandHistory {
     fn header(&self) -> Option<Vec<MonoLabel>> {

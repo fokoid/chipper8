@@ -1,6 +1,7 @@
 use egui::{Align, Layout, Ui};
 
 use chipper8::machine::Machine;
+
 use super::Windowed;
 
 mod program_counter;

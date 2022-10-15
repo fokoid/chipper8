@@ -1,4 +1,5 @@
 use ringbuffer::{AllocRingBuffer, RingBufferExt, RingBufferWrite};
+
 use chipper8::instructions::Command;
 
 // hard coded based on current (also hard coded) UI element sizes
@@ -16,7 +17,7 @@ pub struct CommandHistory {
 
 impl CommandHistory {
     pub fn new() -> Self {
-        Self { items: AllocRingBuffer::with_capacity(REPL_HISTORY_SIZE), }
+        Self { items: AllocRingBuffer::with_capacity(REPL_HISTORY_SIZE) }
     }
 
     pub fn append(&mut self, command: &Command, user: bool) {

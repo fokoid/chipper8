@@ -1,6 +1,9 @@
 use egui::Ui;
-use crate::ui::util::MemoryDisplay;
+
 use chipper8::machine::{self, Machine};
+
+use crate::ui::util::MemoryDisplay;
+
 use super::Windowed;
 
 pub struct Display {

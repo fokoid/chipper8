@@ -2,8 +2,9 @@ use egui::{Context, Window};
 
 use chipper8::instructions::Command;
 use chipper8::machine::Machine;
-use windows::{Windowed, Index, Memory, Display, ExecutionStatus, Timers, Registers};
+use windows::{Display, ExecutionStatus, Index, Memory, Registers, Timers, Windowed};
 pub use windows::repl;
+
 use crate::command_history::CommandHistory;
 
 mod util;
@@ -48,7 +49,7 @@ impl Ui {
         });
         Window::new("Command History")
             .resizable(false)
-            .show(ctx, |ui| { repl::history_ui(ui, history)});
+            .show(ctx, |ui| { repl::history_ui(ui, history) });
         for window in &mut self.windows {
             Window::new(window.name())
                 .resizable(false)

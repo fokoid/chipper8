@@ -5,8 +5,8 @@ use egui::{Context, Vec2};
 
 use chipper8::instructions::{Command, MachineState, MetaCommand};
 use chipper8::machine::{self, Machine};
-use ui::Ui;
 use command_history::CommandHistory;
+use ui::Ui;
 
 mod ui;
 mod command_history;

@@ -4,6 +4,7 @@ use egui_extras::TableBuilder;
 use chipper8::machine::Machine;
 
 use crate::ui::util::{MonoLabel, table, TabularData};
+
 use super::Windowed;
 
 pub struct Registers {}

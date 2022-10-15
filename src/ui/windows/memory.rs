@@ -1,5 +1,6 @@
-use chipper8::machine::Machine;
 use egui::Ui;
+
+use chipper8::machine::Machine;
 
 use crate::ui::util::MemoryDisplay;
 
