@@ -81,7 +81,10 @@ impl Repl {
         }
     }
 
-    // todo: return a Response?
+    pub fn name(&self) -> &'static str {
+        "REPL"
+    }
+
     pub fn ui(&mut self, ui: &mut Ui, command_buffer: &mut Option<Command>) {
         repl_history_ui(ui, &self.history);
         if repl_input_ui(ui, &mut self.input).lost_focus() {

@@ -4,21 +4,33 @@ use egui_extras::TableBuilder;
 use chipper8::machine::Machine;
 
 use crate::ui::util::{MonoLabel, table, TabularData};
+use super::Windowed;
 
-// todo: should we return a response?
-pub fn registers_ui(ui: &mut Ui, machine: &Machine) {
-    table::build(
-        TableBuilder::new(ui)
-            .striped(true)
-            .stick_to_bottom(true)
-            .resizable(false)
-            .scroll(false)
-        // .column(Size::relative(0.5))
-        // .column(Size::relative(0.5))
-        ,
-        vec![60.0, 60.0, 60.0],
-        RegistersHelper::new(machine),
-    )
+pub struct Registers {}
+
+impl Registers {
+    pub fn new() -> Self { Self {} }
+}
+
+impl Windowed for Registers {
+    fn name(&self) -> &'static str {
+        "Registers"
+    }
+
+    fn ui(&mut self, ui: &mut Ui, machine: &Machine) {
+        table::build(
+            TableBuilder::new(ui)
+                .striped(true)
+                .stick_to_bottom(true)
+                .resizable(false)
+                .scroll(false)
+            // .column(Size::relative(0.5))
+            // .column(Size::relative(0.5))
+            ,
+            vec![60.0, 60.0, 60.0],
+            RegistersHelper::new(machine),
+        )
+    }
 }
 
 struct RegistersHelper<'a> {

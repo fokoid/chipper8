@@ -5,6 +5,8 @@ use chipper8::machine::{DrawOptions, Machine};
 
 use crate::ui::util::{MemoryDisplay, MonoLabel, table, TabularData};
 
+use super::Windowed;
+
 struct IndexHelper<'a> {
     pub machine: &'a Machine,
 }
@@ -41,8 +43,14 @@ impl Index {
             draw_height: 15,
         }
     }
+}
 
-    pub fn ui(&mut self, ui: &mut Ui, machine: &Machine) {
+impl Windowed for Index {
+    fn name(&self) -> &'static str {
+        "Index"
+    }
+
+    fn ui(&mut self, ui: &mut Ui, machine: &Machine) {
         self.buffer.fill(0);
         let height = self.draw_height % 16;
         DrawOptions::new(
