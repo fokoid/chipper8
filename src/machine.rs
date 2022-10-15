@@ -126,8 +126,8 @@ impl Machine {
     pub fn demo(&mut self) {
         self.program_counter = 1000;
         self.memory[self.program_counter] = 0x00E0;
-        self.stack.push(0xAAAA);
-        self.stack.push(0xBBBB);
+        self.stack.push(0xAAA);
+        self.stack.push(0xBBB);
         self.registers[0] = 0x12;
         self.registers[1] = 0xAB;
         self.sound_timer = 1;
