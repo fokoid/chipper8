@@ -1,7 +1,9 @@
 use egui::Ui;
-use crate::ui::util::{MonoLabel, table, TabularData};
-use chipper8::machine::Machine;
 use egui_extras::TableBuilder;
+
+use chipper8::machine::Machine;
+
+use crate::ui::util::{MonoLabel, table, TabularData};
 
 // todo: should we return a response?
 pub fn registers_ui(ui: &mut Ui, machine: &Machine) {

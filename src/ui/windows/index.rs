@@ -1,7 +1,6 @@
+use chipper8::machine::{DrawOptions, Machine};
 use egui::{Slider, Ui};
 use egui_extras::TableBuilder;
-
-use chipper8::machine::{DrawOptions, Machine};
 
 use crate::ui::util::{MemoryDisplay, MonoLabel, table, TabularData};
 

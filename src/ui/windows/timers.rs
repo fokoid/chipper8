@@ -1,8 +1,9 @@
+use chipper8::machine::Machine;
 use egui::Ui;
+use egui_extras::TableBuilder;
+
 use crate::ui::util::{table, TabularData};
 use crate::ui::util::MonoLabel;
-use chipper8::machine::Machine;
-use egui_extras::TableBuilder;
 
 struct TimersHelper<'a> {
     machine: &'a Machine,
