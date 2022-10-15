@@ -1,5 +1,6 @@
 use std::fmt::{Debug, Display, Formatter};
 use std::num::ParseIntError;
+
 use thiserror::Error;
 
 use crate::tokens::{Token, Tokens};
@@ -20,7 +21,7 @@ pub enum Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Command {
     Meta(MetaCommand),
     Instruction(Instruction),
@@ -33,14 +34,14 @@ impl Command {
             Some(Token::Hex(_)) => {
                 let opcode = &OpCode::parse(tokens)?;
                 Ok(Some(Self::Instruction(opcode.as_instruction()?)))
-            },
+            }
             Some(Token::Meta(_)) => Ok(Some(Self::Meta(MetaCommand::parse(tokens)?))),
             Some(Token::Other(_)) => Ok(Some(Self::Instruction(Instruction::parse(tokens)?))),
         }
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum MachineState {
     Demo,
 }
@@ -63,7 +64,7 @@ impl Display for MachineState {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum MetaCommand {
     Reset(Option<MachineState>),
     Load(String, u16),
@@ -115,7 +116,7 @@ impl Display for MetaCommand {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Instruction {
     ClearScreen,
     Jump(u16),
@@ -152,7 +153,7 @@ impl Instruction {
                         Some(x) => Err(Error::SyntaxError(format!("set requires a value but got {:?}", x))),
                         None => Err(Error::SyntaxError(format!("set requires a value"))),
                     }
-                },
+                }
                 Some(x) => Err(Error::SyntaxError(format!("set requires a register but got {:?}", x))),
                 None => Err(Error::SyntaxError(format!("set requires a register"))),
             },
@@ -168,7 +169,7 @@ impl Instruction {
                         Some(x) => Err(Error::SyntaxError(format!("add requires a value but got {:?}", x))),
                         None => Err(Error::SyntaxError(format!("add requires a value"))),
                     }
-                },
+                }
                 Some(x) => Err(Error::SyntaxError(format!("add requires a register but got {:?}", x))),
                 None => Err(Error::SyntaxError(format!("add requires a register"))),
             },
@@ -197,11 +198,11 @@ impl Instruction {
                                 Some(x) => Err(Error::SyntaxError(format!("draw requires a value {:?}", x))),
                                 None => Err(Error::SyntaxError(format!("draw requires a value"))),
                             }
-                        },
+                        }
                         Some(x) => Err(Error::SyntaxError(format!("draw requires a second register but got {:?}", x))),
                         None => Err(Error::SyntaxError(format!("draw requires a second register"))),
                     }
-                },
+                }
                 Some(x) => Err(Error::SyntaxError(format!("draw requires a register but got {:?}", x))),
                 None => Err(Error::SyntaxError(format!("draw requires a register"))),
             },
@@ -257,11 +258,11 @@ impl OpCode {
             0x6000 => {
                 let [register, value] = (self.0 & 0x0FFF).to_be_bytes();
                 Ok(Instruction::Set(register, value))
-            },
+            }
             0x7000 => {
                 let [register, value] = (self.0 & 0x0FFF).to_be_bytes();
                 Ok(Instruction::Add(register, value))
-            },
+            }
             0xA000 => Ok(Instruction::IndexSet(self.0 & 0x0FFF)),
             0xD000 => {
                 let [vx, lower] = (self.0 & 0xFFF).to_be_bytes();
@@ -303,7 +304,7 @@ impl OpCode {
         match tokens.next() {
             Some(Token::Hex(s)) => {
                 Ok(OpCode(u16::from_str_radix(&s[2..], 16)?))
-            },
+            }
             x => Err(Error::OpCodeSyntaxError(format!("{:?}", x))),
         }
     }

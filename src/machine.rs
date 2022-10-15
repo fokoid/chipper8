@@ -1,6 +1,7 @@
 use std::cmp::min;
 use std::ops::RangeInclusive;
 use std::time::Duration;
+
 use crate::instructions::{self, Instruction, OpCode};
 
 pub const MEMORY_SIZE: usize = 4096;
@@ -125,24 +126,32 @@ impl Machine {
     pub fn demo(&mut self) {
         self.program_counter = 1000;
         self.memory[self.program_counter] = 0x00E0;
-        self.stack.push(0xAAAA);
-        self.stack.push(0xBBBB);
+        self.stack.push(0xAAA);
+        self.stack.push(0xBBB);
         self.registers[0] = 0x12;
         self.registers[1] = 0xAB;
         self.sound_timer = 1;
         self.display[1000] = 0xFF;
     }
 
-    pub fn at_program_counter(&self) -> u16 {
-        u16::from_be_bytes(self.memory[self.program_counter..self.program_counter + 2].try_into().unwrap())
+    pub fn byte_at_address(&self, address: usize) -> u8 {
+        self.memory[address]
     }
 
-    pub fn next_instruction(&self) -> instructions::Result<Instruction >{
+    pub fn word_at_address(&self, address: usize) -> u16 {
+        u16::from_be_bytes(self.memory[address..address + 2].try_into().unwrap())
+    }
+
+    pub fn at_program_counter(&self) -> u16 {
+        self.word_at_address(self.program_counter)
+    }
+
+    pub fn next_instruction(&self) -> instructions::Result<Instruction> {
         OpCode(self.at_program_counter()).as_instruction()
     }
 
     pub fn at_index(&self) -> u8 {
-        self.memory[self.index]
+        self.byte_at_address(self.index)
     }
 
     pub fn execute(&mut self, instruction: &Instruction) {
@@ -150,34 +159,34 @@ impl Machine {
             Instruction::ClearScreen => self.display.fill(0),
             Instruction::Jump(address) => {
                 self.program_counter = *address as Pointer;
-            },
+            }
             Instruction::Set(register, value) => {
                 self.registers[*register as usize] = *value;
-            },
+            }
             Instruction::Add(register, value) => {
                 self.registers[*register as usize] += *value;
-            },
+            }
             Instruction::IndexSet(value) => {
                 self.index = *value as Pointer;
-            },
+            }
             Instruction::Draw(vx, vy, height) => {
                 let [x, y] = [self.registers[*vx as usize] as usize % DISPLAY_WIDTH, self.registers[*vy as usize] as usize % DISPLAY_HEIGHT];
                 let bytes = &self.memory[self.index..self.index + *height as usize];
                 for j in y..min(y + *height as usize, DISPLAY_HEIGHT) {
                     let mut byte = bytes[j - y];
                     for i in x..min(x + 8, DISPLAY_WIDTH) {
-                        self.display[i + j * DISPLAY_WIDTH] ^= if byte & 0b10000000 != 0 { 0xFF } else {0};
+                        self.display[i + j * DISPLAY_WIDTH] ^= if byte & 0b10000000 != 0 { 0xFF } else { 0 };
                         byte = byte.rotate_left(1);
                     }
                 };
-            },
+            }
             Instruction::Font(register) => {
                 let char = self.registers[*register as usize] as usize & 0x0F;
                 self.index = FONT_RANGE.start() + FONT_SPRITE_HEIGHT * char;
             }
             Instruction::TimerSound(value) => {
                 self.sound_timer = *value;
-            },
+            }
         }
     }
 
