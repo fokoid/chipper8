@@ -1,4 +1,4 @@
-use egui::{Response, Ui};
+use egui::Ui;
 use crate::ui::util::MemoryDisplay;
 use chipper8::machine::{self, Machine};
 use super::Windowed;

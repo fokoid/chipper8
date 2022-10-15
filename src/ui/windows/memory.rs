@@ -1,5 +1,5 @@
 use chipper8::machine::Machine;
-use egui::{Response, Ui};
+use egui::Ui;
 
 use crate::ui::util::MemoryDisplay;
 

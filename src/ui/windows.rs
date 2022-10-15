@@ -1,14 +1,13 @@
-use egui::{Response, Ui};
+use egui::Ui;
 use chipper8::machine::Machine;
 pub use execution_status::ExecutionStatus;
 pub use index::Index;
 pub use registers::Registers;
-pub use repl::Repl;
 pub use timers::Timers;
 pub use memory::Memory;
 pub use display::Display;
 
-mod repl;
+pub mod repl;
 mod timers;
 mod execution_status;
 mod registers;
