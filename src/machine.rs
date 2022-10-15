@@ -171,14 +171,11 @@ impl Machine {
             }
             Instruction::Draw(vx, vy, height) => {
                 let [x, y] = [self.registers[*vx as usize] as usize % DISPLAY_WIDTH, self.registers[*vy as usize] as usize % DISPLAY_HEIGHT];
-                let bytes = &self.memory[self.index..self.index + *height as usize];
-                for j in y..min(y + *height as usize, DISPLAY_HEIGHT) {
-                    let mut byte = bytes[j - y];
-                    for i in x..min(x + 8, DISPLAY_WIDTH) {
-                        self.display[i + j * DISPLAY_WIDTH] ^= if byte & 0b10000000 != 0 { 0xFF } else { 0 };
-                        byte = byte.rotate_left(1);
-                    }
-                };
+                DrawOptions::new(
+                    &self.memory[self.index..self.index + *height as usize],
+                    &mut self.display,
+                    [DISPLAY_WIDTH, DISPLAY_HEIGHT]
+                ).at([x, y]).draw();
             }
             Instruction::Font(register) => {
                 let char = self.registers[*register as usize] as usize & 0x0F;
@@ -195,5 +192,42 @@ impl Machine {
         self.program_counter += 2;
         self.execute(&instruction);
         Ok(())
+    }
+}
+
+pub struct DrawOptions<'a> {
+    pos: [usize; 2],
+    display_size: [usize; 2],
+    source: &'a [u8],
+    target: &'a mut [u8],
+}
+
+impl<'a> DrawOptions<'a> {
+    pub fn new(source: &'a [u8], target: &'a mut [u8], display_size: [usize; 2]) -> Self {
+        Self {
+            pos: [0, 0],
+            display_size,
+            source,
+            target,
+        }
+    }
+
+    pub fn at(mut self, pos: [usize; 2]) -> Self {
+        self.pos = pos;
+        self
+    }
+
+    pub fn draw(self) {
+        let bytes = self.source;
+        let [x, y] = self.pos;
+        let [display_width, display_height] = self.display_size;
+        let height = self.source.len();
+        for j in y..min(y + height, display_height) {
+            let mut byte = bytes[j - y];
+            for i in x..min(x + 8, display_width) {
+                self.target[i + j * display_width] ^= if byte & 0b10000000 != 0 { 0xFF } else { 0 };
+                byte = byte.rotate_left(1);
+            }
+        };
     }
 }
