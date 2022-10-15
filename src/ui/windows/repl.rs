@@ -5,8 +5,7 @@ use ringbuffer::{AllocRingBuffer, RingBufferExt, RingBufferWrite};
 
 use chipper8::instructions::Command;
 
-use crate::ui::table::{self, TabularData};
-use crate::ui::util::MonoLabel;
+use crate::ui::util::{MonoLabel, table, TabularData};
 
 // hard coded based on current (also hard coded) UI element sizes
 const REPL_HISTORY_SIZE: usize = 16;

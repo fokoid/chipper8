@@ -3,9 +3,7 @@ use egui_extras::TableBuilder;
 
 use chipper8::machine::{DrawOptions, Machine};
 
-use crate::ui::memory::MemoryDisplay;
-use crate::ui::table::{self, TabularData};
-use crate::ui::util::MonoLabel;
+use crate::ui::util::{MemoryDisplay, MonoLabel, table, TabularData};
 
 struct IndexHelper<'a> {
     pub machine: &'a Machine,
@@ -28,14 +26,14 @@ impl<'a> TabularData for IndexHelper<'a> {
     }
 }
 
-pub struct IndexDisplay {
+pub struct Index {
     display: MemoryDisplay,
     // 8x16 (all sprites are 8 pixels wide and up to 15 pixels tall)
     buffer: [u8; 128],
     draw_height: usize,
 }
 
-impl IndexDisplay {
+impl Index {
     pub fn new() -> Self {
         Self {
             display: MemoryDisplay::new(8, 16),

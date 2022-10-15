@@ -3,8 +3,7 @@ use egui_extras::TableBuilder;
 
 use chipper8::machine::Machine;
 
-use crate::ui::table::{self, TabularData};
-use crate::ui::util::MonoLabel;
+use crate::ui::util::{MonoLabel, table, TabularData};
 
 // todo: should we return a response?
 pub fn stack_ui(ui: &mut Ui, machine: &Machine) {

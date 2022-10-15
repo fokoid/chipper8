@@ -2,25 +2,17 @@ use egui::{Context, Window};
 
 use chipper8::instructions::Command;
 use chipper8::machine::{self, Machine};
-use index::IndexDisplay;
-use memory::MemoryDisplay;
-use repl::Repl;
+use util::MemoryDisplay;
+use windows::{Index, Repl};
 
-mod cpu;
-mod memory;
-mod repl;
 mod util;
-mod image_builder;
-mod table;
-mod index;
-mod stack;
-mod program_counter;
+mod windows;
 
 pub struct Ui {
     memory: MemoryDisplay,
     display: MemoryDisplay,
     repl: Repl,
-    index: IndexDisplay,
+    index: Index,
 }
 
 impl Ui {
@@ -29,7 +21,7 @@ impl Ui {
             memory: MemoryDisplay::new(64, 64),
             display: MemoryDisplay::new(machine::DISPLAY_WIDTH, machine::DISPLAY_HEIGHT),
             repl: Repl::new(),
-            index: IndexDisplay::new(),
+            index: Index::new(),
         }
     }
 
@@ -44,9 +36,9 @@ impl Ui {
         Window::new("Registers")
             .default_size([100.0, 600.0])
             .resizable(false)
-            .show(ctx, |ui| cpu::registers_ui(ui, machine));
-        Window::new("Execution Status").show(ctx, |ui| cpu::program_status_ui(ui, machine));
-        Window::new("Timers").show(ctx, |ui| cpu::timers_ui(ui, machine));
+            .show(ctx, |ui| windows::registers_ui(ui, machine));
+        Window::new("Execution Status").show(ctx, |ui| windows::execution_status_ui(ui, machine));
+        Window::new("Timers").show(ctx, |ui| windows::timers_ui(ui, machine));
         Window::new("Index").show(ctx, |ui| self.index.ui(ui, machine));
     }
 }

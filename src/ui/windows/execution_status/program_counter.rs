@@ -2,8 +2,7 @@ use chipper8::machine::Machine;
 use egui::Ui;
 use egui_extras::TableBuilder;
 
-use crate::ui::table::{self, TabularData};
-use crate::ui::util::MonoLabel;
+use crate::ui::util::{MonoLabel, table, TabularData};
 
 // todo: should we return a response?
 pub fn program_counter_ui(ui: &mut Ui, machine: &Machine) {

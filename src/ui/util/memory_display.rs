@@ -1,6 +1,6 @@
 use egui::{Response, TextureFilter, TextureHandle, Ui};
 
-use crate::ui::image_builder::ImageBuilder;
+use crate::ui::util::image_builder::ImageBuilder;
 
 pub struct MemoryDisplay {
     image_builder: ImageBuilder,

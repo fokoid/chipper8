@@ -1,7 +1,14 @@
+mod image_builder;
+mod memory_display;
+pub mod table;
+
 use std::fmt::{Debug, Formatter};
 
 use egui::{Color32, Label, Response, Ui, Widget};
 use egui::widget_text::RichText;
+
+pub use memory_display::MemoryDisplay;
+pub use table::TabularData;
 
 pub struct MonoLabel {
     text: String,
