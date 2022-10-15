@@ -6,9 +6,10 @@ use egui::{Context, Vec2};
 use chipper8::instructions::{Command, MachineState, MetaCommand};
 use chipper8::machine::{self, Machine};
 use ui::Ui;
-use ui::repl::History;
+use command_history::CommandHistory;
 
 mod ui;
+mod command_history;
 
 fn main() {
     let mut native_options = NativeOptions::default();
@@ -23,7 +24,7 @@ struct ReplApp {
     machine: Machine,
     running: bool,
     last_time: f64,
-    history: History,
+    command_history: CommandHistory,
 }
 
 impl ReplApp {
@@ -33,7 +34,7 @@ impl ReplApp {
             machine: Machine::new(),
             running: false,
             last_time: 0.0,
-            history: History::new(),
+            command_history: CommandHistory::new(),
         }
     }
 
@@ -81,9 +82,9 @@ impl ReplApp {
 impl eframe::App for ReplApp {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
         let mut command = None;
-        self.ui.draw(ctx, &self.machine, &mut command, &self.history);
+        self.ui.draw(ctx, &self.machine, &mut command, &self.command_history);
         if let Some(command) = &command {
-            self.history.append(command, true);
+            self.command_history.append(command, true);
             self.execute(command);
         };
         // if VM main loop is running, and timer is up, execute next command
@@ -92,7 +93,7 @@ impl eframe::App for ReplApp {
             if ctx.input().time - self.last_time > machine::FRAME_TIME.as_secs_f64() {
                 self.last_time = ctx.input().time;
                 let instruction = self.machine.next_instruction().unwrap();
-                self.history.append(&Command::Instruction(instruction), false);
+                self.command_history.append(&Command::Instruction(instruction), false);
                 self.machine.step().unwrap();
             }
             ctx.request_repaint_after(machine::FRAME_TIME);

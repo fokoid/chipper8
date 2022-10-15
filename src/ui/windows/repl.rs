@@ -1,39 +1,14 @@
 use egui::{Response, TextStyle, Ui};
 use egui::widgets::TextEdit;
 use egui_extras::TableBuilder;
-use ringbuffer::{AllocRingBuffer, RingBufferExt, RingBufferWrite};
+use ringbuffer::RingBufferExt;
 
 use chipper8::instructions::Command;
 
 use crate::ui::util::{MonoLabel, table, TabularData};
+use crate::command_history::CommandHistory;
 
-// hard coded based on current (also hard coded) UI element sizes
-const REPL_HISTORY_SIZE: usize = 16;
-
-struct HistoryItem {
-    command: Command,
-    user: bool,
-    count: usize,
-}
-
-pub struct History {
-    items: AllocRingBuffer<HistoryItem>,
-}
-
-impl History {
-    pub fn new() -> Self {
-        Self { items: AllocRingBuffer::with_capacity(REPL_HISTORY_SIZE), }
-    }
-
-    pub fn append(&mut self, command: &Command, user: bool) {
-        match self.items.back_mut() {
-            Some(item) if item.command == *command && item.user == user => item.count += 1,
-            _ => self.items.push(HistoryItem { command: command.clone(), user, count: 1 }),
-        }
-    }
-}
-
-impl TabularData for &History {
+impl TabularData for &CommandHistory {
     fn header(&self) -> Option<Vec<MonoLabel>> {
         Some(vec![
             MonoLabel::new("Tag"),
@@ -78,7 +53,7 @@ impl TabularData for &History {
     }
 }
 
-pub fn history_ui(ui: &mut Ui, history: &History) {
+pub fn history_ui(ui: &mut Ui, history: &CommandHistory) {
     table::build(
         TableBuilder::new(ui)
             .resizable(false)

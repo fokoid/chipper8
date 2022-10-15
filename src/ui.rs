@@ -4,7 +4,7 @@ use chipper8::instructions::Command;
 use chipper8::machine::Machine;
 use windows::{Windowed, Index, Memory, Display, ExecutionStatus, Timers, Registers};
 pub use windows::repl;
-use windows::repl::History;
+use crate::command_history::CommandHistory;
 
 mod util;
 mod windows;
@@ -29,7 +29,7 @@ impl Ui {
         }
     }
 
-    pub fn draw(&mut self, ctx: &Context, machine: &Machine, command_buffer: &mut Option<Command>, history: &History) {
+    pub fn draw(&mut self, ctx: &Context, machine: &Machine, command_buffer: &mut Option<Command>, history: &CommandHistory) {
         egui::TopBottomPanel::bottom("bar").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 if repl::input_ui(ui, &mut self.input).lost_focus() {
