@@ -3,8 +3,6 @@ use egui::widgets::TextEdit;
 use egui_extras::TableBuilder;
 use ringbuffer::RingBufferExt;
 
-use chipper8::instructions::Command;
-
 use crate::command_history::CommandHistory;
 use crate::ui::util::{MonoLabel, table, TabularData};
 
