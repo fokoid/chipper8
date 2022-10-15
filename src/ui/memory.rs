@@ -1,7 +1,5 @@
 use egui::{Response, TextureFilter, TextureHandle, Ui};
 
-use chipper8::machine::Machine;
-
 use crate::ui::image_builder::ImageBuilder;
 
 pub struct MemoryDisplay {

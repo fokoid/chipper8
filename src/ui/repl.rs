@@ -1,5 +1,4 @@
-use egui::{Align, Color32, Context, Frame, Layout, Response, Stroke, TextStyle, Ui};
-use egui::style::Margin;
+use egui::{Response, TextStyle, Ui};
 use egui::widgets::TextEdit;
 use egui_extras::TableBuilder;
 use ringbuffer::{AllocRingBuffer, RingBufferExt, RingBufferWrite};

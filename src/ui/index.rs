@@ -1,8 +1,7 @@
-use egui::{Slider, TextureHandle, Ui};
-use egui::plot::Text;
-use egui_extras::{Size, TableBuilder};
+use egui::{Slider, Ui};
+use egui_extras::TableBuilder;
 
-use chipper8::machine::{self, DrawOptions, Machine};
+use chipper8::machine::{DrawOptions, Machine};
 
 use crate::ui::memory::MemoryDisplay;
 use crate::ui::table::{self, TabularData};

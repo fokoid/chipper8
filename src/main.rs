@@ -1,7 +1,7 @@
 use std::fs;
 
 use eframe::NativeOptions;
-use egui::{Context, Vec2, Visuals};
+use egui::{Context, Vec2};
 
 use chipper8::instructions::{Command, MachineState, MetaCommand};
 use chipper8::machine::{self, Machine};
