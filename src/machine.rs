@@ -133,6 +133,7 @@ impl Machine {
         self.set_instruction_at_address(0xBBB, &Instruction::Font(3));
         self.registers[0] = 0x12;
         self.registers[1] = 0xAB;
+        self.delay_timer = 0xF;
         self.sound_timer = 1;
         self.display[1000] = 0xFF;
     }

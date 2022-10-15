@@ -46,18 +46,18 @@ impl<'a> TabularData for TimersHelper<'a> {
     }
 
     fn rows(&self) -> Vec<Vec<MonoLabel>> {
-        let sound = self.machine.sound_timer > 0;
         vec![
-            vec![
-                MonoLabel::new("DELAY"),
-                MonoLabel::new(format!("{:02X}", self.machine.delay_timer)),
-                MonoLabel::new(""),
-            ],
-            vec![
-                MonoLabel::new("SOUND"),
-                MonoLabel::new(format!("{:02X}", self.machine.sound_timer)),
-                MonoLabel::new(if sound { "🔊" } else { "" }),
-            ],
+            timer_row("Delay", self.machine.delay_timer, None),
+            timer_row("Sound", self.machine.sound_timer, Some('🔊')),
         ]
     }
+}
+
+fn timer_row(label: &str, timer: u8, active_icon: Option<char>) -> Vec<MonoLabel> {
+    let active_icon = if timer > 0 { active_icon } else { None };
+    vec![
+        MonoLabel::new(label),
+        MonoLabel::new(format!("{:02X}", timer)),
+        MonoLabel::new(active_icon.unwrap_or(' ')),
+    ]
 }
