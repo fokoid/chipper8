@@ -11,13 +11,14 @@ mod stack;
 pub fn execution_status_ui(ui: &mut Ui, machine: &Machine) {
     ui.push_id(0, |ui| {
         ui.with_layout(Layout::top_down(Align::Center), |ui| {
-            ui.add(MonoLabel::new("Program Counter"))
+            ui.heading("Program Counter")
         });
         program_counter::program_counter_ui(ui, machine);
     });
+    ui.add_space(18.0);
     ui.push_id(1, |ui| {
         ui.with_layout(Layout::top_down(Align::Center), |ui| {
-            ui.add(MonoLabel::new("Stack"))
+            ui.heading("Stack")
         });
         stack::stack_ui(ui, machine);
     });

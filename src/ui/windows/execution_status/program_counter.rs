@@ -28,14 +28,12 @@ impl<'a> ProgramCounterHelper<'a> {
 
 impl<'a> TabularData for ProgramCounterHelper<'a> {
     fn header(&self) -> Option<Vec<MonoLabel>> {
-        // Some(vec![
-        //     MonoLabel::new("", ),
-        //     MonoLabel::new("", ),
-        //     MonoLabel::new("Address", ),
-        //     MonoLabel::new("Value", ),
-        //     MonoLabel::new("Instruction", ),
-        // ])
-        None
+        Some(vec![
+            MonoLabel::new("", ),
+            MonoLabel::new("Address", ),
+            MonoLabel::new("Value", ),
+            MonoLabel::new("Instruction", ),
+        ])
     }
 
     fn rows(&self) -> Vec<Vec<MonoLabel>> {
