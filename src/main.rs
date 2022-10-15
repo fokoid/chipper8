@@ -1,18 +1,20 @@
 use std::fs;
 
 use eframe::NativeOptions;
-use egui::{Context, Vec2, Visuals};
+use egui::{Context, Vec2};
 
 use chipper8::instructions::{Command, MachineState, MetaCommand};
 use chipper8::machine::{self, Machine};
+use command_history::CommandHistory;
 use ui::Ui;
 
 mod ui;
+mod command_history;
 
 fn main() {
     let mut native_options = NativeOptions::default();
     native_options.resizable = false;
-    native_options.initial_window_size = Some(Vec2 { x: 940.0, y: 600.0 });
+    native_options.initial_window_size = Some(Vec2 { x: 1400.0, y: 800.0 });
     eframe::run_native("CHIPPER-8", native_options,
                        Box::new(|cc| Box::new(ReplApp::new(cc))));
 }
@@ -22,6 +24,7 @@ struct ReplApp {
     machine: Machine,
     running: bool,
     last_time: f64,
+    command_history: CommandHistory,
 }
 
 impl ReplApp {
@@ -31,6 +34,7 @@ impl ReplApp {
             machine: Machine::new(),
             running: false,
             last_time: 0.0,
+            command_history: CommandHistory::new(),
         }
     }
 
@@ -78,8 +82,9 @@ impl ReplApp {
 impl eframe::App for ReplApp {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
         let mut command = None;
-        self.ui.draw(ctx, &self.machine, &mut command);
+        self.ui.draw(ctx, &self.machine, &mut command, &self.command_history);
         if let Some(command) = &command {
+            self.command_history.append(command, true);
             self.execute(command);
         };
         // if VM main loop is running, and timer is up, execute next command
@@ -88,7 +93,7 @@ impl eframe::App for ReplApp {
             if ctx.input().time - self.last_time > machine::FRAME_TIME.as_secs_f64() {
                 self.last_time = ctx.input().time;
                 let instruction = self.machine.next_instruction().unwrap();
-                self.ui.add_history(&Command::Instruction(instruction), false);
+                self.command_history.append(&Command::Instruction(instruction), false);
                 self.machine.step().unwrap();
             }
             ctx.request_repaint_after(machine::FRAME_TIME);

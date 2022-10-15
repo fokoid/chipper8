@@ -308,6 +308,10 @@ impl OpCode {
             x => Err(Error::OpCodeSyntaxError(format!("{:?}", x))),
         }
     }
+
+    pub fn bytes(&self) -> [u8; 2] {
+        self.0.to_be_bytes()
+    }
 }
 
 impl Debug for OpCode {

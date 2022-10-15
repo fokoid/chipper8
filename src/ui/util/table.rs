@@ -1,4 +1,3 @@
-use egui::Ui;
 use egui_extras::{self, Size, TableBuilder};
 
 use crate::ui::util::MonoLabel;

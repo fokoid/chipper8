@@ -1,8 +1,6 @@
-use egui::{Response, TextureFilter, TextureHandle, Ui};
+use egui::{TextureFilter, TextureHandle, Ui};
 
-use chipper8::machine::Machine;
-
-use crate::ui::image_builder::ImageBuilder;
+use crate::ui::util::image_builder::ImageBuilder;
 
 pub struct MemoryDisplay {
     image_builder: ImageBuilder,
@@ -17,7 +15,8 @@ impl MemoryDisplay {
         }
     }
 
-    pub fn ui(&mut self, ui: &mut Ui, memory: &[u8]) -> Response {
+    // todo: should return a response
+    pub fn ui(&mut self, ui: &mut Ui, memory: &[u8]) {
         let texture = self.texture.get_or_insert_with(|| {
             ui.ctx().load_texture(
                 "display",
@@ -30,6 +29,6 @@ impl MemoryDisplay {
             TextureFilter::Linear,
         );
         let size = texture.size_vec2();
-        ui.image(texture, size)
+        ui.image(texture, size);
     }
 }

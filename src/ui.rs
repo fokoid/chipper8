@@ -1,46 +1,59 @@
 use egui::{Context, Window};
 
 use chipper8::instructions::Command;
-use chipper8::machine::{self, Machine};
-use memory::MemoryDisplay;
-use repl::Repl;
+use chipper8::machine::Machine;
+use windows::{Display, ExecutionStatus, Index, Memory, Registers, Timers, Windowed};
+pub use windows::repl;
 
-mod cpu;
-mod memory;
-mod repl;
+use crate::command_history::CommandHistory;
+
 mod util;
-mod image_builder;
-mod table;
+mod windows;
 
 pub struct Ui {
-    memory: MemoryDisplay,
-    display: MemoryDisplay,
-    repl: Repl,
+    windows: Vec<Box<dyn Windowed>>,
+    input: String,
 }
 
 impl Ui {
     pub fn new() -> Self {
         Self {
-            memory: MemoryDisplay::new(64, 64),
-            display: MemoryDisplay::new(machine::DISPLAY_WIDTH, machine::DISPLAY_HEIGHT),
-            repl: Repl::new(),
+            windows: vec![
+                Box::new(Display::new()),
+                Box::new(Memory::new()),
+                Box::new(Registers::new()),
+                Box::new(Index::new()),
+                Box::new(Timers::new()),
+                Box::new(ExecutionStatus::new()),
+            ],
+            input: String::new(),
         }
     }
 
-    pub fn add_history(&mut self, command: &Command, user: bool) {
-        self.repl.add_history(command, user);
-    }
-
-    pub fn draw(&mut self, ctx: &Context, machine: &Machine, command_buffer: &mut Option<Command>) {
-        Window::new("REPL").show(ctx, |ui| { self.repl.ui(ui, command_buffer); });
-        Window::new("Display").show(ctx, |ui| self.display.ui(ui, &machine.display));
-        Window::new("Memory").show(ctx, |ui| self.memory.ui(ui, &machine.memory));
-        Window::new("Registers")
-            .default_size([100.0, 600.0])
+    pub fn draw(&mut self, ctx: &Context, machine: &Machine, command_buffer: &mut Option<Command>, history: &CommandHistory) {
+        egui::TopBottomPanel::bottom("bar").show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                if repl::input_ui(ui, &mut self.input).lost_focus() {
+                    match Command::parse(self.input.as_str().into()) {
+                        Ok(Some(command)) => {
+                            self.input.clear();
+                            command_buffer.replace(command);
+                        }
+                        Ok(None) => {}
+                        Err(error) => {
+                            eprintln!("{:?}", error);
+                        }
+                    };
+                };
+            });
+        });
+        Window::new("Command History")
             .resizable(false)
-            .show(ctx, |ui| cpu::registers_ui(ui, machine));
-        Window::new("Stack").show(ctx, |ui| cpu::stack_ui(ui, machine));
-        Window::new("Timers").show(ctx, |ui| cpu::timers_ui(ui, machine));
-        Window::new("Pointers").show(ctx, |ui| cpu::pointers_ui(ui, machine));
+            .show(ctx, |ui| { repl::history_ui(ui, history) });
+        for window in &mut self.windows {
+            Window::new(window.name())
+                .resizable(false)
+                .show(ctx, |ui| { window.ui(ui, machine); });
+        }
     }
 }
