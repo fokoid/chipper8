@@ -1,6 +1,7 @@
-use chipper8::machine::Machine;
 use egui::Ui;
 use egui_extras::TableBuilder;
+
+use chipper8::machine::Machine;
 
 use crate::ui::util::{table, TabularData};
 use crate::ui::util::MonoLabel;
