@@ -6,8 +6,8 @@ use ringbuffer::{AllocRingBuffer, RingBufferExt, RingBufferWrite};
 
 use chipper8::instructions::Command;
 
-use crate::ui::util::MonoLabel;
 use crate::ui::table::{self, TabularData};
+use crate::ui::util::MonoLabel;
 
 // hard coded based on current (also hard coded) UI element sizes
 const REPL_HISTORY_SIZE: usize = 16;
@@ -41,11 +41,11 @@ impl TabularData for &AllocRingBuffer<HistoryItem> {
                     },
                 ),
                 MonoLabel::new(match item.command.opcode() {
-                                    None => String::from(""),
-                                    Some(opcode) => format!("{}", opcode),
-                                },
+                    None => String::from(""),
+                    Some(opcode) => format!("{}", opcode),
+                },
                 ),
-                MonoLabel::new(format!("{}", item.command), ),
+                MonoLabel::new(format!("{}", item.command)),
                 MonoLabel::new(
                     if item.count == 1 {
                         String::from("  ")

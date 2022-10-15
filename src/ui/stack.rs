@@ -1,8 +1,10 @@
 use egui::Ui;
+use egui_extras::TableBuilder;
+
+use chipper8::machine::Machine;
+
 use crate::ui::table::{self, TabularData};
 use crate::ui::util::MonoLabel;
-use chipper8::machine::Machine;
-use egui_extras::TableBuilder;
 
 // todo: should we return a response?
 pub fn stack_ui(ui: &mut Ui, machine: &Machine) {
@@ -30,10 +32,10 @@ impl<'a> StackHelper<'a> {
 impl<'a> TabularData for StackHelper<'a> {
     fn header(&self) -> Option<Vec<MonoLabel>> {
         Some(vec![
-            MonoLabel::new("Depth", ),
-            MonoLabel::new("Address", ),
-            MonoLabel::new("Value", ),
-            MonoLabel::new("Instruction", ),
+            MonoLabel::new("Depth"),
+            MonoLabel::new("Address"),
+            MonoLabel::new("Value"),
+            MonoLabel::new("Instruction"),
         ])
     }
 

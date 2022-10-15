@@ -1,4 +1,5 @@
 use std::fmt::{Debug, Formatter};
+
 use egui::{Color32, Label, Response, Ui, Widget};
 use egui::widget_text::RichText;
 

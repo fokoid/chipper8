@@ -4,9 +4,9 @@ use egui_extras::{Size, TableBuilder};
 
 use chipper8::machine::Machine;
 
+use crate::ui::{program_counter, stack};
 use crate::ui::table::{self, TabularData};
 use crate::ui::util::MonoLabel;
-use crate::ui::{program_counter, stack};
 
 // todo: should we return a response?
 pub fn registers_ui(ui: &mut Ui, machine: &Machine) {
@@ -16,8 +16,8 @@ pub fn registers_ui(ui: &mut Ui, machine: &Machine) {
             .stick_to_bottom(true)
             .resizable(false)
             .scroll(false)
-            // .column(Size::relative(0.5))
-            // .column(Size::relative(0.5))
+        // .column(Size::relative(0.5))
+        // .column(Size::relative(0.5))
         ,
         vec![60.0, 60.0, 60.0],
         RegistersHelper::new(machine),
@@ -37,18 +37,18 @@ impl<'a> RegistersHelper<'a> {
 impl<'a> TabularData for RegistersHelper<'a> {
     fn header(&self) -> Option<Vec<MonoLabel>> {
         Some(vec![
-            MonoLabel::new("Name", ),
-            MonoLabel::new("Hex", ),
-            MonoLabel::new("Decimal", ),
+            MonoLabel::new("Name"),
+            MonoLabel::new("Hex"),
+            MonoLabel::new("Decimal"),
         ])
     }
 
     fn rows(&self) -> Vec<Vec<MonoLabel>> {
         self.machine.registers.iter().enumerate().map(|(index, value)| {
             vec![
-                MonoLabel::new(format!("V{:1X}", index), ),
-                MonoLabel::new(format!("{:02X}", value), ),
-                MonoLabel::new(format!("{:03}", value), ),
+                MonoLabel::new(format!("V{:1X}", index)),
+                MonoLabel::new(format!("{:02X}", value)),
+                MonoLabel::new(format!("{:03}", value)),
             ]
         }).collect()
     }
@@ -89,16 +89,16 @@ impl<'a> TabularData for TimersHelper<'a> {
         let sound = self.machine.sound_timer > 0;
         vec![
             vec![
-                MonoLabel::new("DELAY", ),
-                MonoLabel::new(format!("{:02X}", self.machine.delay_timer), ),
-                MonoLabel::new("", ),
+                MonoLabel::new("DELAY"),
+                MonoLabel::new(format!("{:02X}", self.machine.delay_timer)),
+                MonoLabel::new(""),
             ],
             vec![
-                MonoLabel::new("SOUND", )
+                MonoLabel::new("SOUND")
                     .highlight_if(|| sound),
-                MonoLabel::new(format!("{:02X}", self.machine.sound_timer), )
+                MonoLabel::new(format!("{:02X}", self.machine.sound_timer))
                     .highlight_if(|| sound),
-                MonoLabel::new(if sound { "🔊" } else { "" }, ),
+                MonoLabel::new(if sound { "🔊" } else { "" }),
             ],
         ]
     }

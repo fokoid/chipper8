@@ -186,7 +186,7 @@ impl Machine {
                 DrawOptions::new(
                     &self.memory[self.index..self.index + *height as usize],
                     &mut self.display,
-                    [DISPLAY_WIDTH, DISPLAY_HEIGHT]
+                    [DISPLAY_WIDTH, DISPLAY_HEIGHT],
                 ).at([x, y]).draw();
             }
             Instruction::Font(register) => {

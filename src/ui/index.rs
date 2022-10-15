@@ -1,10 +1,12 @@
-use egui::plot::Text;
 use egui::{Slider, TextureHandle, Ui};
+use egui::plot::Text;
 use egui_extras::{Size, TableBuilder};
+
 use chipper8::machine::{self, DrawOptions, Machine};
-use crate::ui::util::MonoLabel;
-use crate::ui::table::{self, TabularData};
+
 use crate::ui::memory::MemoryDisplay;
+use crate::ui::table::{self, TabularData};
+use crate::ui::util::MonoLabel;
 
 struct IndexHelper<'a> {
     pub machine: &'a Machine,
@@ -22,7 +24,7 @@ impl<'a> TabularData for IndexHelper<'a> {
                 MonoLabel::new("Byte"),
                 MonoLabel::new(format!(" {:02X}", self.machine.at_index())),
                 MonoLabel::new(format!(" {:03}", self.machine.at_index())),
-            ]
+            ],
         ]
     }
 }

@@ -1,8 +1,9 @@
+use chipper8::machine::Machine;
 use egui::Ui;
+use egui_extras::TableBuilder;
+
 use crate::ui::table::{self, TabularData};
 use crate::ui::util::MonoLabel;
-use chipper8::machine::Machine;
-use egui_extras::TableBuilder;
 
 // todo: should we return a response?
 pub fn program_counter_ui(ui: &mut Ui, machine: &Machine) {
@@ -45,9 +46,9 @@ impl<'a> TabularData for ProgramCounterHelper<'a> {
         };
         vec![
             vec![
-                MonoLabel::new("", ),
-                MonoLabel::new(format!("{:03X}", self.machine.program_counter), ),
-                MonoLabel::new(format!("{:04X}", self.machine.at_program_counter()), ),
+                MonoLabel::new(""),
+                MonoLabel::new(format!("{:03X}", self.machine.program_counter)),
+                MonoLabel::new(format!("{:04X}", self.machine.at_program_counter())),
                 MonoLabel::new(instruction),
             ],
         ]

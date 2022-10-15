@@ -2,9 +2,9 @@ use egui::{Context, Window};
 
 use chipper8::instructions::Command;
 use chipper8::machine::{self, Machine};
+use index::IndexDisplay;
 use memory::MemoryDisplay;
 use repl::Repl;
-use index::IndexDisplay;
 
 mod cpu;
 mod memory;
