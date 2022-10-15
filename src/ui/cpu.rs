@@ -122,11 +122,6 @@ impl<'a> TabularData for PointersHelper<'a> {
                 MonoLabel::new(format!("{:04X}", self.machine.program_counter), ),
                 MonoLabel::new(format!("{:04X}", self.machine.at_program_counter()), ),
             ],
-            vec![
-                MonoLabel::new("IDX", ),
-                MonoLabel::new(format!("{:04X}", self.machine.index), ),
-                MonoLabel::new(format!("{:04X}", self.machine.at_index()), ),
-            ]
         ]
     }
 }

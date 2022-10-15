@@ -4,6 +4,7 @@ use chipper8::instructions::Command;
 use chipper8::machine::{self, Machine};
 use memory::MemoryDisplay;
 use repl::Repl;
+use index::IndexDisplay;
 
 mod cpu;
 mod memory;
@@ -11,11 +12,13 @@ mod repl;
 mod util;
 mod image_builder;
 mod table;
+mod index;
 
 pub struct Ui {
     memory: MemoryDisplay,
     display: MemoryDisplay,
     repl: Repl,
+    index: IndexDisplay,
 }
 
 impl Ui {
@@ -24,6 +27,7 @@ impl Ui {
             memory: MemoryDisplay::new(64, 64),
             display: MemoryDisplay::new(machine::DISPLAY_WIDTH, machine::DISPLAY_HEIGHT),
             repl: Repl::new(),
+            index: IndexDisplay::new(),
         }
     }
 
@@ -42,5 +46,6 @@ impl Ui {
         Window::new("Stack").show(ctx, |ui| cpu::stack_ui(ui, machine));
         Window::new("Timers").show(ctx, |ui| cpu::timers_ui(ui, machine));
         Window::new("Pointers").show(ctx, |ui| cpu::pointers_ui(ui, machine));
+        Window::new("Index").show(ctx, |ui| self.index.ui(ui, machine));
     }
 }
