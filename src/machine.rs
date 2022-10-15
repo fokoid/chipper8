@@ -128,6 +128,9 @@ impl Machine {
         self.memory[self.program_counter] = 0x00E0;
         self.stack.push(0xAAA);
         self.stack.push(0xBBB);
+        // put some instructions at these stack addresses show they show in the visualization
+        self.set_instruction_at_address(0xAAA, &Instruction::ClearScreen);
+        self.set_instruction_at_address(0xBBB, &Instruction::Font(3));
         self.registers[0] = 0x12;
         self.registers[1] = 0xAB;
         self.sound_timer = 1;
@@ -140,6 +143,15 @@ impl Machine {
 
     pub fn word_at_address(&self, address: usize) -> u16 {
         u16::from_be_bytes(self.memory[address..address + 2].try_into().unwrap())
+    }
+
+    pub fn instruction_at_address(&self, address: usize) -> instructions::Result<Instruction> {
+        OpCode(self.word_at_address(address)).as_instruction()
+    }
+
+    fn set_instruction_at_address(&mut self, address: usize, instruction: &Instruction) {
+        let opcode: OpCode = instruction.into();
+        self.memory[address..address + 2].clone_from_slice(&opcode.bytes())
     }
 
     pub fn at_program_counter(&self) -> u16 {

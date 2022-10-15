@@ -13,6 +13,8 @@ mod util;
 mod image_builder;
 mod table;
 mod index;
+mod stack;
+mod program_counter;
 
 pub struct Ui {
     memory: MemoryDisplay,
@@ -43,9 +45,8 @@ impl Ui {
             .default_size([100.0, 600.0])
             .resizable(false)
             .show(ctx, |ui| cpu::registers_ui(ui, machine));
-        Window::new("Stack").show(ctx, |ui| cpu::stack_ui(ui, machine));
+        Window::new("Execution Status").show(ctx, |ui| cpu::program_status_ui(ui, machine));
         Window::new("Timers").show(ctx, |ui| cpu::timers_ui(ui, machine));
-        Window::new("Pointers").show(ctx, |ui| cpu::pointers_ui(ui, machine));
         Window::new("Index").show(ctx, |ui| self.index.ui(ui, machine));
     }
 }

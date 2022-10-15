@@ -1,4 +1,4 @@
-use egui::{Color32, Context, Frame, Response, Stroke, Ui};
+use egui::{Align, Color32, Context, Frame, Layout, Response, Stroke, Ui};
 use egui::style::Margin;
 use egui_extras::{Size, TableBuilder};
 
@@ -6,6 +6,7 @@ use chipper8::machine::Machine;
 
 use crate::ui::table::{self, TabularData};
 use crate::ui::util::MonoLabel;
+use crate::ui::{program_counter, stack};
 
 // todo: should we return a response?
 pub fn registers_ui(ui: &mut Ui, machine: &Machine) {
@@ -54,86 +55,19 @@ impl<'a> TabularData for RegistersHelper<'a> {
 }
 
 // todo: should we return a response?
-pub fn stack_ui(ui: &mut Ui, machine: &Machine) {
-    table::build(
-        TableBuilder::new(ui)
-            .striped(true)
-            .stick_to_bottom(true)
-            .resizable(false)
-            .scroll(true),
-        vec![50.0, 80.0, 50.0],
-        StackHelper::new(machine),
-    )
-}
-
-struct StackHelper<'a> {
-    machine: &'a Machine,
-}
-
-impl<'a> StackHelper<'a> {
-    fn new(machine: &'a Machine) -> Self {
-        Self { machine }
-    }
-}
-
-impl<'a> TabularData for StackHelper<'a> {
-    fn header(&self) -> Option<Vec<MonoLabel>> {
-        Some(vec![
-            MonoLabel::new("Depth", ),
-            MonoLabel::new("Address", ),
-            MonoLabel::new("Value", ),
-        ])
-    }
-
-    fn rows(&self) -> Vec<Vec<MonoLabel>> {
-        self.machine.stack.data.iter().enumerate().map(|(index, address)| {
-            let label = MonoLabel::new(format!("{:04X}", address));
-            vec![
-                MonoLabel::new(format!("{}", index + 1)),
-                label.highlight_if(|| index == self.machine.stack.pointer),
-                MonoLabel::new(format!("{:04X}", self.machine.word_at_address(*address as usize))),
-            ]
-        }).collect()
-    }
-}
-
-struct PointersHelper<'a> {
-    machine: &'a Machine,
-}
-
-impl<'a> PointersHelper<'a> {
-    fn new(machine: &'a Machine) -> Self {
-        Self { machine }
-    }
-}
-
-impl<'a> TabularData for PointersHelper<'a> {
-    fn header(&self) -> Option<Vec<MonoLabel>> {
-        None
-    }
-
-    fn rows(&self) -> Vec<Vec<MonoLabel>> {
-        // if let Ok(instruction) = machine.next_instruction() {
-        //     ui.add(MonoLabel::new(format!("{}", instruction)));
-        // };
-        vec![
-            vec![
-                MonoLabel::new("PC", ),
-                MonoLabel::new(format!("{:04X}", self.machine.program_counter), ),
-                MonoLabel::new(format!("{:04X}", self.machine.at_program_counter()), ),
-            ],
-        ]
-    }
-}
-
-pub fn pointers_ui(ui: &mut Ui, machine: &Machine) {
-    table::build(
-        TableBuilder::new(ui)
-            .resizable(false)
-            .scroll(false),
-        vec![40.0, 40.0, 40.0],
-        PointersHelper::new(machine),
-    )
+pub fn program_status_ui(ui: &mut Ui, machine: &Machine) {
+    ui.push_id(0, |ui| {
+        ui.with_layout(Layout::top_down(Align::Center), |ui| {
+            ui.add(MonoLabel::new("Program Counter"))
+        });
+        program_counter::program_counter_ui(ui, machine);
+    });
+    ui.push_id(1, |ui| {
+        ui.with_layout(Layout::top_down(Align::Center), |ui| {
+            ui.add(MonoLabel::new("Stack"))
+        });
+        stack::stack_ui(ui, machine);
+    });
 }
 
 struct TimersHelper<'a> {
