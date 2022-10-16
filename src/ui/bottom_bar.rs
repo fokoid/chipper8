@@ -1,4 +1,5 @@
-use egui::{Key, Response, TextEdit, TextStyle, Ui};
+use egui::{Color32, Key, Label, Response, TextEdit, TextStyle, Ui};
+use egui::widget_text::RichText;
 use crate::State;
 
 pub struct BottomBar {
@@ -18,6 +19,11 @@ impl BottomBar {
                 self.input.clear();
             }
             response.request_focus();
+            if let Some(error) = state.error() {
+                let message = RichText::new(format!("{}", error))
+                    .color(Color32::DEBUG_COLOR);
+                ui.add(Label::new(message));
+            }
         });
     }
 }

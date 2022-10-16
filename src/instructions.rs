@@ -7,15 +7,15 @@ use crate::tokens::{Token, Tokens};
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("parse int error")]
+    #[error("error parsing integer: {0}")]
     ParseIntError(#[from] ParseIntError),
-    #[error("meta command syntax error")]
+    #[error("Syntax error in meta command: {0}")]
     MetaSyntaxError(String),
-    #[error("syntax error")]
+    #[error("syntax error: {0}")]
     SyntaxError(String),
-    #[error("opcode syntax error")]
+    #[error("syntax error in opcode: {0}")]
     OpCodeSyntaxError(String),
-    #[error("invalid opcode error")]
+    #[error("invalid opcode: {0}")]
     InvalidOpCode(OpCode),
 }
 
