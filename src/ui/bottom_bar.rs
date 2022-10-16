@@ -22,8 +22,8 @@ impl BottomBar {
             if response.lost_focus() && ui.input().key_pressed(Key::Enter) {
                 state.parse_command(self.input.as_str());
                 self.input.clear();
+                response.request_focus();
             }
-            response.request_focus();
             if let Some(error) = state.error() {
                 let message = RichText::new(format!("{}", error))
                     .color(Color32::DEBUG_COLOR);
