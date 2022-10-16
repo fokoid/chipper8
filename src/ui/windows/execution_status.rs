@@ -5,6 +5,7 @@ use chipper8::machine::Machine;
 use crate::State;
 
 use super::WindowContent;
+pub use program_counter::ProgramCounterHelper;
 
 mod program_counter;
 mod stack;
