@@ -1,25 +1,25 @@
 use egui::{Key, Response, TextEdit, TextStyle, Ui};
+use crate::State;
 
-use chipper8::instructions::Command;
+pub struct BottomBar {
+    input: String,
+}
 
-pub fn bottom_bar_ui(ui: &mut Ui, command_buffer: &mut Option<Command>, input: &mut String) {
-    ui.horizontal(|ui| {
-        let response = input_ui(ui, input);
-        if response.lost_focus() && ui.input().key_pressed(Key::Enter) {
-            match Command::parse(input.as_str().into()) {
-                Ok(Some(command)) => {
-                    input.clear();
-                    command_buffer.replace(command);
-                }
-                Ok(None) => {}
-                Err(error) => {
-                    eprintln!("{:?}", error);
-                }
-            };
-            input.clear();
-        };
-        response.request_focus();
-    });
+impl BottomBar {
+    pub fn new() -> Self {
+        Self { input: String::new() }
+    }
+
+    pub fn ui(&mut self, ui: &mut Ui, state: &mut State) {
+        ui.horizontal(|ui| {
+            let response = input_ui(ui, &mut self.input);
+            if response.lost_focus() && ui.input().key_pressed(Key::Enter) {
+                state.parse_command(self.input.as_str());
+                self.input.clear();
+            }
+            response.request_focus();
+        });
+    }
 }
 
 fn input_ui(ui: &mut Ui, text: &mut String) -> Response {

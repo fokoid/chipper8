@@ -3,7 +3,7 @@ use std::fs;
 use eframe::NativeOptions;
 use egui::{Context, Vec2};
 
-use chipper8::instructions::{Command, MachineState, MetaCommand};
+use chipper8::instructions::{Command, Error, MachineState, MetaCommand};
 use chipper8::machine::{self, Machine};
 use command_history::CommandHistory;
 use ui::Ui;
@@ -23,6 +23,7 @@ pub struct State {
     pub running: bool,
     pub command_history: CommandHistory,
     pub command_buffer: Option<Command>,
+    pub error: Option<Error>
 }
 
 impl State {
@@ -31,7 +32,20 @@ impl State {
             running: false,
             command_history: CommandHistory::new(),
             command_buffer: None,
+            error: None,
         }
+    }
+
+    pub fn parse_command(&mut self, input: &str) {
+        match Command::parse(input.into()) {
+            Ok(Some(command)) => {
+                self.command_buffer.replace(command);
+            }
+            Ok(None) => {}
+            Err(error) => {
+                self.error.replace(error);
+            }
+        };
     }
 }
 
