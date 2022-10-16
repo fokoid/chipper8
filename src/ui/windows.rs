@@ -55,13 +55,13 @@ impl Window {
 pub fn create_all() -> Vec<Window> {
     vec![
         Window::new(Box::new(CommandHistory::new())),
-        Window::new(Box::new(Display::new())),
-        Window::new(Box::new(Memory::new())),
-        Window::new(Box::new(Registers::new())),
-        Window::new(Box::new(Index::new())),
-        Window::new(Box::new(Timers::new())),
-        Window::new(Box::new(ExecutionStatus::new())),
         Window::new(Box::new(CommandGui::meta())),
         Window::new(Box::new(CommandGui::instruction())),
+        Window::new(Box::new(Display::new())),
+        Window::new(Box::new(Memory::new())),
+        Window::new(Box::new(Index::new())),
+        Window::new(Box::new(Timers::new())),
+        Window::new(Box::new(Registers::new())),
+        Window::new(Box::new(ExecutionStatus::new())),
     ]
 }

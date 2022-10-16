@@ -14,7 +14,7 @@ mod command_history;
 fn main() {
     let mut native_options = NativeOptions::default();
     native_options.resizable = true;
-    native_options.initial_window_size = Some(Vec2 { x: 1400.0, y: 800.0 });
+    native_options.initial_window_size = Some(Vec2 { x: 1300.0, y: 700.0 });
     eframe::run_native("CHIPPER-8", native_options,
                        Box::new(|cc| Box::new(ReplApp::new(cc))));
 }
