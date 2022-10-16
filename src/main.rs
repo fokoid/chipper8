@@ -20,10 +20,10 @@ fn main() {
 }
 
 pub struct State {
-    pub running: bool,
-    pub command_history: CommandHistory,
-    pub command_buffer: Option<Command>,
-    pub error: Option<Error>
+    running: bool,
+    command_history: CommandHistory,
+    command_buffer: Option<Command>,
+    error: Option<Error>
 }
 
 impl State {
