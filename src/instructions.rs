@@ -82,12 +82,12 @@ impl MetaCommand {
             Some(Token::Meta(".load")) => match tokens.next() {
                 Some(Token::Other(s)) => {
                     let path = String::from(s);
-                    match tokens.next() {
-                        Some(Token::Other(s)) => Ok(
+                    // default to address 200 which is what ROMs typically expect anyway
+                    match tokens.next().unwrap_or(Token::Other("200")) {
+                        Token::Other(s) => Ok(
                             MetaCommand::Load(path, u16::from_str_radix(s, 16)?)
                         ),
-                        Some(x) => Err(Error::MetaSyntaxError(format!(".load requires an address but got {:?}", x))),
-                        None => Err(Error::MetaSyntaxError(format!(".load requires an address"))),
+                        x => Err(Error::MetaSyntaxError(format!(".load requires an address but got {:?}", x))),
                     }
                 }
                 Some(x) => Err(Error::MetaSyntaxError(format!(".load requires a path but got {:?}", x))),
