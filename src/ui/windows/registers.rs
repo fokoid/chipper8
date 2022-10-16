@@ -5,7 +5,7 @@ use chipper8::machine::Machine;
 
 use crate::ui::util::{MonoLabel, table, TabularData};
 
-use super::Windowed;
+use super::WindowContent;
 
 pub struct Registers {}
 
@@ -13,7 +13,7 @@ impl Registers {
     pub fn new() -> Self { Self {} }
 }
 
-impl Windowed for Registers {
+impl WindowContent for Registers {
     fn name(&self) -> &'static str {
         "Registers"
     }

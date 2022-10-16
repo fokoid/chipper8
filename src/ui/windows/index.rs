@@ -5,7 +5,7 @@ use chipper8::machine::{DrawOptions, Machine};
 
 use crate::ui::util::{MemoryDisplay, MonoLabel, table, TabularData};
 
-use super::Windowed;
+use super::WindowContent;
 
 struct IndexHelper<'a> {
     pub machine: &'a Machine,
@@ -45,7 +45,7 @@ impl Index {
     }
 }
 
-impl Windowed for Index {
+impl WindowContent for Index {
     fn name(&self) -> &'static str {
         "Index"
     }

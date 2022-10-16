@@ -2,7 +2,7 @@ use egui::{Align, Layout, Ui};
 
 use chipper8::machine::Machine;
 
-use super::Windowed;
+use super::WindowContent;
 
 mod program_counter;
 mod stack;
@@ -14,7 +14,7 @@ impl ExecutionStatus {
     pub fn new() -> Self { Self {} }
 }
 
-impl Windowed for ExecutionStatus {
+impl WindowContent for ExecutionStatus {
     fn name(&self) -> &'static str {
         "Execution Status"
     }
