@@ -23,7 +23,7 @@ pub struct State {
     pub running: bool,
     pub command_history: CommandHistory,
     pub command_buffer: Option<Command>,
-    pub error: Option<Error>
+    pub error: Option<Error>,
 }
 
 impl State {

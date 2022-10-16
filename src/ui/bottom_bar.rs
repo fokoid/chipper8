@@ -1,6 +1,8 @@
 use egui::{Color32, Key, Label, Response, TextEdit, TextStyle, Ui};
 use egui::widget_text::RichText;
+
 use chipper8::instructions::{Command, MetaCommand};
+
 use crate::State;
 
 pub struct BottomBar {
