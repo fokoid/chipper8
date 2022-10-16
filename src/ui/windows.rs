@@ -43,7 +43,7 @@ impl Window {
 
     pub fn draw(&mut self, ctx: &Context, machine: &Machine, state: &mut State) {
         egui::Window::new(self.content.name())
-            .resizable(false)
+            .resizable(true)
             .open(&mut self.open)
             .show(ctx, |ui| { self.content.ui(ui, machine, state); });
     }

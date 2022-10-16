@@ -1,8 +1,8 @@
-use egui::{Align, Checkbox, Context, Frame, Layout, Sense};
-use egui::style::Margin;
+use egui::{Align, Checkbox, Context, Layout, Sense};
 
 use chipper8::machine::Machine;
 use windows::Window;
+use bottom_bar::BottomBar;
 
 use crate::State;
 
@@ -12,20 +12,20 @@ mod bottom_bar;
 
 pub struct Ui {
     windows: Vec<Window>,
-    input: String,
+    bottom_bar: BottomBar,
 }
 
 impl Ui {
     pub fn new() -> Self {
         Self {
             windows: windows::create_all(),
-            input: String::new(),
+            bottom_bar: BottomBar::new(),
         }
     }
 
     pub fn draw(&mut self, ctx: &Context, machine: &Machine, state: &mut State) {
         egui::TopBottomPanel::bottom("bar").show(ctx, |ui| {
-            bottom_bar::bottom_bar_ui(ui, &mut state.command_buffer, &mut self.input);
+            self.bottom_bar.ui(ui, state);
         });
         egui::CentralPanel::default().show(
             ctx, |_ui| {},
