@@ -50,23 +50,3 @@ impl TabularData for &CommandHistory {
         16
     }
 }
-
-pub fn history_ui(ui: &mut Ui, history: &CommandHistory) {
-    table::build(
-        TableBuilder::new(ui)
-            .resizable(false)
-            .striped(true)
-            .scroll(false)
-            .stick_to_bottom(true),
-        vec![30.0, 60.0, 160.0, 50.0],
-        history,
-    )
-}
-
-pub fn input_ui(ui: &mut Ui, text: &mut String) -> Response {
-    ui.add(TextEdit::singleline(text)
-        .font(TextStyle::Monospace)
-        .frame(false)
-        .hint_text(">>>")
-        .desired_width(250.0))
-}
