@@ -9,6 +9,7 @@ use memory::Memory;
 use registers::Registers;
 use timers::Timers;
 use meta_command_gui::MetaCommandGui;
+use instruction_gui::InstructionGui;
 
 use crate::State;
 
@@ -20,6 +21,7 @@ mod index;
 mod memory;
 mod display;
 mod meta_command_gui;
+mod instruction_gui;
 
 pub trait WindowContent {
     fn name(&self) -> &'static str;
@@ -60,6 +62,7 @@ pub fn create_all() -> Vec<Window> {
         Window::new(Box::new(Index::new())),
         Window::new(Box::new(Timers::new())),
         Window::new(Box::new(ExecutionStatus::new())),
-        Window::new(Box::new(MetaCommandGui::new()))
+        Window::new(Box::new(MetaCommandGui::new())),
+        Window::new(Box::new(InstructionGui::new()))
     ]
 }

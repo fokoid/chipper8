@@ -182,8 +182,8 @@ impl Instruction {
                         // todo: bounds checking (12 bit address)
                         u16::from_str_radix(s, 16)?
                     )),
-                    Some(x) => Err(Error::SyntaxError(format!("jmp requires an address but got {:?}", x))),
-                    None => Err(Error::SyntaxError(format!("jmp requires an address"))),
+                    Some(x) => Err(Error::SyntaxError(format!("index set requires an address but got {:?}", x))),
+                    None => Err(Error::SyntaxError(format!("index set requires an address"))),
                 },
                 None | Some(_) => Err(Error::SyntaxError(String::from("allowed index sub commands: set"))),
             },
