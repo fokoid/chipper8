@@ -4,7 +4,7 @@ use chipper8::machine::{self, Machine};
 
 use crate::ui::util::MemoryDisplay;
 
-use super::Windowed;
+use super::WindowContent;
 
 pub struct Display {
     display: MemoryDisplay,
@@ -18,7 +18,7 @@ impl Display {
     }
 }
 
-impl Windowed for Display {
+impl WindowContent for Display {
     fn name(&self) -> &'static str { "Video Display" }
 
     fn ui(&mut self, ui: &mut Ui, machine: &Machine) {

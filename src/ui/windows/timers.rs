@@ -6,7 +6,7 @@ use chipper8::machine::Machine;
 use crate::ui::util::{table, TabularData};
 use crate::ui::util::MonoLabel;
 
-use super::Windowed;
+use super::WindowContent;
 
 pub struct Timers {}
 
@@ -14,7 +14,7 @@ impl Timers {
     pub fn new() -> Self { Self {} }
 }
 
-impl Windowed for Timers {
+impl WindowContent for Timers {
     fn name(&self) -> &'static str {
         "Timers"
     }

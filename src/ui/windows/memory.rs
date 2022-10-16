@@ -4,7 +4,7 @@ use chipper8::machine::Machine;
 
 use crate::ui::util::MemoryDisplay;
 
-use super::Windowed;
+use super::WindowContent;
 
 pub struct Memory {
     display: MemoryDisplay,
@@ -16,7 +16,7 @@ impl Memory {
     }
 }
 
-impl Windowed for Memory {
+impl WindowContent for Memory {
     fn name(&self) -> &'static str { "Memory" }
 
     fn ui(&mut self, ui: &mut Ui, machine: &Machine) {
