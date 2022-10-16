@@ -9,6 +9,7 @@ use crate::command_history::CommandHistory;
 
 mod util;
 mod windows;
+mod bottom_bar;
 
 pub struct Ui {
     windows: Vec<Window>,
@@ -32,20 +33,7 @@ impl Ui {
 
     pub fn draw(&mut self, ctx: &Context, machine: &Machine, command_buffer: &mut Option<Command>, history: &CommandHistory) {
         egui::TopBottomPanel::bottom("bar").show(ctx, |ui| {
-            ui.horizontal(|ui| {
-                if repl::input_ui(ui, &mut self.input).lost_focus() {
-                    match Command::parse(self.input.as_str().into()) {
-                        Ok(Some(command)) => {
-                            self.input.clear();
-                            command_buffer.replace(command);
-                        }
-                        Ok(None) => {}
-                        Err(error) => {
-                            eprintln!("{:?}", error);
-                        }
-                    };
-                };
-            });
+            bottom_bar::bottom_bar_ui(ui, &mut state.command_buffer, &mut self.input);
         });
         egui::CentralPanel::default().show(
             ctx, |_ui| {}
