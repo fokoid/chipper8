@@ -36,7 +36,6 @@ impl ImageBuilder {
         image
     }
 
-    fn size(&self) -> [usize; 2] { [self.width, self.height] }
     fn pixel_width(&self) -> usize { self.width * self.pixel_size }
     fn pixel_height(&self) -> usize { self.height * self.pixel_size }
     fn pixel_size(&self) -> [usize; 2] { [self.pixel_width(), self.pixel_height()] }
