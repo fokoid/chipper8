@@ -1,11 +1,10 @@
 use egui::{TextEdit, Ui};
 
-use super::WindowContent;
-
 use chipper8::machine::Machine;
-use chipper8::instructions::{Command, MachineState, MetaCommand};
 
 use crate::State;
+
+use super::WindowContent;
 
 pub struct MetaCommandGui {
     load_filename: String,

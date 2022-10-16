@@ -1,11 +1,10 @@
+use chipper8::instructions::{Command, MachineState, MetaCommand};
+use chipper8::machine::Machine;
 use egui::{Key, TextEdit, Ui};
 
-use super::WindowContent;
-
-use chipper8::machine::Machine;
-use chipper8::instructions::{Command, MachineState, MetaCommand};
-
 use crate::State;
+
+use super::WindowContent;
 
 pub struct InstructionGui {
     instructions: Vec<InstructionWidget>,

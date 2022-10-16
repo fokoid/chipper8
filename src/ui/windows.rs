@@ -5,11 +5,11 @@ use command_history::CommandHistory;
 use display::Display;
 use execution_status::ExecutionStatus;
 use index::Index;
+use instruction_gui::InstructionGui;
 use memory::Memory;
+use meta_command_gui::MetaCommandGui;
 use registers::Registers;
 use timers::Timers;
-use meta_command_gui::MetaCommandGui;
-use instruction_gui::InstructionGui;
 
 use crate::State;
 
@@ -63,6 +63,6 @@ pub fn create_all() -> Vec<Window> {
         Window::new(Box::new(Timers::new())),
         Window::new(Box::new(ExecutionStatus::new())),
         Window::new(Box::new(MetaCommandGui::new())),
-        Window::new(Box::new(InstructionGui::new()))
+        Window::new(Box::new(InstructionGui::new())),
     ]
 }

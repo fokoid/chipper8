@@ -1,8 +1,8 @@
 use egui::{Align, Checkbox, Context, Layout, Sense};
 
+use bottom_bar::BottomBar;
 use chipper8::machine::Machine;
 use windows::Window;
-use bottom_bar::BottomBar;
 
 use crate::State;
 
