@@ -3,6 +3,7 @@ use egui_extras::TableBuilder;
 
 use chipper8::machine::Machine;
 
+use crate::State;
 use crate::ui::util::{MonoLabel, table, TabularData};
 
 use super::WindowContent;
@@ -18,7 +19,7 @@ impl WindowContent for Registers {
         "Registers"
     }
 
-    fn ui(&mut self, ui: &mut Ui, machine: &Machine) {
+    fn ui(&mut self, ui: &mut Ui, machine: &Machine, _state: &mut State) {
         table::build(
             TableBuilder::new(ui)
                 .striped(true)

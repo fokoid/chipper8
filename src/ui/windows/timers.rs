@@ -3,6 +3,7 @@ use egui_extras::TableBuilder;
 
 use chipper8::machine::Machine;
 
+use crate::State;
 use crate::ui::util::{table, TabularData};
 use crate::ui::util::MonoLabel;
 
@@ -19,7 +20,7 @@ impl WindowContent for Timers {
         "Timers"
     }
 
-    fn ui(&mut self, ui: &mut Ui, machine: &Machine) {
+    fn ui(&mut self, ui: &mut Ui, machine: &Machine, _state: &mut State) {
         table::build(
             TableBuilder::new(ui)
                 .resizable(false)

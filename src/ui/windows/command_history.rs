@@ -1,12 +1,36 @@
-use egui::{Response, TextStyle, Ui};
-use egui::widgets::TextEdit;
+use chipper8::machine::Machine;
+use egui::Ui;
 use egui_extras::TableBuilder;
 use ringbuffer::RingBufferExt;
 
-use crate::command_history::CommandHistory;
+use crate::State;
 use crate::ui::util::{MonoLabel, table, TabularData};
 
-impl TabularData for &CommandHistory {
+use super::WindowContent;
+
+pub struct CommandHistory {}
+
+impl CommandHistory {
+    pub fn new() -> Self { Self {} }
+}
+
+impl WindowContent for CommandHistory {
+    fn name(&self) -> &'static str { "Command History" }
+
+    fn ui(&mut self, ui: &mut Ui, _machine: &Machine, state: &mut State) {
+        table::build(
+            TableBuilder::new(ui)
+                .resizable(false)
+                .striped(true)
+                .scroll(false)
+                .stick_to_bottom(true),
+            vec![30.0, 60.0, 160.0, 50.0],
+            &state.command_history,
+        )
+    }
+}
+
+impl TabularData for &crate::command_history::CommandHistory {
     fn header(&self) -> Option<Vec<MonoLabel>> {
         Some(vec![
             MonoLabel::new("Tag"),

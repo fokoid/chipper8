@@ -2,6 +2,8 @@ use egui::{Align, Layout, Ui};
 
 use chipper8::machine::Machine;
 
+use crate::State;
+
 use super::WindowContent;
 
 mod program_counter;
@@ -19,7 +21,7 @@ impl WindowContent for ExecutionStatus {
         "Execution Status"
     }
 
-    fn ui(&mut self, ui: &mut Ui, machine: &Machine) {
+    fn ui(&mut self, ui: &mut Ui, machine: &Machine, _state: &mut State) {
         ui.push_id(0, |ui| {
             ui.with_layout(Layout::top_down(Align::Center), |ui| {
                 ui.heading("Program Counter")
