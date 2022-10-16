@@ -1,13 +1,14 @@
 use egui::{Context, Ui};
 
 use chipper8::machine::Machine;
-pub use command_history::CommandHistory;
-pub use display::Display;
-pub use execution_status::ExecutionStatus;
-pub use index::Index;
-pub use memory::Memory;
-pub use registers::Registers;
-pub use timers::Timers;
+use command_history::CommandHistory;
+use display::Display;
+use execution_status::ExecutionStatus;
+use index::Index;
+use memory::Memory;
+use registers::Registers;
+use timers::Timers;
+use meta_command_gui::MetaCommandGui;
 
 use crate::State;
 
@@ -18,6 +19,7 @@ mod registers;
 mod index;
 mod memory;
 mod display;
+mod meta_command_gui;
 
 pub trait WindowContent {
     fn name(&self) -> &'static str;
@@ -58,5 +60,6 @@ pub fn create_all() -> Vec<Window> {
         Window::new(Box::new(Index::new())),
         Window::new(Box::new(Timers::new())),
         Window::new(Box::new(ExecutionStatus::new())),
+        Window::new(Box::new(MetaCommandGui::new()))
     ]
 }
