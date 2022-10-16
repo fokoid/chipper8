@@ -71,6 +71,7 @@ pub enum MetaCommand {
     Step,
     Play,
     Pause,
+    PlayPause,
 }
 
 impl MetaCommand {
@@ -95,6 +96,7 @@ impl MetaCommand {
             Some(Token::Meta(".step")) => Ok(MetaCommand::Step),
             Some(Token::Meta(".play")) => Ok(MetaCommand::Play),
             Some(Token::Meta(".pause")) => Ok(MetaCommand::Pause),
+            Some(Token::Meta(".play-pause")) => Ok(MetaCommand::PlayPause),
             Some(Token::Meta(s)) => Err(Error::MetaSyntaxError(format!("invalid meta command '{}'", s))),
             s => Err(Error::MetaSyntaxError(format!("expected meta command token but found '{:?}'", s))),
         }
@@ -112,6 +114,7 @@ impl Display for MetaCommand {
             Self::Step => write!(f, ".step"),
             Self::Play => write!(f, ".play"),
             Self::Pause => write!(f, ".pause"),
+            Self::PlayPause => write!(f, ".play-pause"),
         }
     }
 }
