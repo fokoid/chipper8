@@ -1,5 +1,6 @@
 use egui::{Color32, Key, Label, Response, TextEdit, TextStyle, Ui};
 use egui::widget_text::RichText;
+use chipper8::instructions::{Command, MetaCommand};
 use crate::State;
 
 pub struct BottomBar {
@@ -13,6 +14,10 @@ impl BottomBar {
 
     pub fn ui(&mut self, ui: &mut Ui, state: &mut State) {
         ui.horizontal(|ui| {
+            ui.checkbox(&mut state.running, "Running");
+            if ui.button("⏩").on_hover_text("Next Instruction").clicked() {
+                state.command_buffer = Some(Command::Meta(MetaCommand::Step));
+            }
             let response = input_ui(ui, &mut self.input);
             if response.lost_focus() && ui.input().key_pressed(Key::Enter) {
                 state.parse_command(self.input.as_str());

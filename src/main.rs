@@ -20,10 +20,10 @@ fn main() {
 }
 
 pub struct State {
-    running: bool,
-    command_history: CommandHistory,
-    command_buffer: Option<Command>,
-    error: Option<Error>
+    pub running: bool,
+    pub command_history: CommandHistory,
+    pub command_buffer: Option<Command>,
+    pub error: Option<Error>
 }
 
 impl State {
@@ -96,12 +96,14 @@ impl ReplApp {
                 };
             }
             MetaCommand::Load(path, address) => {
+                self.state.running = false;
                 let bytes = fs::read(path).unwrap();
                 self.machine.load(*address as usize, &bytes);
                 self.machine.program_counter = *address as usize;
             }
             MetaCommand::Step => {
-                self.machine.step().unwrap();
+                self.state.running = false;
+                self.step();
             }
             MetaCommand::Play => {
                 self.state.running = true;
@@ -109,7 +111,16 @@ impl ReplApp {
             MetaCommand::Pause => {
                 self.state.running = false;
             }
+            MetaCommand::PlayPause => {
+                self.state.running = !self.state.running;
+            }
         }
+    }
+
+    fn step(&mut self) {
+        let instruction = self.machine.next_instruction().unwrap();
+        self.state.command_history.append(&Command::Instruction(instruction), false);
+        self.machine.step().unwrap();
     }
 }
 
@@ -125,9 +136,7 @@ impl eframe::App for ReplApp {
             // todo make timing here configurable
             if ctx.input().time - self.last_time > machine::FRAME_TIME.as_secs_f64() {
                 self.last_time = ctx.input().time;
-                let instruction = self.machine.next_instruction().unwrap();
-                self.state.command_history.append(&Command::Instruction(instruction), false);
-                self.machine.step().unwrap();
+                self.step();
             }
             ctx.request_repaint_after(machine::FRAME_TIME);
         }
