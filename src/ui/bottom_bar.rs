@@ -1,10 +1,11 @@
-use egui::{Response, TextEdit, TextStyle, Ui};
+use egui::{Key, Response, TextEdit, TextStyle, Ui};
 
 use chipper8::instructions::Command;
 
 pub fn bottom_bar_ui(ui: &mut Ui, command_buffer: &mut Option<Command>, input: &mut String) {
     ui.horizontal(|ui| {
-        if input_ui(ui, input).lost_focus() {
+        let response = input_ui(ui, input);
+        if response.lost_focus() && ui.input().key_pressed(Key::Enter) {
             match Command::parse(input.as_str().into()) {
                 Ok(Some(command)) => {
                     input.clear();
@@ -15,7 +16,9 @@ pub fn bottom_bar_ui(ui: &mut Ui, command_buffer: &mut Option<Command>, input: &
                     eprintln!("{:?}", error);
                 }
             };
+            input.clear();
         };
+        response.request_focus();
     });
 }
 
