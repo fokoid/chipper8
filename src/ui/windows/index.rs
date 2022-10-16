@@ -3,6 +3,7 @@ use egui_extras::TableBuilder;
 
 use chipper8::machine::{DrawOptions, Machine};
 
+use crate::State;
 use crate::ui::util::{MemoryDisplay, MonoLabel, table, TabularData};
 
 use super::WindowContent;
@@ -50,7 +51,7 @@ impl WindowContent for Index {
         "Index"
     }
 
-    fn ui(&mut self, ui: &mut Ui, machine: &Machine) {
+    fn ui(&mut self, ui: &mut Ui, machine: &Machine, _state: &mut State) {
         self.buffer.fill(0);
         let height = self.draw_height % 16;
         DrawOptions::new(

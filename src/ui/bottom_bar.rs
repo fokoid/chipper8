@@ -1,4 +1,5 @@
 use egui::{Response, TextEdit, TextStyle, Ui};
+
 use chipper8::instructions::Command;
 
 pub fn bottom_bar_ui(ui: &mut Ui, command_buffer: &mut Option<Command>, input: &mut String) {

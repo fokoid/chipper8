@@ -2,6 +2,7 @@ use egui::Ui;
 
 use chipper8::machine::Machine;
 
+use crate::State;
 use crate::ui::util::MemoryDisplay;
 
 use super::WindowContent;
@@ -19,7 +20,7 @@ impl Memory {
 impl WindowContent for Memory {
     fn name(&self) -> &'static str { "Memory" }
 
-    fn ui(&mut self, ui: &mut Ui, machine: &Machine) {
+    fn ui(&mut self, ui: &mut Ui, machine: &Machine, _state: &mut State) {
         self.display.ui(ui, &machine.memory)
     }
 }

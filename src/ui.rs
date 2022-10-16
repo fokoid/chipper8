@@ -1,11 +1,9 @@
-use egui::{Align, Context, Checkbox, Layout, Sense};
+use egui::{Align, Checkbox, Context, Layout, Sense};
 
-use chipper8::instructions::Command;
 use chipper8::machine::Machine;
-use windows::{Display, ExecutionStatus, Index, Memory, Registers, Timers, Window};
-pub use windows::repl;
+use windows::Window;
 
-use crate::command_history::CommandHistory;
+use crate::State;
 
 mod util;
 mod windows;
@@ -20,23 +18,24 @@ impl Ui {
     pub fn new() -> Self {
         Self {
             windows: vec![
-                Window::new(Box::new(Display::new())),
-                Window::new(Box::new(Memory::new())),
-                Window::new(Box::new(Registers::new())),
-                Window::new(Box::new(Index::new())),
-                Window::new(Box::new(Timers::new())),
-                Window::new(Box::new(ExecutionStatus::new())),
+                Window::new(Box::new(windows::CommandHistory::new())),
+                Window::new(Box::new(windows::Display::new())),
+                Window::new(Box::new(windows::Memory::new())),
+                Window::new(Box::new(windows::Registers::new())),
+                Window::new(Box::new(windows::Index::new())),
+                Window::new(Box::new(windows::Timers::new())),
+                Window::new(Box::new(windows::ExecutionStatus::new())),
             ],
             input: String::new(),
         }
     }
 
-    pub fn draw(&mut self, ctx: &Context, machine: &Machine, command_buffer: &mut Option<Command>, history: &CommandHistory) {
+    pub fn draw(&mut self, ctx: &Context, machine: &Machine, state: &mut State) {
         egui::TopBottomPanel::bottom("bar").show(ctx, |ui| {
             bottom_bar::bottom_bar_ui(ui, &mut state.command_buffer, &mut self.input);
         });
         egui::CentralPanel::default().show(
-            ctx, |_ui| {}
+            ctx, |_ui| {},
         ).response.interact(Sense::click()).context_menu(|ui| {
             ui.with_layout(Layout::top_down(Align::Center), |ui| {
                 ui.heading("Windows");
@@ -50,11 +49,8 @@ impl Ui {
                 }
             }
         });
-        egui::Window::new("Command History")
-            .resizable(false)
-            .show(ctx, |ui| { repl::history_ui(ui, history) });
         for window in &mut self.windows {
-            window.draw(ctx, machine);
+            window.draw(ctx, machine, state);
         }
     }
 }
