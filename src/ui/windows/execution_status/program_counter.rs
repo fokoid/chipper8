@@ -11,7 +11,7 @@ pub fn program_counter_ui(ui: &mut Ui, machine: &Machine) {
     shared::address_table(ui, ProgramCounterHelper { machine })
 }
 
-struct ProgramCounterHelper<'a> {
+pub struct ProgramCounterHelper<'a> {
     pub machine: &'a Machine,
 }
 

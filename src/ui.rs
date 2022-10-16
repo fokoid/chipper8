@@ -25,7 +25,7 @@ impl Ui {
 
     pub fn draw(&mut self, ctx: &Context, machine: &Machine, state: &mut State) {
         egui::TopBottomPanel::bottom("bar").show(ctx, |ui| {
-            self.bottom_bar.ui(ui, state);
+            self.bottom_bar.ui(ui, machine, state);
         });
         egui::CentralPanel::default().show(
             ctx, |_ui| {},

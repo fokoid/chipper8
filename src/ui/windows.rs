@@ -10,6 +10,7 @@ use memory::Memory;
 use meta_command_gui::MetaCommandGui;
 use registers::Registers;
 use timers::Timers;
+pub use execution_status::ProgramCounterHelper;
 
 use crate::State;
 
