@@ -40,12 +40,18 @@ impl State {
         match Command::parse(input.into()) {
             Ok(Some(command)) => {
                 self.command_buffer.replace(command);
+                self.error.take();
             }
             Ok(None) => {}
             Err(error) => {
+                self.command_buffer.take();
                 self.error.replace(error);
             }
         };
+    }
+
+    pub fn error(&mut self) -> Option<&Error> {
+        self.error.as_ref()
     }
 }
 
