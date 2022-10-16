@@ -48,3 +48,15 @@ impl Window {
             .show(ctx, |ui| { self.content.ui(ui, machine, state); });
     }
 }
+
+pub fn create_all() -> Vec<Window> {
+    vec![
+        Window::new(Box::new(CommandHistory::new())),
+        Window::new(Box::new(Display::new())),
+        Window::new(Box::new(Memory::new())),
+        Window::new(Box::new(Registers::new())),
+        Window::new(Box::new(Index::new())),
+        Window::new(Box::new(Timers::new())),
+        Window::new(Box::new(ExecutionStatus::new())),
+    ]
+}

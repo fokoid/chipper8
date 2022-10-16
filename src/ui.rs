@@ -17,15 +17,7 @@ pub struct Ui {
 impl Ui {
     pub fn new() -> Self {
         Self {
-            windows: vec![
-                Window::new(Box::new(windows::CommandHistory::new())),
-                Window::new(Box::new(windows::Display::new())),
-                Window::new(Box::new(windows::Memory::new())),
-                Window::new(Box::new(windows::Registers::new())),
-                Window::new(Box::new(windows::Index::new())),
-                Window::new(Box::new(windows::Timers::new())),
-                Window::new(Box::new(windows::ExecutionStatus::new())),
-            ],
+            windows: windows::create_all(),
             input: String::new(),
         }
     }
