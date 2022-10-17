@@ -1,5 +1,6 @@
-use chipper8::machine::Machine;
 use egui::{Key, TextEdit, Ui};
+
+use chipper8::machine::Machine;
 
 use crate::State;
 
@@ -80,7 +81,7 @@ impl CommandGui {
                 CommandWidget::new("Add to Register", "add", vec!["Register", "Value"]),
                 CommandWidget::new("Index to Font", "font", vec!["Register"]),
                 CommandWidget::new("Draw", "draw", vec!["Register X", "Register Y", "Height"]),
-            ]
+            ],
         }
     }
 
@@ -96,7 +97,7 @@ impl CommandGui {
                 // todo: dropdown of allowed machine states
                 CommandWidget::new("Reset", ".reset", vec!["State"]),
                 CommandWidget::new("Load ROM", ".load", vec!["Filename", "Address"]),
-            ]
+            ],
         }
     }
 }

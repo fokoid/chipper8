@@ -5,42 +5,44 @@ use ringbuffer::RingBufferExt;
 use chipper8::machine::Machine;
 
 use crate::State;
-use crate::ui::util::{MonoLabel, table, TabularData};
+use crate::ui::util::{MonoLabel, TabularData};
+use crate::ui::util::table::{ColumnSpec, TableSpec};
 
 use super::WindowContent;
 
-pub struct CommandHistory {}
+pub struct CommandHistory {
+    table_spec: TableSpec,
+}
 
 impl CommandHistory {
-    pub fn new() -> Self { Self {} }
+    pub fn new() -> Self {
+        Self {
+            table_spec: TableSpec::new(vec![
+                ColumnSpec::fixed("Tag", 30.0),
+                ColumnSpec::fixed("Opcode", 60.0),
+                ColumnSpec::fixed("Command", 160.0),
+                ColumnSpec::fixed("Count", 50.0),
+            ])
+        }
+    }
 }
 
 impl WindowContent for CommandHistory {
     fn name(&self) -> &'static str { "Command History" }
 
     fn ui(&mut self, ui: &mut Ui, _machine: &Machine, state: &mut State) {
-        table::build(
+        self.table_spec.build(
             TableBuilder::new(ui)
                 .resizable(false)
                 .striped(true)
                 .scroll(false)
                 .stick_to_bottom(true),
-            vec![30.0, 60.0, 160.0, 50.0],
             &state.command_history,
         )
     }
 }
 
 impl TabularData for &crate::command_history::CommandHistory {
-    fn header(&self) -> Option<Vec<MonoLabel>> {
-        Some(vec![
-            MonoLabel::new("Tag"),
-            MonoLabel::new("Opcode"),
-            MonoLabel::new("Command"),
-            MonoLabel::new("Count"),
-        ])
-    }
-
     fn rows(&self) -> Vec<Vec<MonoLabel>> {
         self.items.iter().map(|item| {
             vec![

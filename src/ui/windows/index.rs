@@ -4,7 +4,8 @@ use egui_extras::TableBuilder;
 use chipper8::machine::{DrawOptions, Machine};
 
 use crate::State;
-use crate::ui::util::{MemoryDisplay, MonoLabel, table, TabularData};
+use crate::ui::util::{MemoryDisplay, MonoLabel, TabularData};
+use crate::ui::util::table::{ColumnSpec, TableSpec};
 
 use super::WindowContent;
 
@@ -34,6 +35,7 @@ pub struct Index {
     // 8x16 (all sprites are 8 pixels wide and up to 15 pixels tall)
     buffer: [u8; 128],
     draw_height: usize,
+    table_spec: TableSpec,
 }
 
 impl Index {
@@ -42,6 +44,15 @@ impl Index {
             display: MemoryDisplay::new(8, 16),
             buffer: [0; 128],
             draw_height: 15,
+            table_spec: TableSpec {
+                show_header: false,
+                enable_context_menu: false,
+                columns: vec![
+                    ColumnSpec::fixed("Label", 40.0),
+                    ColumnSpec::fixed("Hex", 40.0),
+                    ColumnSpec::fixed("Decimal", 40.0),
+                ],
+            },
         }
     }
 }
@@ -61,11 +72,10 @@ impl WindowContent for Index {
         ).draw();
         ui.horizontal(|ui| {
             ui.vertical(|ui| {
-                table::build(
+                self.table_spec.build(
                     TableBuilder::new(ui)
                         .resizable(false)
                         .scroll(false),
-                    vec![40.0, 40.0, 40.0],
                     IndexHelper { machine },
                 );
                 ui.add(Slider::new(&mut self.draw_height, 0..=15));

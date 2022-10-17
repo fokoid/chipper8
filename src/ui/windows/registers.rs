@@ -4,14 +4,27 @@ use egui_extras::TableBuilder;
 use chipper8::machine::Machine;
 
 use crate::State;
-use crate::ui::util::{MonoLabel, table, TabularData};
+use crate::ui::util::{MonoLabel, TabularData};
+use crate::ui::util::table::{ColumnSpec, TableSpec};
 
 use super::WindowContent;
 
-pub struct Registers {}
+pub struct Registers {
+    table_spec: TableSpec,
+}
 
 impl Registers {
-    pub fn new() -> Self { Self {} }
+    pub fn new() -> Self {
+        Self {
+            table_spec: TableSpec::new(
+                vec![
+                    ColumnSpec::fixed("Name", 60.0),
+                    ColumnSpec::fixed("Hex", 60.0),
+                    ColumnSpec::fixed("Decimal", 60.0),
+                ],
+            )
+        }
+    }
 }
 
 impl WindowContent for Registers {
@@ -20,7 +33,7 @@ impl WindowContent for Registers {
     }
 
     fn ui(&mut self, ui: &mut Ui, machine: &Machine, _state: &mut State) {
-        table::build(
+        self.table_spec.build(
             TableBuilder::new(ui)
                 .striped(true)
                 .stick_to_bottom(true)
@@ -29,7 +42,6 @@ impl WindowContent for Registers {
             // .column(Size::relative(0.5))
             // .column(Size::relative(0.5))
             ,
-            vec![60.0, 60.0, 60.0],
             RegistersHelper::new(machine),
         )
     }
@@ -46,14 +58,6 @@ impl<'a> RegistersHelper<'a> {
 }
 
 impl<'a> TabularData for RegistersHelper<'a> {
-    fn header(&self) -> Option<Vec<MonoLabel>> {
-        Some(vec![
-            MonoLabel::new("Name"),
-            MonoLabel::new("Hex"),
-            MonoLabel::new("Decimal"),
-        ])
-    }
-
     fn rows(&self) -> Vec<Vec<MonoLabel>> {
         self.machine.registers.iter().enumerate().map(|(index, value)| {
             vec![

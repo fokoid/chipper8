@@ -4,15 +4,29 @@ use egui_extras::TableBuilder;
 use chipper8::machine::Machine;
 
 use crate::State;
-use crate::ui::util::{table, TabularData};
 use crate::ui::util::MonoLabel;
+use crate::ui::util::table::{ColumnSpec, TableSpec, TabularData};
 
 use super::WindowContent;
 
-pub struct Timers {}
+pub struct Timers {
+    table_spec: TableSpec,
+}
 
 impl Timers {
-    pub fn new() -> Self { Self {} }
+    pub fn new() -> Self {
+        Self {
+            table_spec: TableSpec {
+                show_header: false,
+                enable_context_menu: false,
+                columns: vec![
+                    ColumnSpec::fixed("Label", 50.0),
+                    ColumnSpec::fixed("Value", 20.0),
+                    ColumnSpec::fixed("Icon", 20.0),
+                ],
+            }
+        }
+    }
 }
 
 impl WindowContent for Timers {
@@ -21,11 +35,10 @@ impl WindowContent for Timers {
     }
 
     fn ui(&mut self, ui: &mut Ui, machine: &Machine, _state: &mut State) {
-        table::build(
+        self.table_spec.build(
             TableBuilder::new(ui)
                 .resizable(false)
                 .scroll(false),
-            vec![50.0, 20.0, 20.0],
             TimersHelper::new(machine),
         )
     }
@@ -42,10 +55,6 @@ impl<'a> TimersHelper<'a> {
 }
 
 impl<'a> TabularData for TimersHelper<'a> {
-    fn header(&self) -> Option<Vec<MonoLabel>> {
-        None
-    }
-
     fn rows(&self) -> Vec<Vec<MonoLabel>> {
         vec![
             timer_row("Delay", self.machine.delay_timer, None),

@@ -5,8 +5,8 @@ use chipper8::instructions::{Command, MetaCommand};
 use chipper8::machine::Machine;
 
 use crate::State;
-use crate::ui::windows::ProgramCounterHelper;
 use crate::ui::util::table::TabularData;
+use crate::ui::windows::ProgramCounterHelper;
 
 pub struct BottomBar {
     input: String,

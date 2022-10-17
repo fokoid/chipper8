@@ -1,15 +1,15 @@
 use egui::{Context, Ui};
 
 use chipper8::machine::Machine;
+use command_gui::CommandGui;
 use command_history::CommandHistory;
 use display::Display;
 use execution_status::ExecutionStatus;
+pub use execution_status::ProgramCounterHelper;
 use index::Index;
 use memory::Memory;
-use command_gui::CommandGui;
 use registers::Registers;
 use timers::Timers;
-pub use execution_status::ProgramCounterHelper;
 
 use crate::State;
 

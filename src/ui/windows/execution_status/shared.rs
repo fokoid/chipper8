@@ -3,17 +3,8 @@ use egui_extras::TableBuilder;
 
 use chipper8::machine::Machine;
 
-use crate::ui::util::{table, TabularData};
 use crate::ui::util::MonoLabel;
-
-pub fn header_row(prefix: &str) -> Vec<MonoLabel> {
-    vec![
-        MonoLabel::new(prefix),
-        MonoLabel::new("Address"),
-        MonoLabel::new("Value"),
-        MonoLabel::new("Instruction"),
-    ]
-}
+use crate::ui::util::table::{ColumnSpec, TableSpec, TabularData};
 
 pub fn address_row(prefix: &str, address: usize, machine: &Machine) -> Vec<MonoLabel> {
     let instruction = if let Ok(instruction) = machine.instruction_at_address(address) {
@@ -29,15 +20,32 @@ pub fn address_row(prefix: &str, address: usize, machine: &Machine) -> Vec<MonoL
     ]
 }
 
-pub fn address_table<Helper>(ui: &mut Ui, helper: Helper)
-    where Helper: TabularData {
-    table::build(
-        TableBuilder::new(ui)
-            .striped(true)
-            .stick_to_bottom(true)
-            .resizable(false)
-            .scroll(false),
-        vec![50.0, 80.0, 50.0, 120.0],
-        helper,
-    )
+pub struct AddressTable {
+    table_spec: TableSpec,
+}
+
+impl AddressTable {
+    pub fn new(prefix: &str) -> Self {
+        Self {
+            table_spec: TableSpec::new(
+                vec![
+                    ColumnSpec::fixed(prefix, 50.0),
+                    ColumnSpec::fixed("Address", 80.0),
+                    ColumnSpec::fixed("Value", 50.0),
+                    ColumnSpec::fixed("Instruction", 120.0),
+                ]
+            )
+        }
+    }
+
+    pub fn ui(&mut self, ui: &mut Ui, helper: impl TabularData) {
+        self.table_spec.build(
+            TableBuilder::new(ui)
+                .striped(true)
+                .stick_to_bottom(true)
+                .resizable(false)
+                .scroll(false),
+            helper,
+        )
+    }
 }
