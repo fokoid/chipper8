@@ -34,7 +34,7 @@ const FONT_GLYPHS: [u8; 80] = [
 ];
 
 // TODO: restrict pointers to 12 bits at compile time?
-type Pointer = usize;
+pub type Pointer = usize;
 
 type Timer = u8;
 

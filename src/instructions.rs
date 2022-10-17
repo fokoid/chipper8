@@ -329,6 +329,12 @@ impl Display for OpCode {
     }
 }
 
+impl Into<String> for OpCode {
+    fn into(self) -> String {
+        format!("{}", self)
+    }
+}
+
 impl Command {
     pub fn opcode(&self) -> Option<OpCode> {
         match self {

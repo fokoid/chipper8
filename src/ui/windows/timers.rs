@@ -3,7 +3,7 @@ use egui::Ui;
 use chipper8::machine::Machine;
 
 use crate::State;
-use crate::ui::util::MonoLabel;
+use crate::ui::util::{Byte, MonoLabel};
 use crate::ui::util::table::{ColumnSpec, TableSpec, TabularData};
 
 use super::WindowContent;
@@ -59,7 +59,7 @@ fn timer_row(label: &str, timer: u8, active_icon: Option<char>) -> Vec<MonoLabel
     let active_icon = if timer > 0 { active_icon } else { None };
     vec![
         MonoLabel::new(label),
-        MonoLabel::new(format!("{:02X}", timer)),
+        MonoLabel::new(Byte::from(timer)),
         MonoLabel::new(active_icon.unwrap_or(' ')),
     ]
 }

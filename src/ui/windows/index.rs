@@ -3,7 +3,7 @@ use egui::{Slider, Ui};
 use chipper8::machine::{DrawOptions, Machine};
 
 use crate::State;
-use crate::ui::util::{MemoryDisplay, MonoLabel, TabularData};
+use crate::ui::util::{MemoryDisplay, MonoLabel, TabularData, Address, Byte, Decimal};
 use crate::ui::util::table::{ColumnSpec, TableSpec};
 
 use super::WindowContent;
@@ -17,13 +17,13 @@ impl<'a> TabularData for IndexHelper<'a> {
         vec![
             vec![
                 MonoLabel::new("Addr"),
-                MonoLabel::new(format!("{:03X}", self.machine.index)),
-                MonoLabel::new(format!("{:04}", self.machine.index)),
+                MonoLabel::new(Address::from(self.machine.index)),
+                MonoLabel::new(Decimal::from(self.machine.index)),
             ],
             vec![
                 MonoLabel::new("Byte"),
-                MonoLabel::new(format!(" {:02X}", self.machine.at_index())),
-                MonoLabel::new(format!(" {:03}", self.machine.at_index())),
+                MonoLabel::new(Byte::from(self.machine.at_index())),
+                MonoLabel::new(Decimal::from(self.machine.at_index())),
             ],
         ]
     }

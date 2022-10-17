@@ -2,7 +2,7 @@ use egui::Ui;
 
 use chipper8::machine::Machine;
 
-use crate::ui::util::MonoLabel;
+use crate::ui::util::{MonoLabel, Address, Word};
 use crate::ui::util::table::{ColumnSpec, TableSpec, TabularData};
 
 pub fn address_row(prefix: &str, address: usize, machine: &Machine) -> Vec<MonoLabel> {
@@ -13,8 +13,8 @@ pub fn address_row(prefix: &str, address: usize, machine: &Machine) -> Vec<MonoL
     };
     vec![
         MonoLabel::new(prefix),
-        MonoLabel::new(format!("{:03X}", address)),
-        MonoLabel::new(format!("{:04X}", machine.word_at_address(address))),
+        MonoLabel::new(Address::from(address)),
+        MonoLabel::new(Word::from(machine.word_at_address(address))),
         MonoLabel::new(instruction),
     ]
 }

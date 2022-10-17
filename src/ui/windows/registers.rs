@@ -3,7 +3,7 @@ use egui::Ui;
 use chipper8::machine::Machine;
 
 use crate::State;
-use crate::ui::util::{MonoLabel, TabularData};
+use crate::ui::util::{MonoLabel, TabularData, Register, Byte, Decimal};
 use crate::ui::util::table::{ColumnSpec, TableSpec};
 
 use super::WindowContent;
@@ -50,9 +50,9 @@ impl<'a> TabularData for RegistersHelper<'a> {
     fn rows(&self) -> Vec<Vec<MonoLabel>> {
         self.machine.registers.iter().enumerate().map(|(index, value)| {
             vec![
-                MonoLabel::new(format!("V{:1X}", index)),
-                MonoLabel::new(format!("{:02X}", value)),
-                MonoLabel::new(format!("{:03}", value)),
+                MonoLabel::new(Register::from(index)),
+                MonoLabel::new(Byte::from(*value)),
+                MonoLabel::new(Decimal::from(*value)),
             ]
         }).collect()
     }
