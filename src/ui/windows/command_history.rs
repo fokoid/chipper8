@@ -1,5 +1,4 @@
 use egui::Ui;
-use egui_extras::TableBuilder;
 use ringbuffer::RingBufferExt;
 
 use chipper8::machine::Machine;
@@ -22,7 +21,7 @@ impl CommandHistory {
                 ColumnSpec::fixed("Opcode", 60.0),
                 ColumnSpec::fixed("Command", 160.0),
                 ColumnSpec::fixed("Count", 50.0),
-            ])
+            ]).striped(true)
         }
     }
 }
@@ -31,14 +30,7 @@ impl WindowContent for CommandHistory {
     fn name(&self) -> &'static str { "Command History" }
 
     fn ui(&mut self, ui: &mut Ui, _machine: &Machine, state: &mut State) {
-        self.table_spec.build(
-            TableBuilder::new(ui)
-                .resizable(false)
-                .striped(true)
-                .scroll(false)
-                .stick_to_bottom(true),
-            &state.command_history,
-        )
+        self.table_spec.draw(ui, &state.command_history)
     }
 }
 

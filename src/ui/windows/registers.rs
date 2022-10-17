@@ -1,5 +1,4 @@
 use egui::Ui;
-use egui_extras::TableBuilder;
 
 use chipper8::machine::Machine;
 
@@ -22,7 +21,7 @@ impl Registers {
                     ColumnSpec::fixed("Hex", 60.0),
                     ColumnSpec::fixed("Decimal", 60.0),
                 ],
-            )
+            ).striped(true)
         }
     }
 }
@@ -33,17 +32,7 @@ impl WindowContent for Registers {
     }
 
     fn ui(&mut self, ui: &mut Ui, machine: &Machine, _state: &mut State) {
-        self.table_spec.build(
-            TableBuilder::new(ui)
-                .striped(true)
-                .stick_to_bottom(true)
-                .resizable(false)
-                .scroll(false)
-            // .column(Size::relative(0.5))
-            // .column(Size::relative(0.5))
-            ,
-            RegistersHelper::new(machine),
-        )
+        self.table_spec.draw(ui, RegistersHelper::new(machine))
     }
 }
 

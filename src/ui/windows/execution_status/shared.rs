@@ -1,5 +1,4 @@
 use egui::Ui;
-use egui_extras::TableBuilder;
 
 use chipper8::machine::Machine;
 
@@ -34,18 +33,11 @@ impl AddressTable {
                     ColumnSpec::fixed("Value", 50.0),
                     ColumnSpec::fixed("Instruction", 120.0),
                 ]
-            )
+            ).striped(true)
         }
     }
 
     pub fn ui(&mut self, ui: &mut Ui, helper: impl TabularData) {
-        self.table_spec.build(
-            TableBuilder::new(ui)
-                .striped(true)
-                .stick_to_bottom(true)
-                .resizable(false)
-                .scroll(false),
-            helper,
-        )
+        self.table_spec.draw(ui, helper)
     }
 }

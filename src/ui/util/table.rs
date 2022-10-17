@@ -33,6 +33,9 @@ pub struct TableSpec {
     pub columns: Vec<ColumnSpec>,
     pub show_header: bool,
     pub enable_context_menu: bool,
+    // todo: now we're duplicating values in the TableBuilder. fix this
+    pub striped: bool,
+    pub stick_to_bottom: bool,
 }
 
 impl TableSpec {
@@ -41,16 +44,51 @@ impl TableSpec {
             columns,
             show_header: true,
             enable_context_menu: true,
+            striped: false,
+            stick_to_bottom: true,
         }
     }
 
+    pub fn header(mut self, show: bool) -> Self {
+        self.show_header = show;
+        self
+    }
+
+    pub fn striped(mut self, striped: bool) -> Self {
+        self.striped = striped;
+        self
+    }
+
+    pub fn context_menu(mut self, enable: bool) -> Self {
+        self.enable_context_menu = enable;
+        self
+    }
+
+    // todo: table can also be invisible if header off and no rows, but this depends on data too
+    fn is_invisible(&self) -> bool {
+        return self.columns.iter().all(|column| !column.visible);
+    }
+
     // todo: return a response
-    pub fn build(&mut self, builder: TableBuilder, data: impl TabularData) {
+    pub fn draw(&mut self, ui: &mut Ui, data: impl TabularData) {
+        if self.is_invisible() {
+            self.draw_restore_button(ui)
+        } else {
+            self.draw_table(ui, data)
+        }
+    }
+
+    fn draw_table(&mut self, ui: &mut Ui, data: impl TabularData) {
         let mut data_iter = data.rows().into_iter();
         // If table spec is changed midway through, the TableBuilder can panic, since the number of
         // allocated columns may not match the number of header/row cells. We therefore make a copy
         // of the spec used for drawing and mutate the original.
         let draw_spec = self.clone();
+        let builder = TableBuilder::new(ui)
+            .resizable(false)
+            .scroll(false)
+            .striped(self.striped)
+            .stick_to_bottom(self.stick_to_bottom);
 
         draw_spec.columns.iter().fold(
             builder,
@@ -80,6 +118,15 @@ impl TableSpec {
                 },
             );
         });
+    }
+
+    fn draw_restore_button(&mut self, ui: &mut Ui) {
+        let response = ui.button("Restore");
+        if response.clicked() {
+            for column in &mut self.columns {
+                column.visible = true;
+            }
+        };
     }
 }
 

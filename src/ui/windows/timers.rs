@@ -1,5 +1,4 @@
 use egui::Ui;
-use egui_extras::TableBuilder;
 
 use chipper8::machine::Machine;
 
@@ -16,15 +15,13 @@ pub struct Timers {
 impl Timers {
     pub fn new() -> Self {
         Self {
-            table_spec: TableSpec {
-                show_header: false,
-                enable_context_menu: false,
-                columns: vec![
+            table_spec: TableSpec::new(
+                vec![
                     ColumnSpec::fixed("Label", 50.0),
                     ColumnSpec::fixed("Value", 20.0),
                     ColumnSpec::fixed("Icon", 20.0),
                 ],
-            }
+            ).header(false).context_menu(false)
         }
     }
 }
@@ -35,12 +32,7 @@ impl WindowContent for Timers {
     }
 
     fn ui(&mut self, ui: &mut Ui, machine: &Machine, _state: &mut State) {
-        self.table_spec.build(
-            TableBuilder::new(ui)
-                .resizable(false)
-                .scroll(false),
-            TimersHelper::new(machine),
-        )
+        self.table_spec.draw(ui, TimersHelper::new(machine))
     }
 }
 

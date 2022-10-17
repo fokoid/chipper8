@@ -1,5 +1,4 @@
 use egui::{Slider, Ui};
-use egui_extras::TableBuilder;
 
 use chipper8::machine::{DrawOptions, Machine};
 
@@ -44,15 +43,13 @@ impl Index {
             display: MemoryDisplay::new(8, 16),
             buffer: [0; 128],
             draw_height: 15,
-            table_spec: TableSpec {
-                show_header: false,
-                enable_context_menu: false,
-                columns: vec![
+            table_spec: TableSpec::new(
+                vec![
                     ColumnSpec::fixed("Label", 40.0),
                     ColumnSpec::fixed("Hex", 40.0),
                     ColumnSpec::fixed("Decimal", 40.0),
                 ],
-            },
+            ).header(false).context_menu(false),
         }
     }
 }
@@ -72,12 +69,7 @@ impl WindowContent for Index {
         ).draw();
         ui.horizontal(|ui| {
             ui.vertical(|ui| {
-                self.table_spec.build(
-                    TableBuilder::new(ui)
-                        .resizable(false)
-                        .scroll(false),
-                    IndexHelper { machine },
-                );
+                self.table_spec.draw(ui, IndexHelper { machine });
                 ui.add(Slider::new(&mut self.draw_height, 0..=15));
             });
             self.display.ui(ui, &self.buffer);
