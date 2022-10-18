@@ -16,25 +16,73 @@ pub struct Register(pub u8);
 
 impl Into<String> for Decimal {
     fn into(self) -> String {
-        format!("{:>4}", self.0)
+        format!("{}", self)
+    }
+}
+
+impl Display for Decimal {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:>4}", self.0)
     }
 }
 
 impl Into<String> for Byte {
     fn into(self) -> String {
-        format!("{:02X}", self.0)
+        format!("{}", self)
+    }
+}
+
+impl Display for Byte {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:02X}", self.0)
     }
 }
 
 impl Into<String> for Address {
     fn into(self) -> String {
-        format!("{:03X}", self.0)
+        format!("{}", self)
+    }
+}
+
+impl Display for Address {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:03X}", self.0)
     }
 }
 
 impl Into<String> for Word {
     fn into(self) -> String {
-        format!("{:04X}", self.0)
+        format!("{}", self)
+    }
+}
+
+impl Display for Word {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:04X}", self.0)
+    }
+}
+
+impl Into<String> for Register {
+    fn into(self) -> String {
+        format!("{}", self)
+    }
+}
+
+impl Display for Register {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "V{:01X}", self.0)
+    }
+}
+
+impl Into<String> for Nibble {
+    fn into(self) -> String {
+        format!("{}", &self)
+    }
+}
+
+impl Display for Nibble {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:01X}", self.0)
     }
 }
 
@@ -74,12 +122,6 @@ impl From<usize> for Register {
     }
 }
 
-impl Into<String> for Register {
-    fn into(self) -> String {
-        format!("V{:01X}", self.0)
-    }
-}
-
 impl From<u16> for Word {
     fn from(value: u16) -> Self {
         Self(value)
@@ -95,17 +137,5 @@ impl From<u8> for Nibble {
 impl From<usize> for Nibble {
     fn from(register: usize) -> Self {
         Self((register & 0xF) as u8)
-    }
-}
-
-impl Into<String> for Nibble {
-    fn into(self) -> String {
-        format!("{}", &self)
-    }
-}
-
-impl Display for Nibble {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:01X}", self.0)
     }
 }
