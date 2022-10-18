@@ -3,7 +3,7 @@ use std::fmt::{Debug, Formatter};
 use egui::{Color32, Label, Response, Ui, Widget};
 use egui::widget_text::RichText;
 
-pub use formatting::{Address, Byte, Decimal, Register, Word};
+pub use formatting::{Address, Byte, Decimal, Nibble, Register, Word};
 pub use memory_display::MemoryDisplay;
 pub use table::TabularData;
 

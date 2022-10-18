@@ -24,6 +24,7 @@ pub struct State {
     pub command_history: CommandHistory,
     pub command_buffer: Option<Command>,
     pub error: Option<Error>,
+    pub key_pressed: Option<u8>,
 }
 
 impl State {
@@ -33,6 +34,7 @@ impl State {
             command_history: CommandHistory::new(),
             command_buffer: None,
             error: None,
+            key_pressed: None,
         }
     }
 
@@ -52,6 +54,10 @@ impl State {
 
     pub fn error(&mut self) -> Option<&Error> {
         self.error.as_ref()
+    }
+
+    pub fn is_key_down(&self, key: u8) -> bool {
+        self.key_pressed == Some(key)
     }
 }
 

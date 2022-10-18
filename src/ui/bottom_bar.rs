@@ -1,6 +1,5 @@
-use egui::{Color32, Key, Label, Response, TextEdit, TextStyle, Ui};
+use egui::{Color32, Label, Ui};
 use egui::widget_text::RichText;
-use ringbuffer::RingBuffer;
 
 use chipper8::instructions::{Command, MetaCommand};
 use chipper8::machine::Machine;
@@ -31,7 +30,7 @@ impl BottomBar {
                 state.command_buffer = Some(Command::Meta(MetaCommand::Step));
             }
             ui.separator();
-            let response = self.input.ui(ui, state);
+            self.input.ui(ui, state);
             if let Some(error) = state.error() {
                 ui.separator();
                 let message = RichText::new(format!("{}", error))

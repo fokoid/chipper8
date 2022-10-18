@@ -2,6 +2,8 @@ use chipper8::machine::Pointer;
 
 pub struct Decimal(pub u16);
 
+pub struct Nibble(pub u8);
+
 pub struct Byte(pub u8);
 
 pub struct Address(pub u16);
@@ -79,5 +81,17 @@ impl Into<String> for Register {
 impl From<u16> for Word {
     fn from(value: u16) -> Self {
         Self(value)
+    }
+}
+
+impl From<u8> for Nibble {
+    fn from(register: u8) -> Self {
+        Self(register & 0xF as u8)
+    }
+}
+
+impl Into<String> for Nibble {
+    fn into(self) -> String {
+        format!("{:01X}", self.0)
     }
 }

@@ -7,6 +7,7 @@ use display::Display;
 use execution_status::ExecutionStatus;
 pub use execution_status::ProgramCounterHelper;
 use index::Index;
+use keypad::Keypad;
 use memory::Memory;
 use registers::Registers;
 use timers::Timers;
@@ -21,6 +22,7 @@ mod index;
 mod memory;
 mod display;
 mod command_gui;
+mod keypad;
 
 pub trait WindowContent {
     fn name(&self) -> &'static str;
@@ -63,5 +65,6 @@ pub fn create_all() -> Vec<Window> {
         Window::new(Box::new(Timers::new())),
         Window::new(Box::new(Registers::new())),
         Window::new(Box::new(ExecutionStatus::new())),
+        Window::new(Box::new(Keypad::new())),
     ]
 }
