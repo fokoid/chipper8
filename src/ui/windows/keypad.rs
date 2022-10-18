@@ -25,7 +25,7 @@ struct KeyBindings {
 impl KeyBindings {
     fn new() -> Self {
         Self {
-            active: String::from("Default"),
+            active: String::from("Moonlander"),
             bindings: HashMap::from([
                 (String::from("Default"), [
                     Key::Num1,
@@ -64,12 +64,8 @@ impl KeyBindings {
                     Key::V,
                     Key::B,
                 ], ),
-            ])
+            ]),
         }
-    }
-
-    fn bindings(&self) -> Vec<&String> {
-        self.bindings.keys().collect()
     }
 
     fn active_binding(&self) -> &[Key; 16] {
@@ -86,7 +82,7 @@ pub struct Keypad {
 impl Keypad {
     pub fn new() -> Self {
         Self {
-            capture_keys: false,
+            capture_keys: true,
             show_binds: false,
             bindings: KeyBindings::new(),
         }
@@ -115,7 +111,7 @@ impl WindowContent for Keypad {
                 }
             });
         }
-        if self.capture_keys {
+        if self.capture_keys && !state.key_capture_suspended {
             for (value, key) in KEYS.iter().zip(self.bindings.active_binding().iter()) {
                 state.keys[*value as usize] |= ui.input().keys_down.contains(key);
             }

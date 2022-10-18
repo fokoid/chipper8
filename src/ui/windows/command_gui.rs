@@ -3,6 +3,7 @@ use egui::{Key, TextEdit, Ui};
 use chipper8::machine::Machine;
 
 use crate::State;
+use crate::ui::util;
 
 use super::WindowContent;
 
@@ -48,7 +49,7 @@ impl CommandWidget {
         ui.horizontal(|ui| {
             let mut submitted = ui.button(self.label).clicked();
             for arg in &mut self.args {
-                if ui.add(TextEdit::singleline(&mut arg.value)
+                if util::add_text_edit(ui, state, TextEdit::singleline(&mut arg.value)
                     .hint_text(arg.hint)
                     .desired_width(60.0)).lost_focus() && ui.input().key_pressed(Key::Enter) {
                     submitted = true;

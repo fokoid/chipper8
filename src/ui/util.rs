@@ -1,11 +1,13 @@
 use std::fmt::{Debug, Formatter};
 
-use egui::{Color32, Label, Response, Ui, Widget};
+use egui::{Color32, Label, Response, TextEdit, Ui, Widget};
 use egui::widget_text::RichText;
 
 pub use formatting::{Address, Byte, Decimal, Nibble, Register, Word};
 pub use memory_display::MemoryDisplay;
 pub use table::TabularData;
+
+use crate::State;
 
 mod image_builder;
 mod memory_display;
@@ -37,4 +39,15 @@ impl Widget for MonoLabel {
         };
         ui.add(Label::new(text))
     }
+}
+
+/// helper function to wrap textbox add with global key capture management
+pub fn add_text_edit(ui: &mut Ui, state: &mut State, widget: TextEdit) -> Response {
+    let response = ui.add(widget);
+    if response.has_focus() {
+        state.key_capture_suspended = true;
+    } else if response.lost_focus() {
+        state.key_capture_suspended = false;
+    };
+    response
 }

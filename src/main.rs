@@ -25,6 +25,8 @@ pub struct State {
     pub command_buffer: Option<Command>,
     pub error: Option<Error>,
     pub keys: [bool; 16],
+    // when a text edit field has focus, do not send any key presses to the virtual keypad
+    pub key_capture_suspended: bool,
 }
 
 impl State {
@@ -35,6 +37,7 @@ impl State {
             command_buffer: None,
             error: None,
             keys: [false; 16],
+            key_capture_suspended: false,
         }
     }
 

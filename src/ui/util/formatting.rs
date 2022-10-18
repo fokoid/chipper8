@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+
 use chipper8::machine::Pointer;
 
 pub struct Decimal(pub u16);

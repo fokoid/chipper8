@@ -4,6 +4,7 @@ use egui::{Key, Response, TextEdit, TextStyle, Ui};
 use ringbuffer::RingBuffer;
 
 use crate::State;
+use crate::ui::util;
 
 pub struct Input {
     input: String,
@@ -21,7 +22,7 @@ impl Input {
     }
 
     pub fn ui(&mut self, ui: &mut Ui, state: &mut State) -> Response {
-        let response = ui.add(TextEdit::singleline(&mut self.input)
+        let response = util::add_text_edit(ui, state, TextEdit::singleline(&mut self.input)
             .font(TextStyle::Monospace)
             .frame(false)
             .hint_text(">>>")
