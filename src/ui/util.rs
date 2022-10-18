@@ -3,6 +3,7 @@ use std::fmt::{Debug, Formatter};
 use egui::{Color32, Label, Response, Ui, Widget};
 use egui::widget_text::RichText;
 
+pub use formatting::{Address, Byte, Decimal, Register, Word};
 pub use memory_display::MemoryDisplay;
 pub use table::TabularData;
 
@@ -10,8 +11,6 @@ mod image_builder;
 mod memory_display;
 pub mod table;
 mod formatting;
-
-pub use formatting::{Decimal, Byte, Address, Word, Register};
 
 pub struct MonoLabel {
     text: String,

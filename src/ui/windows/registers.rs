@@ -3,7 +3,7 @@ use egui::Ui;
 use chipper8::machine::Machine;
 
 use crate::State;
-use crate::ui::util::{MonoLabel, TabularData, Register, Byte, Decimal};
+use crate::ui::util::{Byte, Decimal, MonoLabel, Register, TabularData};
 use crate::ui::util::table::{ColumnSpec, TableSpec};
 
 use super::WindowContent;

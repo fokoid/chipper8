@@ -1,4 +1,5 @@
 use std::cmp;
+
 use egui::{Key, Response, TextEdit, TextStyle, Ui};
 use ringbuffer::RingBuffer;
 
@@ -30,8 +31,7 @@ impl Input {
             state.parse_command(self.input.as_str());
             response.request_focus();
             self.reset();
-        }
-        else if response.has_focus() {
+        } else if response.has_focus() {
             // ^C clears textbox and resets history reverse search
             if ui.input().modifiers.ctrl && ui.input().key_pressed(Key::C) {
                 self.reset();
@@ -45,7 +45,7 @@ impl Input {
                 } else {
                     0
                 },
-                state
+                state,
             );
         };
         ui.label(format!("{}: {}", self.history_index, self.swap_input));
@@ -61,7 +61,7 @@ impl Input {
 
     fn update_history_index(&mut self, step: isize, state: &State) {
         let history_index = -cmp::min(cmp::max(0, -self.history_index + step),
-                                     state.command_history.items.len() as isize);
+                                      state.command_history.items.len() as isize);
         if history_index != self.history_index {
             if self.history_index == 0 {
                 self.swap_input = self.input.clone();

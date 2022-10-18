@@ -4,11 +4,11 @@ use ringbuffer::RingBuffer;
 
 use chipper8::instructions::{Command, MetaCommand};
 use chipper8::machine::Machine;
+use input::Input;
 
 use crate::State;
 use crate::ui::util::table::TabularData;
 use crate::ui::windows::ProgramCounterHelper;
-use input::Input;
 
 mod input;
 
@@ -47,6 +47,4 @@ impl BottomBar {
             }
         });
     }
-
-
 }

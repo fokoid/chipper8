@@ -3,7 +3,7 @@ use egui::{Slider, Ui};
 use chipper8::machine::{DrawOptions, Machine};
 
 use crate::State;
-use crate::ui::util::{MemoryDisplay, MonoLabel, TabularData, Address, Byte, Decimal};
+use crate::ui::util::{Address, Byte, Decimal, MemoryDisplay, MonoLabel, TabularData};
 use crate::ui::util::table::{ColumnSpec, TableSpec};
 
 use super::WindowContent;

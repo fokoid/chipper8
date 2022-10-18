@@ -1,9 +1,13 @@
 use chipper8::machine::Pointer;
 
 pub struct Decimal(pub u16);
+
 pub struct Byte(pub u8);
+
 pub struct Address(pub u16);
+
 pub struct Word(pub u16);
+
 pub struct Register(pub u8);
 
 impl Into<String> for Decimal {
