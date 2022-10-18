@@ -1,5 +1,6 @@
 use egui::{Color32, Key, Label, Response, TextEdit, TextStyle, Ui};
 use egui::widget_text::RichText;
+use ringbuffer::RingBuffer;
 
 use chipper8::instructions::{Command, MetaCommand};
 use chipper8::machine::Machine;
@@ -7,14 +8,19 @@ use chipper8::machine::Machine;
 use crate::State;
 use crate::ui::util::table::TabularData;
 use crate::ui::windows::ProgramCounterHelper;
+use input::Input;
+
+mod input;
 
 pub struct BottomBar {
-    input: String,
+    input: Input,
 }
 
 impl BottomBar {
     pub fn new() -> Self {
-        Self { input: String::new() }
+        Self {
+            input: Input::new(),
+        }
     }
 
     // todo: use strips (or something else) to force some of this content to the right
@@ -25,12 +31,7 @@ impl BottomBar {
                 state.command_buffer = Some(Command::Meta(MetaCommand::Step));
             }
             ui.separator();
-            let response = input_ui(ui, &mut self.input);
-            if response.lost_focus() && ui.input().key_pressed(Key::Enter) {
-                state.parse_command(self.input.as_str());
-                self.input.clear();
-                response.request_focus();
-            }
+            let response = self.input.ui(ui, state);
             if let Some(error) = state.error() {
                 ui.separator();
                 let message = RichText::new(format!("{}", error))
@@ -46,12 +47,6 @@ impl BottomBar {
             }
         });
     }
-}
 
-fn input_ui(ui: &mut Ui, text: &mut String) -> Response {
-    ui.add(TextEdit::singleline(text)
-        .font(TextStyle::Monospace)
-        .frame(false)
-        .hint_text(">>>")
-        .desired_width(250.0))
+
 }
