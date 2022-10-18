@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use chipper8::machine::Pointer;
 
 pub struct Decimal(pub u16);
@@ -86,12 +87,24 @@ impl From<u16> for Word {
 
 impl From<u8> for Nibble {
     fn from(register: u8) -> Self {
-        Self(register & 0xF as u8)
+        Self(register & 0xF)
+    }
+}
+
+impl From<usize> for Nibble {
+    fn from(register: usize) -> Self {
+        Self((register & 0xF) as u8)
     }
 }
 
 impl Into<String> for Nibble {
     fn into(self) -> String {
-        format!("{:01X}", self.0)
+        format!("{}", &self)
+    }
+}
+
+impl Display for Nibble {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:01X}", self.0)
     }
 }

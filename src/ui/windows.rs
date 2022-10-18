@@ -1,4 +1,4 @@
-use egui::{Context, Ui};
+use egui::{Context, Response, Ui};
 
 use chipper8::machine::Machine;
 use command_gui::CommandGui;
@@ -29,6 +29,8 @@ pub trait WindowContent {
 
     // todo: this should return a response
     fn ui(&mut self, ui: &mut Ui, machine: &Machine, state: &mut State);
+
+    fn on_show(&mut self, _response: Response) {}
 }
 
 pub struct Window {
@@ -47,10 +49,13 @@ impl Window {
     pub fn name(&self) -> &'static str { self.content.name() }
 
     pub fn draw(&mut self, ctx: &Context, machine: &Machine, state: &mut State) {
-        egui::Window::new(self.content.name())
+        let response = egui::Window::new(self.content.name())
             .resizable(true)
             .open(&mut self.open)
             .show(ctx, |ui| { self.content.ui(ui, machine, state); });
+        if let Some(response) = response {
+            self.content.on_show(response.response);
+        }
     }
 }
 
