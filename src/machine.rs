@@ -1,5 +1,5 @@
 use std::cmp::min;
-use std::ops::RangeInclusive;
+use std::ops::Range;
 use std::time::Duration;
 
 use crate::instructions::{self, Instruction, OpCode};
@@ -9,7 +9,7 @@ pub const NUM_REGISTERS: usize = 16;
 pub const STACK_SIZE: usize = 16;
 pub const DISPLAY_WIDTH: usize = 64;
 pub const DISPLAY_HEIGHT: usize = 32;
-pub const FONT_RANGE: RangeInclusive<usize> = 0x050..=0x09F;
+pub const FONT_RANGE: Range<usize> = 0x050..0x0A0;
 pub const FONT_SPRITE_HEIGHT: usize = 5;
 pub const FRAMES_PER_SECOND: u64 = 60;
 pub const FRAME_TIME: Duration = Duration::from_nanos(1_000_000_000 / FRAMES_PER_SECOND);
@@ -192,7 +192,7 @@ impl Machine {
             }
             Instruction::Font(register) => {
                 let char = self.registers[*register as usize] as usize & 0x0F;
-                self.index = FONT_RANGE.start() + FONT_SPRITE_HEIGHT * char;
+                self.index = FONT_RANGE.start + FONT_SPRITE_HEIGHT * char;
             }
             Instruction::TimerSound(value) => {
                 self.sound_timer = *value;

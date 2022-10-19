@@ -4,21 +4,23 @@ pub struct ImageBuilder {
     width: usize,
     height: usize,
     pixel_size: usize,
-    background: Color32,
+    pub color_map: Vec<Color32>,
 }
 
 impl ImageBuilder {
     pub fn new(width: usize, height: usize) -> Self {
+        let mut color_map = Vec::new();
+        (0..(width * height)).for_each(|_| color_map.push(Color32::WHITE));
         Self {
             width,
             height,
             pixel_size: 4,
-            background: Color32::BLACK,
+            color_map,
         }
     }
 
     pub fn build_empty(&self) -> ColorImage {
-        ColorImage::new(self.pixel_size(), self.background)
+        ColorImage::new(self.pixel_size(), Color32::BLACK)
     }
 
     pub fn build_from_memory(&self, memory: &[u8]) -> ColorImage {
@@ -26,10 +28,11 @@ impl ImageBuilder {
         // todo: check memory bounds
         for y in 0..self.height {
             for x in 0..self.width {
+                let index = x + y * self.width;
                 self.set_pixel(
                     &mut image,
                     &[x, y],
-                    Color32::from_gray(memory[x + y * self.width]),
+                    self.color_map[index].linear_multiply(memory[index] as f32 / 255.0),
                 );
             }
         };

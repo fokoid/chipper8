@@ -97,7 +97,10 @@ impl CommandGui {
                 CommandWidget::new("Step", ".step", vec![]),
                 // todo: dropdown of allowed machine states
                 CommandWidget::new("Reset", ".reset", vec!["State"]),
+                // todo: dropdown of available ROMs
                 CommandWidget::new("Load ROM", ".load", vec!["Filename", "Address"]),
+                CommandWidget::new("Load IBM", ".load ibm", vec![]),
+                CommandWidget::new("Unload ROM", ".unload", vec![]),
             ],
         }
     }

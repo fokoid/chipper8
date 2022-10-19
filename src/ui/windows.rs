@@ -35,7 +35,7 @@ pub trait WindowContent {
 
 pub struct Window {
     pub open: bool,
-    content: Box<dyn WindowContent>,
+    pub content: Box<dyn WindowContent>,
 }
 
 impl Window {

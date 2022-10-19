@@ -3,7 +3,7 @@ use egui::{TextureFilter, TextureHandle, Ui};
 use crate::ui::util::image_builder::ImageBuilder;
 
 pub struct MemoryDisplay {
-    image_builder: ImageBuilder,
+    pub image_builder: ImageBuilder,
     texture: Option<TextureHandle>,
 }
 

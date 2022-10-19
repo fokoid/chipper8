@@ -71,6 +71,7 @@ impl Display for MachineState {
 pub enum MetaCommand {
     Reset(Option<MachineState>),
     Load(String, u16),
+    UnloadRom,
     Step,
     Play,
     Pause,
@@ -95,7 +96,8 @@ impl MetaCommand {
                 }
                 Some(x) => Err(Error::MetaSyntaxError(format!(".load requires a path but got {:?}", x))),
                 None => Err(Error::MetaSyntaxError(format!(".load requires a path"))),
-            }
+            },
+            Some(Token::Meta(".unload")) => Ok(MetaCommand::UnloadRom),
             Some(Token::Meta(".step")) => Ok(MetaCommand::Step),
             Some(Token::Meta(".play")) => Ok(MetaCommand::Play),
             Some(Token::Meta(".pause")) => Ok(MetaCommand::Pause),
@@ -114,6 +116,7 @@ impl Display for MetaCommand {
                 Some(state) => format!("{}", state),
             }),
             Self::Load(path, address) => write!(f, ".load {} {:03X}", path, address),
+            Self::UnloadRom => write!(f, ".unload"),
             Self::Step => write!(f, ".step"),
             Self::Play => write!(f, ".play"),
             Self::Pause => write!(f, ".pause"),

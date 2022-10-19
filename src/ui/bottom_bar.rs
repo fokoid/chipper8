@@ -44,6 +44,10 @@ impl BottomBar {
             for label in helper.rows().into_iter().next().unwrap() {
                 ui.add(label);
             }
+            ui.separator();
+            ui.label(if let Some(rom) = &state.rom {
+                format!("Loaded ROM: {}.rom", rom.name)
+            } else { String::from("No ROM loaded") });
         });
     }
 }
