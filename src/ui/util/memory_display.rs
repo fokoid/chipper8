@@ -16,7 +16,7 @@ impl MemoryDisplay {
     }
 
     // todo: should return a response
-    pub fn ui(&mut self, ui: &mut Ui, memory: &[u8]) {
+    pub fn ui(&mut self, ui: &mut Ui, memory: &[u8], force_on: Vec<usize>) {
         let texture = self.texture.get_or_insert_with(|| {
             ui.ctx().load_texture(
                 "display",
@@ -25,7 +25,7 @@ impl MemoryDisplay {
             )
         });
         texture.set(
-            self.image_builder.build_from_memory(memory),
+            self.image_builder.build_from_memory(memory, force_on),
             TextureFilter::Linear,
         );
         let size = texture.size_vec2();

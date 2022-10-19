@@ -72,7 +72,7 @@ impl WindowContent for Index {
                 self.table_spec.draw(ui, IndexHelper { machine });
                 ui.add(Slider::new(&mut self.draw_height, 0..=15));
             });
-            self.display.ui(ui, &self.buffer);
+            self.display.ui(ui, &self.buffer, Vec::new());
         });
     }
 }

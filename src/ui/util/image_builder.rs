@@ -23,16 +23,21 @@ impl ImageBuilder {
         ColorImage::new(self.pixel_size(), Color32::BLACK)
     }
 
-    pub fn build_from_memory(&self, memory: &[u8]) -> ColorImage {
+    pub fn build_from_memory(&self, memory: &[u8], force_on: Vec<usize>) -> ColorImage {
         let mut image = self.build_empty();
         // todo: check memory bounds
         for y in 0..self.height {
             for x in 0..self.width {
                 let index = x + y * self.width;
+                let scale = if force_on.contains(&index) {
+                    1.0
+                } else {
+                    memory[index] as f32 / 255.0
+                };
                 self.set_pixel(
                     &mut image,
                     &[x, y],
-                    self.color_map[index].linear_multiply(memory[index] as f32 / 255.0),
+                    self.color_map[index].linear_multiply(scale),
                 );
             }
         };

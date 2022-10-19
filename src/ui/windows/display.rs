@@ -23,6 +23,6 @@ impl WindowContent for Display {
     fn name(&self) -> &'static str { "Video Display" }
 
     fn ui(&mut self, ui: &mut Ui, machine: &Machine, _state: &mut State) {
-        self.display.ui(ui, &machine.display)
+        self.display.ui(ui, &machine.display, Vec::new())
     }
 }

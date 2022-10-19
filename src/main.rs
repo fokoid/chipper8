@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::fs;
 use std::ops::Range;
 
@@ -51,7 +52,7 @@ impl Rom {
         self.loaded_at = Some(address);
         machine.load(address, &self.bytes);
         machine.program_counter = address;
-        state.tag_memory(self.loaded_range().unwrap(), MemoryTag::UserProgram { name: self.name.clone() });
+        state.memory_tags.insert(MemoryTag::UserProgram { name: self.name.clone() }, self.loaded_range().unwrap());
     }
 
     fn unload(&mut self, machine: &mut Machine, state: &mut State) {
@@ -59,32 +60,36 @@ impl Rom {
             panic!("attempt to unload ROM that was never loaded");
         }
         machine.memory[self.loaded_range().unwrap()].fill(0);
-        state.untag_memory(self.loaded_range().unwrap());
+        state.memory_tags.remove(&MemoryTag::UserProgram { name: self.name.clone() });
         self.loaded_at = None;
         // todo: move program counter?
     }
 }
 
-#[derive(Clone, Eq, Hash, PartialEq)]
+#[derive(Eq, Ord, PartialEq, PartialOrd)]
 pub enum MemoryTag {
+    // the order here determines priority: later variants are draw later over the top of prior ones
+    Reserved,
     SystemFont,
     UserProgram { name: String },
-    ProgramCounter,
     Index,
+    ProgramCounter,
 }
 
 impl MemoryTag {
     pub fn color(&self) -> Color32 {
         match self {
-            Self::SystemFont => Color32::GREEN,
+            Self::Reserved => Color32::LIGHT_GRAY,
+            Self::SystemFont => Color32::YELLOW,
             Self::UserProgram { name: _name } => Color32::RED,
-            Self::ProgramCounter => Color32::BLUE,
-            Self::Index => Color32::YELLOW,
+            Self::ProgramCounter => Color32::WHITE,
+            Self::Index => Color32::LIGHT_GREEN,
         }
     }
 
     pub fn name(&self) -> String {
         match self {
+            Self::Reserved => String::from("System Reserved"),
             Self::SystemFont => String::from("System Fonts"),
             Self::UserProgram { name } => format!("User Program ({}.rom)", name),
             Self::ProgramCounter => String::from("Program Counter"),
@@ -103,14 +108,11 @@ pub struct State {
     // when a text edit field has focus, do not send any key presses to the virtual keypad
     pub key_capture_suspended: bool,
     pub rom: Option<Rom>,
-    pub memory_tags: Vec<Option<MemoryTag>>,
+    pub memory_tags: BTreeMap<MemoryTag, Range<usize>>,
 }
 
 impl State {
     pub fn new() -> Self {
-        let mut memory_tags = Vec::with_capacity(machine::MEMORY_SIZE);
-        (0..machine::MEMORY_SIZE).for_each(|_| memory_tags.push(None));
-        memory_tags[machine::FONT_RANGE].fill(Some(MemoryTag::SystemFont));
         Self {
             running: false,
             command_history: CommandHistory::new(),
@@ -119,7 +121,10 @@ impl State {
             keys: [false; 16],
             key_capture_suspended: false,
             rom: None,
-            memory_tags,
+            memory_tags: BTreeMap::from([
+                (MemoryTag::Reserved, 0..0x200),
+                (MemoryTag::SystemFont, machine::FONT_RANGE),
+            ]),
         }
     }
 
@@ -139,14 +144,6 @@ impl State {
 
     pub fn error(&mut self) -> Option<&Error> {
         self.error.as_ref()
-    }
-
-    pub fn untag_memory(&mut self, range: Range<usize>) {
-        self.memory_tags[range].fill(None);
-    }
-
-    pub fn tag_memory(&mut self, range: Range<usize>, tag: MemoryTag) {
-        self.memory_tags[range].fill(Some(tag));
     }
 }
 
@@ -233,6 +230,10 @@ impl ReplApp {
 
 impl eframe::App for ReplApp {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
+        self.state.memory_tags.insert(MemoryTag::ProgramCounter,
+                                      self.machine.program_counter..self.machine.program_counter + 2);
+        self.state.memory_tags.insert(MemoryTag::Index,
+                                      self.machine.index..self.machine.index + 1);
         self.ui.draw(ctx, &self.machine, &mut self.state);
         if let Some(command) = &self.state.command_buffer.take() {
             self.state.command_history.append(command, true);
