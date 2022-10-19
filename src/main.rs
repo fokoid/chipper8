@@ -1,9 +1,10 @@
 use std::fs;
+use std::path::PathBuf;
 
 use eframe::NativeOptions;
 use egui::{Context, Vec2};
 
-use chipper8::instructions::{Command, Error, MachineState, MetaCommand};
+use chipper8::instructions::{Command, Error, MachineState, MetaCommand, Result};
 use chipper8::machine::{self, Machine};
 use command_history::CommandHistory;
 use ui::Ui;
@@ -77,19 +78,30 @@ impl ReplApp {
         }
     }
 
-    fn execute(&mut self, command: &Command) {
+    fn execute(&mut self, command: &Command) -> Result<()> {
         match command {
             Command::Instruction(instruction) => {
                 // user entered a machine instruction at the prompt
                 // so we should suspend the VM main loop if running
                 self.state.running = false;
-                self.machine.execute(instruction)
+                // todo: Machine::execute should also return result
+                self.machine.execute(instruction);
+                Ok(())
             }
             Command::Meta(meta) => self.execute_meta(meta),
         }
     }
 
-    fn execute_meta(&mut self, command: &MetaCommand) {
+    fn read_rom(&mut self, path: &String) -> Result<Vec<u8>> {
+        let path = if path.ends_with(".rom") {
+            PathBuf::from(path)
+        } else {
+            PathBuf::from(format!("{}.rom", path))
+        };
+        Ok(fs::read(path)?)
+    }
+
+    fn execute_meta(&mut self, command: &MetaCommand) -> Result<()> {
         match command {
             MetaCommand::Reset(state) => {
                 self.state.running = false;
@@ -102,7 +114,7 @@ impl ReplApp {
             }
             MetaCommand::Load(path, address) => {
                 self.state.running = false;
-                let bytes = fs::read(path).unwrap();
+                let bytes = self.read_rom(path)?;
                 self.machine.load(*address as usize, &bytes);
                 self.machine.program_counter = *address as usize;
             }
@@ -119,7 +131,8 @@ impl ReplApp {
             MetaCommand::PlayPause => {
                 self.state.running = !self.state.running;
             }
-        }
+        };
+        Ok(())
     }
 
     fn step(&mut self) {
@@ -134,7 +147,12 @@ impl eframe::App for ReplApp {
         self.ui.draw(ctx, &self.machine, &mut self.state);
         if let Some(command) = &self.state.command_buffer.take() {
             self.state.command_history.append(command, true);
-            self.execute(command);
+            match self.execute(command) {
+                Ok(_) => {}
+                Err(error) => {
+                    self.state.error = Some(error);
+                }
+            };
         };
         // if VM main loop is running, and timer is up, execute next command
         if self.state.running {

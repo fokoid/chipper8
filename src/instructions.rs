@@ -1,4 +1,5 @@
 use std::fmt::{Debug, Display, Formatter};
+use std::io;
 use std::num::ParseIntError;
 
 use thiserror::Error;
@@ -17,6 +18,8 @@ pub enum Error {
     OpCodeSyntaxError(String),
     #[error("invalid opcode: {0}")]
     InvalidOpCode(OpCode),
+    #[error("I/O error: {0}")]
+    IoError(#[from] io::Error),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
