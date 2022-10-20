@@ -24,6 +24,6 @@ impl From<Word> for WidgetText {
 
 impl Display for Word {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:04X}", self.0)
+        write!(f, "{:#06X}", self.0)
     }
 }

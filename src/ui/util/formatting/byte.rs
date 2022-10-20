@@ -23,6 +23,6 @@ impl From<Byte> for WidgetText {
 
 impl Display for Byte {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:02X}", self.0)
+        write!(f, "{:#04X}", self.0)
     }
 }

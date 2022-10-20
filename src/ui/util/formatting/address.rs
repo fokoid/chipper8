@@ -26,6 +26,6 @@ impl From<Address> for WidgetText {
 
 impl Display for Address {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:03X}", self.0)
+        write!(f, "{:#05X}", self.0)
     }
 }
