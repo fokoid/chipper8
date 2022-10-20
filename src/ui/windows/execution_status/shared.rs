@@ -14,7 +14,7 @@ pub fn address_row(prefix: &str, address: usize, machine: &Machine) -> Vec<MonoL
     vec![
         MonoLabel::new(prefix),
         MonoLabel::new(Address::from(address)),
-        MonoLabel::new(Word::from(machine.word_at_address(address))),
+        machine.word_at_address(address).map(|word| MonoLabel::new(Word::from(word))).unwrap_or(MonoLabel::new("")),
         MonoLabel::new(instruction),
     ]
 }

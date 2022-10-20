@@ -1,4 +1,4 @@
-use egui::{Slider, Ui};
+use egui::{RichText, Slider, Ui};
 
 use chipper8::machine::{DrawOptions, Machine};
 
@@ -22,8 +22,8 @@ impl<'a> TabularData for IndexHelper<'a> {
             ],
             vec![
                 MonoLabel::new("Byte"),
-                MonoLabel::new(Byte::from(self.machine.at_index())),
-                MonoLabel::new(Decimal::from(self.machine.at_index())),
+                self.machine.at_index().map(|byte| MonoLabel::new(Byte::from(byte))).unwrap_or(MonoLabel::new("")),
+                self.machine.at_index().map(|byte| MonoLabel::new(Decimal::from(byte))).unwrap_or(MonoLabel::new("")),
             ],
         ]
     }
@@ -72,7 +72,9 @@ impl WindowContent for Index {
                 self.table_spec.draw(ui, IndexHelper { machine });
                 ui.add(Slider::new(&mut self.draw_height, 0..=15));
             });
-            self.display.ui(ui, &self.buffer, Vec::new());
+            self.display.ui(ui, &self.buffer, Vec::new(), |index| {
+                vec![RichText::new(format!("Glyph row at memory offset {}", Address::from(machine.index + index / 8)))]
+            });
         });
     }
 }

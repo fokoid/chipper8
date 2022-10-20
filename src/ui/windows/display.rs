@@ -1,4 +1,4 @@
-use egui::Ui;
+use egui::{RichText, Ui};
 
 use chipper8::machine::{self, Machine};
 
@@ -23,6 +23,14 @@ impl WindowContent for Display {
     fn name(&self) -> &'static str { "Video Display" }
 
     fn ui(&mut self, ui: &mut Ui, machine: &Machine, _state: &mut State) {
-        self.display.ui(ui, &machine.display, Vec::new())
+        self.display.ui(ui, &machine.display, Vec::new(), |index| {
+            let [x, y] = [index / machine::DISPLAY_WIDTH, index % machine::DISPLAY_WIDTH];
+            let status = match machine.display.get(index) {
+                Some(0xFF) => "ON",
+                Some(0x00) => "OFF",
+                _ => "UNKNOWN",
+            };
+            vec![RichText::new(format!("({}, {}): {}", x, y, status))]
+        });
     }
 }

@@ -1,9 +1,9 @@
 use egui::{Color32, ColorImage};
 
 pub struct ImageBuilder {
-    width: usize,
-    height: usize,
-    pixel_size: usize,
+    pub width: usize,
+    pub height: usize,
+    pub pixel_size: usize,
     pub color_map: Vec<Color32>,
 }
 
@@ -44,6 +44,7 @@ impl ImageBuilder {
         image
     }
 
+    pub fn size(&self) -> usize { self.width * self.height }
     fn pixel_width(&self) -> usize { self.width * self.pixel_size }
     fn pixel_height(&self) -> usize { self.height * self.pixel_size }
     fn pixel_size(&self) -> [usize; 2] { [self.pixel_width(), self.pixel_height()] }

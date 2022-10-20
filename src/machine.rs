@@ -138,16 +138,17 @@ impl Machine {
         self.display[1000] = 0xFF;
     }
 
-    pub fn byte_at_address(&self, address: usize) -> u8 {
-        self.memory[address]
+    pub fn byte_at_address(&self, address: usize) -> Option<u8> {
+        Some(*self.memory.get(address)?)
     }
 
-    pub fn word_at_address(&self, address: usize) -> u16 {
-        u16::from_be_bytes(self.memory[address..address + 2].try_into().unwrap())
+    pub fn word_at_address(&self, address: usize) -> Option<u16> {
+        let bytes = [self.byte_at_address(address)?, self.byte_at_address(address + 1)?];
+        Some(u16::from_be_bytes(bytes))
     }
 
     pub fn instruction_at_address(&self, address: usize) -> instructions::Result<Instruction> {
-        OpCode(self.word_at_address(address)).as_instruction()
+        OpCode(self.word_at_address(address).unwrap_or(0)).as_instruction()
     }
 
     fn set_instruction_at_address(&mut self, address: usize, instruction: &Instruction) {
@@ -155,15 +156,15 @@ impl Machine {
         self.memory[address..address + 2].clone_from_slice(&opcode.bytes())
     }
 
-    pub fn at_program_counter(&self) -> u16 {
+    pub fn at_program_counter(&self) -> Option<u16> {
         self.word_at_address(self.program_counter)
     }
 
     pub fn next_instruction(&self) -> instructions::Result<Instruction> {
-        OpCode(self.at_program_counter()).as_instruction()
+        self.instruction_at_address(self.program_counter)
     }
 
-    pub fn at_index(&self) -> u8 {
+    pub fn at_index(&self) -> Option<u8> {
         self.byte_at_address(self.index)
     }
 
