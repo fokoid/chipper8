@@ -1,4 +1,5 @@
 use egui::WidgetText;
+
 use chipper8::machine::Machine;
 
 use crate::ui::util::TabularData;

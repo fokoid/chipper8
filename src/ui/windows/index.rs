@@ -1,4 +1,4 @@
-use egui::{RichText, Slider, Ui, TextStyle, WidgetText};
+use egui::{RichText, Slider, TextStyle, Ui, WidgetText};
 
 use chipper8::machine::{DrawOptions, Machine};
 

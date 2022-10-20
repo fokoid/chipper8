@@ -1,11 +1,11 @@
-use egui::{Ui, TextStyle, WidgetText};
+use egui::{TextStyle, Ui, WidgetText};
 use ringbuffer::RingBufferExt;
 
 use chipper8::machine::Machine;
 
 use crate::State;
-use crate::ui::util::TabularData;
 use crate::ui::util::table::{ColumnSpec, TableSpec};
+use crate::ui::util::TabularData;
 
 use super::WindowContent;
 

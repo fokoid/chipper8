@@ -1,4 +1,4 @@
-use egui::{Ui, TextStyle, WidgetText};
+use egui::{TextStyle, Ui, WidgetText};
 
 use chipper8::machine::Machine;
 
