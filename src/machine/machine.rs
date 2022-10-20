@@ -1,9 +1,10 @@
+use crate::ui::Rom;
+
 use super::config;
 use super::draw_options::DrawOptions;
 use super::instructions::{Instruction, OpCode};
 use super::stack::Stack;
 use super::types::{Pointer, Timer};
-use crate::ui::Rom;
 
 #[derive(Debug)]
 pub struct Machine {

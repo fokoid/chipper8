@@ -1,5 +1,6 @@
-use egui::WidgetText;
 use std::fmt::{Display, Formatter};
+
+use egui::WidgetText;
 
 pub struct Register(pub u8);
 

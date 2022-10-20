@@ -1,5 +1,6 @@
-use egui::WidgetText;
 use std::fmt::{Display, Formatter};
+
+use egui::WidgetText;
 
 use crate::machine::Pointer;
 

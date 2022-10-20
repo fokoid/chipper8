@@ -39,7 +39,6 @@ impl Display {
             };
             vec![RichText::new(format!("({}, {}): {}", x, y, status))]
         });
-
     }
 }
 

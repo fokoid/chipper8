@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 use std::time::Duration;
-use clap::Parser;
+
 use eframe::NativeOptions;
 use egui::{Context, Vec2};
 
@@ -8,6 +8,7 @@ use chipper8::machine::Machine;
 use chipper8::Result;
 use chipper8::ui::Rom;
 use chipper8::ui::windows::Display;
+use clap::Parser;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -62,7 +63,7 @@ impl eframe::App for EmulatorApp {
         egui::CentralPanel::default().show(
             ctx, |ui| {
                 self.display.ui_stateless(ui, &mut self.machine);
-            }
+            },
         );
         if ctx.input().time - self.last_time > self.args.frame_time().as_secs_f64() {
             self.last_time = ctx.input().time;

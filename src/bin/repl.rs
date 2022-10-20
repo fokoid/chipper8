@@ -1,10 +1,9 @@
-use eframe::NativeOptions;
-use egui::{Context, Vec2};
-
 use chipper8::command::{Command, MachineState, MetaCommand};
 use chipper8::machine::Machine;
 use chipper8::Result;
 use chipper8::ui::{MemoryTag, Rom, State, Ui};
+use eframe::NativeOptions;
+use egui::{Context, Vec2};
 
 fn main() -> Result<()> {
     let mut native_options = NativeOptions::default();
