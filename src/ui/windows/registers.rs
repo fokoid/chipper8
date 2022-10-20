@@ -32,6 +32,7 @@ impl WindowContent for Registers {
     }
 
     fn ui(&mut self, ui: &mut Ui, machine: &Machine, _state: &mut State) {
+        ui.style_mut().override_text_style = Some(TextStyle::Monospace);
         self.table_spec.draw(ui, RegistersHelper::new(machine))
     }
 }

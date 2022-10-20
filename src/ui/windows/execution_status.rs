@@ -1,4 +1,4 @@
-use egui::{Align, Layout, Ui};
+use egui::{Align, Layout, TextStyle, Ui};
 
 use chipper8::machine::Machine;
 // this is pub so the bottom bar can also use it to create a program counter representation
@@ -34,6 +34,7 @@ impl WindowContent for ExecutionStatus {
     }
 
     fn ui(&mut self, ui: &mut Ui, machine: &Machine, _state: &mut State) {
+        ui.style_mut().override_text_style = Some(TextStyle::Monospace);
         ui.push_id(0, |ui| {
             ui.with_layout(Layout::top_down(Align::Center), |ui| {
                 ui.heading("Program Counter")

@@ -1,4 +1,4 @@
-use egui::{RichText, Slider, Ui, WidgetText};
+use egui::{RichText, Slider, Ui, TextStyle, WidgetText};
 
 use chipper8::machine::{DrawOptions, Machine};
 
@@ -64,6 +64,7 @@ impl WindowContent for Index {
     }
 
     fn ui(&mut self, ui: &mut Ui, machine: &Machine, _state: &mut State) {
+        ui.style_mut().override_text_style = Some(TextStyle::Monospace);
         self.buffer.fill(0);
         let height = self.draw_height % 16;
         DrawOptions::new(

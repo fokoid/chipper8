@@ -42,7 +42,7 @@ impl BottomBar {
             // todo: dependent on table UI implementation, subject to change
             let helper = ProgramCounterHelper { machine };
             for label in helper.rows().into_iter().next().unwrap() {
-                ui.label(label);
+                ui.label(label.monospace());
             }
             ui.separator();
             ui.label(if let Some(rom) = &state.rom {

@@ -1,4 +1,4 @@
-use egui::{Ui, WidgetText};
+use egui::{Ui, TextStyle, WidgetText};
 
 use chipper8::machine::Machine;
 
@@ -18,7 +18,7 @@ impl Timers {
             table_spec: TableSpec::new(
                 vec![
                     ColumnSpec::fixed("Label", 50.0),
-                    ColumnSpec::fixed("Value", 20.0),
+                    ColumnSpec::fixed("Value", 30.0),
                     ColumnSpec::fixed("Icon", 20.0),
                 ],
             ).header(false).context_menu(false)
@@ -32,6 +32,7 @@ impl WindowContent for Timers {
     }
 
     fn ui(&mut self, ui: &mut Ui, machine: &Machine, _state: &mut State) {
+        ui.style_mut().override_text_style = Some(TextStyle::Monospace);
         self.table_spec.draw(ui, TimersHelper::new(machine))
     }
 }

@@ -1,4 +1,4 @@
-use egui::{Ui, WidgetText};
+use egui::{Ui, TextStyle, WidgetText};
 use ringbuffer::RingBufferExt;
 
 use chipper8::machine::Machine;
@@ -30,6 +30,7 @@ impl WindowContent for CommandHistory {
     fn name(&self) -> &'static str { "Command History" }
 
     fn ui(&mut self, ui: &mut Ui, _machine: &Machine, state: &mut State) {
+        ui.style_mut().override_text_style = Some(TextStyle::Monospace);
         self.table_spec.draw(ui, &state.command_history)
     }
 }
