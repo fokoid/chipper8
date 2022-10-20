@@ -57,7 +57,7 @@ impl ReplApp {
                     };
                 };
             }
-            MetaCommand::Load(path, address) => {
+            MetaCommand::LoadRom(path, address) => {
                 self.state.running = false;
                 if let Some(mut rom) = self.state.unload_rom() {
                     self.machine.unload_rom(&mut rom);

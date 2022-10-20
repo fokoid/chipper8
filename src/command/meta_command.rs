@@ -1,4 +1,5 @@
 use std::fmt::{Debug, Display, Formatter};
+use std::path::PathBuf;
 
 use crate::{Error, Result};
 
@@ -8,7 +9,7 @@ use super::tokens::{Token, Tokens};
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum MetaCommand {
     Reset(Option<MachineState>),
-    Load(String, u16),
+    LoadRom(PathBuf, u16),
     UnloadRom,
     Step,
     Play,
@@ -23,11 +24,13 @@ impl MetaCommand {
             Some(Token::Meta(".reset")) => Ok(MetaCommand::Reset(MachineState::parse(tokens)?)),
             Some(Token::Meta(".load")) => match tokens.next() {
                 Some(Token::Other(s)) => {
-                    let path = String::from(s);
+                    let mut path = PathBuf::new();
+                    path.push(String::from(s));
+                    path.set_extension("rom");
                     // default to address 200 which is what ROMs typically expect anyway
                     match tokens.next().unwrap_or(Token::Other("200")) {
                         Token::Other(s) => Ok(
-                            MetaCommand::Load(path, u16::from_str_radix(s, 16)?)
+                            MetaCommand::LoadRom(path, u16::from_str_radix(s, 16)?)
                         ),
                         x => Err(Error::MetaSyntaxError(format!(".load requires an address but got {:?}", x))),
                     }
@@ -53,7 +56,7 @@ impl Display for MetaCommand {
                 None => String::new(),
                 Some(state) => format!("{}", state),
             }),
-            Self::Load(path, address) => write!(f, ".load {} {:03X}", path, address),
+            Self::LoadRom(path, address) => write!(f, ".load {} {:03X}", path.display(), address),
             Self::UnloadRom => write!(f, ".unload"),
             Self::Step => write!(f, ".step"),
             Self::Play => write!(f, ".play"),

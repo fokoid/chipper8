@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::fs;
 use std::ops::Range;
+use std::path::Path;
 use std::time::Duration;
 
 use egui::Color32;
@@ -119,13 +120,10 @@ pub struct Rom {
 }
 
 impl Rom {
-    pub fn from_file(filename: &str) -> Result<Self> {
-        let name = if filename.ends_with(".rom") {
-            &filename[..filename.len() - 4]
-        } else { &filename };
-        let bytes = fs::read(format!("{}.rom", name))?;
+    pub fn from_file(path: impl AsRef<Path>) -> Result<Self> {
+        let bytes = fs::read(path.as_ref())?;
         Ok(Self {
-            name: String::from(name),
+            name: String::from(path.as_ref().file_name().unwrap().to_str().unwrap()),
             bytes,
             loaded_at: None,
         })
