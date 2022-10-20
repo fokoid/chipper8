@@ -1,9 +1,9 @@
-use egui::Ui;
+use egui::{Ui, WidgetText};
 
 use chipper8::machine::Machine;
 
 use crate::State;
-use crate::ui::util::{Byte, MonoLabel};
+use crate::ui::util::Byte;
 use crate::ui::util::table::{ColumnSpec, TableSpec, TabularData};
 
 use super::WindowContent;
@@ -47,7 +47,7 @@ impl<'a> TimersHelper<'a> {
 }
 
 impl<'a> TabularData for TimersHelper<'a> {
-    fn rows(&self) -> Vec<Vec<MonoLabel>> {
+    fn rows(&self) -> Vec<Vec<WidgetText>> {
         vec![
             timer_row("Delay", self.machine.delay_timer, None),
             timer_row("Sound", self.machine.sound_timer, Some('🔊')),
@@ -55,11 +55,11 @@ impl<'a> TabularData for TimersHelper<'a> {
     }
 }
 
-fn timer_row(label: &str, timer: u8, active_icon: Option<char>) -> Vec<MonoLabel> {
+fn timer_row(label: &str, timer: u8, active_icon: Option<char>) -> Vec<WidgetText> {
     let active_icon = if timer > 0 { active_icon } else { None };
     vec![
-        MonoLabel::new(label),
-        MonoLabel::new(Byte::from(timer)),
-        MonoLabel::new(active_icon.unwrap_or(' ')),
+        label.into(),
+        Byte::from(timer).into(),
+        String::from(active_icon.unwrap_or(' ')).into(),
     ]
 }

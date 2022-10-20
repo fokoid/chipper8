@@ -1,10 +1,10 @@
-use egui::Ui;
+use egui::{Ui, WidgetText};
 use ringbuffer::RingBufferExt;
 
 use chipper8::machine::Machine;
 
 use crate::State;
-use crate::ui::util::{MonoLabel, TabularData};
+use crate::ui::util::TabularData;
 use crate::ui::util::table::{ColumnSpec, TableSpec};
 
 use super::WindowContent;
@@ -35,10 +35,10 @@ impl WindowContent for CommandHistory {
 }
 
 impl TabularData for &crate::command_history::CommandHistory {
-    fn rows(&self) -> Vec<Vec<MonoLabel>> {
+    fn rows(&self) -> Vec<Vec<WidgetText>> {
         self.items.iter().map(|item| {
             vec![
-                MonoLabel::new(
+                String::from(
                     if item.command.is_meta() {
                         "M"
                     } else if item.user {
@@ -46,21 +46,18 @@ impl TabularData for &crate::command_history::CommandHistory {
                     } else {
                         " "
                     },
-                ),
-                MonoLabel::new(match item.command.opcode() {
+                ).into(),
+                match item.command.opcode() {
                     None => String::from(""),
                     Some(opcode) => format!("{}", opcode),
-                },
-                ),
-                MonoLabel::new(format!("{}", item.command)),
-                MonoLabel::new(
-                    if item.count == 1 {
-                        String::from("  ")
-                    } else if item.count < 100
-                    {
-                        format!("{}", item.count)
-                    } else { String::from("💯") },
-                ),
+                }.into(),
+                format!("{}", item.command).into(),
+                if item.count == 1 {
+                    String::from("  ")
+                } else if item.count < 100
+                {
+                    format!("{}", item.count)
+                } else { String::from("💯") }.into(),
             ]
         }).collect()
     }

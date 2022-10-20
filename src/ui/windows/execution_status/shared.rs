@@ -1,21 +1,23 @@
-use egui::Ui;
+use egui::{Ui, WidgetText};
 
 use chipper8::machine::Machine;
 
-use crate::ui::util::{Address, MonoLabel, Word};
+use crate::ui::util::{Address, Word};
 use crate::ui::util::table::{ColumnSpec, TableSpec, TabularData};
 
-pub fn address_row(prefix: &str, address: usize, machine: &Machine) -> Vec<MonoLabel> {
+pub fn address_row(prefix: &str, address: usize, machine: &Machine) -> Vec<WidgetText> {
     let instruction = if let Ok(instruction) = machine.instruction_at_address(address) {
         format!("{}", instruction)
     } else {
         String::new()
     };
     vec![
-        MonoLabel::new(prefix),
-        MonoLabel::new(Address::from(address)),
-        machine.word_at_address(address).map(|word| MonoLabel::new(Word::from(word))).unwrap_or(MonoLabel::new("")),
-        MonoLabel::new(instruction),
+        prefix.into(),
+        Address::from(address).into(),
+        machine.word_at_address(address).map(
+            |word| Word::from(word).into()
+        ).unwrap_or("".into()),
+        instruction.into(),
     ]
 }
 

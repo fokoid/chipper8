@@ -1,9 +1,9 @@
-use egui::{RichText, Slider, Ui};
+use egui::{RichText, Slider, Ui, WidgetText};
 
 use chipper8::machine::{DrawOptions, Machine};
 
 use crate::State;
-use crate::ui::util::{Address, Byte, Decimal, MemoryDisplay, MonoLabel, TabularData};
+use crate::ui::util::{Address, Byte, Decimal, MemoryDisplay, TabularData};
 use crate::ui::util::table::{ColumnSpec, TableSpec};
 
 use super::WindowContent;
@@ -13,17 +13,21 @@ struct IndexHelper<'a> {
 }
 
 impl<'a> TabularData for IndexHelper<'a> {
-    fn rows(&self) -> Vec<Vec<MonoLabel>> {
+    fn rows(&self) -> Vec<Vec<WidgetText>> {
         vec![
             vec![
-                MonoLabel::new("Addr"),
-                MonoLabel::new(Address::from(self.machine.index)),
-                MonoLabel::new(Decimal::from(self.machine.index)),
+                "Addr".into(),
+                Address::from(self.machine.index).into(),
+                Decimal::from(self.machine.index).into(),
             ],
             vec![
-                MonoLabel::new("Byte"),
-                self.machine.at_index().map(|byte| MonoLabel::new(Byte::from(byte))).unwrap_or(MonoLabel::new("")),
-                self.machine.at_index().map(|byte| MonoLabel::new(Decimal::from(byte))).unwrap_or(MonoLabel::new("")),
+                "Byte".into(),
+                self.machine.at_index().map(
+                    |byte| Byte::from(byte).into()
+                ).unwrap_or("".into()),
+                self.machine.at_index().map(
+                    |byte| Decimal::from(byte).into()
+                ).unwrap_or("".into()),
             ],
         ]
     }

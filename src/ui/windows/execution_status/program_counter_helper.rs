@@ -1,6 +1,7 @@
+use egui::WidgetText;
 use chipper8::machine::Machine;
 
-use crate::ui::util::{MonoLabel, TabularData};
+use crate::ui::util::TabularData;
 
 use super::shared;
 
@@ -9,7 +10,7 @@ pub struct ProgramCounterHelper<'a> {
 }
 
 impl<'a> TabularData for ProgramCounterHelper<'a> {
-    fn rows(&self) -> Vec<Vec<MonoLabel>> {
+    fn rows(&self) -> Vec<Vec<WidgetText>> {
         vec![shared::address_row("", self.machine.program_counter, self.machine)]
     }
 }

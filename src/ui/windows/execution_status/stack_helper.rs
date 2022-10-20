@@ -1,6 +1,7 @@
+use egui::WidgetText;
 use chipper8::machine::Machine;
 
-use crate::ui::util::{MonoLabel, TabularData};
+use crate::ui::util::TabularData;
 
 use super::shared;
 
@@ -9,7 +10,7 @@ pub struct StackHelper<'a> {
 }
 
 impl<'a> TabularData for StackHelper<'a> {
-    fn rows(&self) -> Vec<Vec<MonoLabel>> {
+    fn rows(&self) -> Vec<Vec<WidgetText>> {
         let mut rows: Vec<_> = self.machine.stack.data.iter().enumerate().map(|(index, address)| {
             let prefix = if index == self.machine.stack.pointer {
                 format!(">{:01X}<", index)
@@ -19,10 +20,10 @@ impl<'a> TabularData for StackHelper<'a> {
             shared::address_row(&prefix, *address as usize, self.machine)
         }).collect();
         rows.push(vec![
-            MonoLabel::new(if 16 == self.machine.stack.pointer { "> <" } else { "   " }),
-            MonoLabel::new(""),
-            MonoLabel::new(""),
-            MonoLabel::new(""),
+            (if 16 == self.machine.stack.pointer { "> <" } else { "   " }).into(),
+            "".into(),
+            "".into(),
+            "".into(),
         ]);
         rows
     }

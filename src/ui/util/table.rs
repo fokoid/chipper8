@@ -1,11 +1,9 @@
-use egui::Ui;
+use egui::{Ui, WidgetText};
 use egui_extras::{self, Size, TableBuilder, TableRow};
-
-use crate::ui::util::MonoLabel;
 
 // todo: figure out how to make the outer Vec an Iterator
 pub trait TabularData {
-    fn rows(&self) -> Vec<Vec<MonoLabel>>;
+    fn rows(&self) -> Vec<Vec<WidgetText>>;
 
     fn total_rows(&self) -> usize { self.rows().len() }
     fn display_rows(&self) -> usize { self.total_rows() }
@@ -143,13 +141,13 @@ fn column_toggle_menu_ui(ui: &mut Ui, table_spec: &mut TableSpec) {
 }
 
 fn column_header_ui(row: &mut TableRow, table_spec: &mut TableSpec, col_spec: &ColumnSpec) {
-    column_cell_ui(row, table_spec, col_spec, MonoLabel::new(&col_spec.name))
+    column_cell_ui(row, table_spec, col_spec, &col_spec.name)
 }
 
 // todo: should this return a Response? but then need to move the if out of the function
-fn column_cell_ui(row: &mut TableRow, table_spec: &mut TableSpec, col_spec: &ColumnSpec, content: MonoLabel) {
+fn column_cell_ui(row: &mut TableRow, table_spec: &mut TableSpec, col_spec: &ColumnSpec, content: impl Into<WidgetText>) {
     if !&col_spec.visible { return; }
-    let response = row.col(|ui| { ui.add(content); });
+    let response = row.col(|ui| { ui.label(content); });
     if table_spec.enable_context_menu {
         response.context_menu(|ui| {
             column_toggle_menu_ui(ui, table_spec);

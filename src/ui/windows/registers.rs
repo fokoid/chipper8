@@ -1,9 +1,9 @@
-use egui::Ui;
+use egui::{TextStyle, Ui, WidgetText};
 
 use chipper8::machine::Machine;
 
 use crate::State;
-use crate::ui::util::{Byte, Decimal, MonoLabel, Register, TabularData};
+use crate::ui::util::{Byte, Decimal, Register, TabularData};
 use crate::ui::util::table::{ColumnSpec, TableSpec};
 
 use super::WindowContent;
@@ -47,12 +47,12 @@ impl<'a> RegistersHelper<'a> {
 }
 
 impl<'a> TabularData for RegistersHelper<'a> {
-    fn rows(&self) -> Vec<Vec<MonoLabel>> {
+    fn rows(&self) -> Vec<Vec<WidgetText>> {
         self.machine.registers.iter().enumerate().map(|(index, value)| {
             vec![
-                MonoLabel::new(Register::from(index)),
-                MonoLabel::new(Byte::from(*value)),
-                MonoLabel::new(Decimal::from(*value)),
+                Register::from(index).into(),
+                Byte::from(*value).into(),
+                Decimal::from(*value).into(),
             ]
         }).collect()
     }
