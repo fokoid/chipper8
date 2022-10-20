@@ -1,9 +1,9 @@
 use std::cmp::min;
 use std::ops::Range;
-use std::time::Duration;
 
 use crate::instructions::{self, Instruction, OpCode};
 
+// todo: make these configurable, but keep machine _state_ separate from machine _config_
 pub const MEMORY_SIZE: usize = 4096;
 pub const NUM_REGISTERS: usize = 16;
 pub const STACK_SIZE: usize = 16;
@@ -11,8 +11,6 @@ pub const DISPLAY_WIDTH: usize = 64;
 pub const DISPLAY_HEIGHT: usize = 32;
 pub const FONT_RANGE: Range<usize> = 0x050..0x0A0;
 pub const FONT_SPRITE_HEIGHT: usize = 5;
-pub const FRAMES_PER_SECOND: u64 = 60;
-pub const FRAME_TIME: Duration = Duration::from_nanos(1_000_000_000 / FRAMES_PER_SECOND);
 
 const FONT_GLYPHS: [u8; 80] = [
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0

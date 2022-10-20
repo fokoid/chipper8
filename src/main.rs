@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::fs;
 use std::ops::Range;
+use std::time::Duration;
 
 use eframe::NativeOptions;
 use egui::{Color32, Context, Vec2};
@@ -109,6 +110,7 @@ pub struct State {
     pub key_capture_suspended: bool,
     pub rom: Option<Rom>,
     pub memory_tags: BTreeMap<MemoryTag, Range<usize>>,
+    pub frames_per_second: u64,
 }
 
 impl State {
@@ -125,7 +127,14 @@ impl State {
                 (MemoryTag::Reserved, 0..0x200),
                 (MemoryTag::SystemFont, machine::FONT_RANGE),
             ]),
+            // todo: is this really state or should it be machine 'config'?
+            // (but for now the UI can't modify the machine directly so it lives here)
+            frames_per_second: 60,
         }
+    }
+
+    pub fn frame_time(&self) -> Duration {
+        Duration::from_nanos(1_000_000_000 / self.frames_per_second)
     }
 
     pub fn parse_command(&mut self, input: &str) {
@@ -247,11 +256,11 @@ impl eframe::App for ReplApp {
         // if VM main loop is running, and timer is up, execute next command
         if self.state.running {
             // todo make timing here configurable
-            if ctx.input().time - self.last_time > machine::FRAME_TIME.as_secs_f64() {
+            if ctx.input().time - self.last_time > self.state.frame_time().as_secs_f64() {
                 self.last_time = ctx.input().time;
                 self.step();
             }
-            ctx.request_repaint_after(machine::FRAME_TIME);
+            ctx.request_repaint_after(self.state.frame_time());
         }
     }
 }

@@ -1,4 +1,4 @@
-use egui::{Color32, Label, Ui};
+use egui::{Color32, Label, Slider, Ui};
 use egui::widget_text::RichText;
 
 use chipper8::instructions::{Command, MetaCommand};
@@ -25,6 +25,8 @@ impl BottomBar {
     // todo: use strips (or something else) to force some of this content to the right
     pub fn ui(&mut self, ui: &mut Ui, machine: &Machine, state: &mut State) {
         ui.horizontal(|ui| {
+            ui.label("Machine Tick Rate: ");
+            ui.add(Slider::new(&mut state.frames_per_second, 1..=120));
             ui.checkbox(&mut state.running, "Running");
             if ui.button("⏩").on_hover_text("Next Instruction").clicked() {
                 state.command_buffer = Some(Command::Meta(MetaCommand::Step));
