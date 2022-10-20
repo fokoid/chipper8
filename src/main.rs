@@ -49,6 +49,7 @@ impl EmulatorApp {
         let mut rom = Rom::from_file(&args.rom).unwrap();
         let mut machine = Machine::new();
         machine.load_rom(&mut rom, 0x200);
+        println!("CHIPPER-8: running ROM '{}'.", rom.name);
         Self {
             machine,
             last_time: 0.0,
@@ -67,6 +68,8 @@ impl eframe::App for EmulatorApp {
         );
         if ctx.input().time - self.last_time > self.args.frame_time().as_secs_f64() {
             self.last_time = ctx.input().time;
+            let next_instruction = self.machine.next_instruction().unwrap();
+            println!("Executing: {}", next_instruction);
             self.machine.step().unwrap();
         }
         ctx.request_repaint_after(self.args.frame_time());
