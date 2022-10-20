@@ -3,6 +3,7 @@ use super::draw_options::DrawOptions;
 use super::instructions::{Instruction, OpCode};
 use super::stack::Stack;
 use super::types::{Pointer, Timer};
+use crate::ui::Rom;
 
 #[derive(Debug)]
 pub struct Machine {
@@ -50,6 +51,24 @@ impl Machine {
         } else { 0 };
         let data = &data[..data.len() - overflow];
         self.memory[offset..offset + data.len()].clone_from_slice(data);
+    }
+
+    pub fn load_rom(&mut self, rom: &mut Rom, address: Pointer) {
+        if rom.loaded_at.is_some() {
+            panic!("rom already loaded");
+        }
+        rom.loaded_at = Some(address);
+        self.program_counter = address;
+        self.load(self.program_counter, &rom.bytes);
+    }
+
+    pub fn unload_rom(&mut self, rom: &mut Rom) {
+        if rom.loaded_at.is_none() {
+            panic!("attempt to unload ROM that was never loaded");
+        }
+        self.memory[rom.loaded_range().unwrap()].fill(0);
+        rom.loaded_at = None;
+        // todo: should we move program counter?
     }
 
     pub fn demo(&mut self) {

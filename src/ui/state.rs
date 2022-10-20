@@ -7,7 +7,7 @@ use egui::Color32;
 
 use crate::{Error, Result};
 use crate::command::Command;
-use crate::machine::{self, Machine};
+use crate::machine;
 
 use super::command_history::CommandHistory;
 
@@ -62,6 +62,17 @@ impl State {
         };
     }
 
+    pub fn load_rom(&mut self, rom: Rom) {
+        self.memory_tags.insert(MemoryTag::UserProgram { name: rom.name.clone() }, rom.loaded_range().unwrap());
+        self.rom = Some(rom);
+    }
+
+    pub fn unload_rom(&mut self) -> Option<Rom> {
+        let rom = self.rom.take()?;
+        self.memory_tags.remove(&MemoryTag::UserProgram { name: rom.name.clone() });
+        Some(rom)
+    }
+
     pub fn error(&mut self) -> Option<&Error> {
         self.error.as_ref()
     }
@@ -103,7 +114,7 @@ impl MemoryTag {
 // todo: clearly ROM doesn't belong in this module
 pub struct Rom {
     pub name: String,
-    bytes: Vec<u8>,
+    pub bytes: Vec<u8>,
     pub loaded_at: Option<usize>,
 }
 
@@ -123,25 +134,5 @@ impl Rom {
     pub fn loaded_range(&self) -> Option<Range<usize>> {
         let start = self.loaded_at?;
         Some(start..start + self.bytes.len())
-    }
-
-    pub fn load(&mut self, address: usize, machine: &mut Machine, state: &mut State) {
-        if self.loaded_at.is_some() {
-            panic!("rom already loaded");
-        }
-        self.loaded_at = Some(address);
-        machine.load(address, &self.bytes);
-        machine.program_counter = address;
-        state.memory_tags.insert(MemoryTag::UserProgram { name: self.name.clone() }, self.loaded_range().unwrap());
-    }
-
-    pub fn unload(&mut self, machine: &mut Machine, state: &mut State) {
-        if self.loaded_at.is_none() {
-            panic!("attempt to unload ROM that was never loaded");
-        }
-        machine.memory[self.loaded_range().unwrap()].fill(0);
-        state.memory_tags.remove(&MemoryTag::UserProgram { name: self.name.clone() });
-        self.loaded_at = None;
-        // todo: move program counter?
     }
 }

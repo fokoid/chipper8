@@ -2,12 +2,12 @@ use egui::{Context, Response, Ui};
 
 use command_gui::CommandGui;
 use command_history::CommandHistory;
-use display::Display;
+pub use display::Display;
 use execution_status::ExecutionStatus;
 pub use execution_status::ProgramCounterHelper;
 use index::Index;
 use keypad::Keypad;
-use memory::Memory;
+pub use memory::Memory;
 use registers::Registers;
 use timers::Timers;
 

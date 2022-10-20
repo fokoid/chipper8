@@ -8,7 +8,7 @@ use windows::Window;
 use crate::machine::Machine;
 
 mod util;
-mod windows;
+pub mod windows;
 mod bottom_bar;
 mod state;
 mod command_history;
