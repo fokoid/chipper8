@@ -14,7 +14,7 @@ pub struct Display {
 impl Display {
     pub fn new() -> Self {
         Self {
-            display: MemoryDisplay::new(machine::DISPLAY_WIDTH, machine::DISPLAY_HEIGHT),
+            display: MemoryDisplay::new(machine::config::DISPLAY_WIDTH, machine::config::DISPLAY_HEIGHT),
         }
     }
 }
@@ -24,7 +24,7 @@ impl WindowContent for Display {
 
     fn ui(&mut self, ui: &mut Ui, machine: &Machine, _state: &mut State) {
         self.display.ui(ui, &machine.display, Vec::new(), |index| {
-            let [x, y] = [index / machine::DISPLAY_WIDTH, index % machine::DISPLAY_WIDTH];
+            let [x, y] = [index / machine::config::DISPLAY_WIDTH, index % machine::config::DISPLAY_WIDTH];
             let status = match machine.display.get(index) {
                 Some(0xFF) => "ON",
                 Some(0x00) => "OFF",

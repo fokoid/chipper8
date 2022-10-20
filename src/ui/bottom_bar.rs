@@ -1,7 +1,7 @@
 use egui::{Color32, Label, Slider, Ui};
 use egui::widget_text::RichText;
 
-use chipper8::instructions::{Command, MetaCommand};
+use chipper8::command::{Command, MetaCommand};
 use chipper8::machine::Machine;
 use input::Input;
 

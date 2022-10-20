@@ -6,8 +6,10 @@ use std::time::Duration;
 use eframe::NativeOptions;
 use egui::{Color32, Context, Vec2};
 
-use chipper8::instructions::{Command, Error, MachineState, MetaCommand, Result};
+use chipper8::{Error, Result};
+use chipper8::command::{Command, MachineState, MetaCommand};
 use chipper8::machine::{self, Machine};
+// use chipper8::instructions::{Command, Error, MachineState, MetaCommand, Result};
 use command_history::CommandHistory;
 use ui::Ui;
 
@@ -125,7 +127,7 @@ impl State {
             rom: None,
             memory_tags: BTreeMap::from([
                 (MemoryTag::Reserved, 0..0x200),
-                (MemoryTag::SystemFont, machine::FONT_RANGE),
+                (MemoryTag::SystemFont, machine::config::FONT_RANGE),
             ]),
             // todo: is this really state or should it be machine 'config'?
             // (but for now the UI can't modify the machine directly so it lives here)
