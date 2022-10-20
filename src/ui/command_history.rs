@@ -1,7 +1,6 @@
 use ringbuffer::{AllocRingBuffer, RingBufferExt, RingBufferWrite};
 
-use chipper8::command;
-use command::Command;
+use crate::command::Command;
 
 // hard coded based on current (also hard coded) UI element sizes
 const REPL_HISTORY_SIZE: usize = 16;

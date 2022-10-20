@@ -1,6 +1,5 @@
 use egui::{Context, Response, Ui};
 
-use chipper8::machine::Machine;
 use command_gui::CommandGui;
 use command_history::CommandHistory;
 use display::Display;
@@ -12,7 +11,9 @@ use memory::Memory;
 use registers::Registers;
 use timers::Timers;
 
-use crate::State;
+use crate::machine::Machine;
+
+use super::State;
 
 mod command_history;
 mod timers;

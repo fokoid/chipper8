@@ -1,12 +1,11 @@
 use egui::{TextStyle, Ui, WidgetText};
 use ringbuffer::RingBufferExt;
 
-use chipper8::machine::Machine;
-
-use crate::State;
+use crate::machine::Machine;
 use crate::ui::util::table::{ColumnSpec, TableSpec};
 use crate::ui::util::TabularData;
 
+use super::State;
 use super::WindowContent;
 
 pub struct CommandHistory {
@@ -35,7 +34,7 @@ impl WindowContent for CommandHistory {
     }
 }
 
-impl TabularData for &crate::command_history::CommandHistory {
+impl TabularData for &crate::ui::command_history::CommandHistory {
     fn rows(&self) -> Vec<Vec<WidgetText>> {
         self.items.iter().map(|item| {
             vec![

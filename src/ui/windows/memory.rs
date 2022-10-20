@@ -1,8 +1,7 @@
 use egui::{Color32, RichText, Ui};
 
-use chipper8::machine::Machine;
-
-use crate::State;
+use crate::machine::Machine;
+use crate::ui::State;
 use crate::ui::util::{Address, Byte, Word};
 use crate::ui::util::MemoryDisplay;
 

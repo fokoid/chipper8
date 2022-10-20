@@ -1,8 +1,7 @@
 use egui::{TextStyle, Ui, WidgetText};
 
-use chipper8::machine::Machine;
-
-use crate::State;
+use crate::machine::Machine;
+use crate::ui::State;
 use crate::ui::util::{Byte, Decimal, Register, TabularData};
 use crate::ui::util::table::{ColumnSpec, TableSpec};
 

@@ -1,12 +1,12 @@
 use egui::{Align, Layout, TextStyle, Ui};
 
-use chipper8::machine::Machine;
 // this is pub so the bottom bar can also use it to create a program counter representation
 pub use program_counter_helper::ProgramCounterHelper;
 use shared::AddressTable;
 use stack_helper::StackHelper;
 
-use crate::State;
+use crate::machine::Machine;
+use crate::ui::State;
 
 use super::WindowContent;
 

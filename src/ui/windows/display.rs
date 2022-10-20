@@ -1,8 +1,7 @@
 use egui::{RichText, Ui};
 
-use chipper8::machine::{self, Machine};
-
-use crate::State;
+use crate::machine::{self, Machine};
+use crate::ui::State;
 use crate::ui::util::MemoryDisplay;
 
 use super::WindowContent;

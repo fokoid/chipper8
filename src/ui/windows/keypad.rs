@@ -2,9 +2,8 @@ use std::collections::HashMap;
 
 use egui::{Button, Color32, ComboBox, Key, Response, RichText, Ui};
 
-use chipper8::machine::Machine;
-
-use crate::State;
+use crate::machine::Machine;
+use crate::ui::State;
 use crate::ui::util::Nibble;
 
 use super::WindowContent;

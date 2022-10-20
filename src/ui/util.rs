@@ -4,7 +4,7 @@ pub use formatting::{Address, Byte, Decimal, Nibble, Register, Word};
 pub use memory_display::MemoryDisplay;
 pub use table::TabularData;
 
-use crate::State;
+use super::State;
 
 mod image_builder;
 mod memory_display;

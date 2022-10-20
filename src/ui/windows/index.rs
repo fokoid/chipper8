@@ -1,8 +1,7 @@
 use egui::{RichText, Slider, TextStyle, Ui, WidgetText};
 
-use chipper8::machine::{DrawOptions, Machine};
-
-use crate::State;
+use crate::machine::{DrawOptions, Machine};
+use crate::ui::State;
 use crate::ui::util::{Address, Byte, Decimal, MemoryDisplay, TabularData};
 use crate::ui::util::table::{ColumnSpec, TableSpec};
 

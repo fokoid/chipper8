@@ -3,7 +3,7 @@ use std::cmp;
 use egui::{Key, Response, TextEdit, TextStyle, Ui};
 use ringbuffer::RingBuffer;
 
-use crate::State;
+use crate::ui::State;
 use crate::ui::util;
 
 pub struct Input {

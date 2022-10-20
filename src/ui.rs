@@ -1,14 +1,17 @@
 use egui::{Align, Checkbox, Context, Layout, Sense};
 
 use bottom_bar::BottomBar;
-use chipper8::machine::Machine;
+pub use command_history::CommandHistory;
+pub use state::{MemoryTag, Rom, State};
 use windows::Window;
 
-use crate::State;
+use crate::machine::Machine;
 
 mod util;
 mod windows;
 mod bottom_bar;
+mod state;
+mod command_history;
 
 pub struct Ui {
     windows: Vec<Window>,

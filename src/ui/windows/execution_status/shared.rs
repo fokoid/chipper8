@@ -1,7 +1,6 @@
 use egui::{Ui, WidgetText};
 
-use chipper8::machine::Machine;
-
+use crate::machine::Machine;
 use crate::ui::util::{Address, Word};
 use crate::ui::util::table::{ColumnSpec, TableSpec, TabularData};
 

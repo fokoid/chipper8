@@ -1,8 +1,7 @@
 use egui::{Key, TextEdit, Ui};
 
-use chipper8::machine::Machine;
-
-use crate::State;
+use crate::machine::Machine;
+use crate::ui::State;
 use crate::ui::util;
 
 use super::WindowContent;

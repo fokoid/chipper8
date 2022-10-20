@@ -1,8 +1,7 @@
+use egui::WidgetText;
 use std::fmt::{Display, Formatter};
 
-use egui::WidgetText;
-
-use chipper8::machine::Pointer;
+use crate::machine::Pointer;
 
 pub struct Address(pub u16);
 

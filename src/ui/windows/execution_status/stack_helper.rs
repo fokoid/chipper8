@@ -1,7 +1,6 @@
 use egui::WidgetText;
 
-use chipper8::machine::Machine;
-
+use crate::machine::Machine;
 use crate::ui::util::TabularData;
 
 use super::shared;

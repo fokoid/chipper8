@@ -1,6 +1,5 @@
-use std::fmt::{Display, Formatter};
-
 use egui::WidgetText;
+use std::fmt::{Display, Formatter};
 
 pub struct Word(pub u16);
 
