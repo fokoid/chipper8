@@ -49,8 +49,6 @@ impl Input {
                 state,
             );
         };
-        ui.label(format!("{}: {}", self.history_index, self.swap_input));
-
         response
     }
 
