@@ -9,9 +9,9 @@ use egui::Color32;
 use crate::{Error, Result};
 use crate::command::Command;
 use crate::machine;
-use super::KeyCapture;
 
 use super::command_history::CommandHistory;
+use super::KeyCapture;
 
 pub struct State {
     pub running: bool,

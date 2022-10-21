@@ -2,8 +2,8 @@ use egui::{Align, Checkbox, Context, Layout, Sense};
 
 use bottom_bar::BottomBar;
 pub use command_history::CommandHistory;
-pub use util::key_capture::KeyCapture;
 pub use state::{MemoryTag, Rom, State};
+pub use util::key_capture::KeyCapture;
 use windows::Window;
 
 use crate::machine::Machine;
