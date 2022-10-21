@@ -10,7 +10,7 @@ pub enum Instruction {
     Set(u8, u8),
     Add(u8, u8),
     IndexSet(u16),
-    TimerDelay(u8),
+    TimerSet(u8),
     TimerGet(u8),
     TimerSound(u8),
     Draw(u8, u8, u8),
@@ -104,12 +104,12 @@ impl Instruction {
                     Some(x) => Err(Error::SyntaxError(format!("timer sound requires a register but got {:?}", x))),
                     None => Err(Error::SyntaxError(format!("timer sound requires a register"))),
                 },
-                Some(Token::Other("delay")) => match tokens.next() {
-                    Some(Token::Other(s)) => Ok(Instruction::TimerDelay(
+                Some(Token::Other("set")) => match tokens.next() {
+                    Some(Token::Other(s)) => Ok(Instruction::TimerSet(
                         u8::from_str_radix(s, 16)?
                     )),
-                    Some(x) => Err(Error::SyntaxError(format!("timer delay requires a register but got {:?}", x))),
-                    None => Err(Error::SyntaxError(format!("timer delay requires a register"))),
+                    Some(x) => Err(Error::SyntaxError(format!("timer set requires a register but got {:?}", x))),
+                    None => Err(Error::SyntaxError(format!("timer set requires a register"))),
                 },
                 Some(Token::Other("get")) => match tokens.next() {
                     Some(Token::Other(s)) => Ok(Instruction::TimerGet(
@@ -118,7 +118,7 @@ impl Instruction {
                     Some(x) => Err(Error::SyntaxError(format!("timer get requires a register but got {:?}", x))),
                     None => Err(Error::SyntaxError(format!("timer get requires a register"))),
                 },
-                Some(_) => Err(Error::SyntaxError(String::from("allowed timer sub commands: sound, get, delay"))),
+                Some(_) => Err(Error::SyntaxError(String::from("allowed timer sub commands: get, set, delay"))),
                 None => Err(Error::SyntaxError(String::from("timer requires a sub command"))),
             },
             Some(Token::Other("font")) => match tokens.next() {
@@ -153,7 +153,7 @@ impl From<&Instruction> for OpCode {
                 Instruction::IndexSet(value) => 0xA000 | (value & 0x0FFF),
                 Instruction::Draw(vx, vy, height) =>
                     0xD000 | u16::from_be_bytes([*vx, vy.rotate_left(4) | *height]),
-                Instruction::TimerDelay(register) => 0xF015 | u16::from_be_bytes([*register, 0]),
+                Instruction::TimerSet(register) => 0xF015 | u16::from_be_bytes([*register, 0]),
                 Instruction::TimerGet(register) => 0xF007 | u16::from_be_bytes([*register, 0]),
                 Instruction::TimerSound(register) => 0xF018 | u16::from_be_bytes([*register, 0]),
                 Instruction::Font(register) => 0xF029 | u16::from_be_bytes([*register, 0]),
@@ -190,7 +190,7 @@ impl OpCode {
                 match self.0 & 0x00FF {
                     0x0A => Ok(Instruction::AwaitKey((self.0 & 0x0F00).to_be_bytes()[0])),
                     0x07 => Ok(Instruction::TimerGet((self.0 & 0x0F00).to_be_bytes()[0])),
-                    0x15 => Ok(Instruction::TimerDelay((self.0 & 0x0F00).to_be_bytes()[0])),
+                    0x15 => Ok(Instruction::TimerSet((self.0 & 0x0F00).to_be_bytes()[0])),
                     0x18 => Ok(Instruction::TimerSound((self.0 & 0x0F00).to_be_bytes()[0])),
                     0x29 => Ok(Instruction::Font((self.0 & 0x0F00).to_be_bytes()[0])),
                     _ => Err(Error::InvalidOpCode(OpCode(self.0))),
@@ -211,7 +211,7 @@ impl Display for Instruction {
             Self::IndexSet(value) => write!(f, "index set {:03X}", value),
             Self::Draw(vx, vy, height) => write!(f, "draw {:01X} {:01X} {:01X}", vx, vy, height),
             Self::Font(vx) => write!(f, "font {:01X}", vx),
-            Self::TimerDelay(register) => write!(f, "timer delay {:02X}", register),
+            Self::TimerSet(register) => write!(f, "timer set {:02X}", register),
             Self::TimerGet(register) => write!(f, "timer get {:02X}", register),
             Self::TimerSound(register) => write!(f, "timer sound {:02X}", register),
             Self::AwaitKey(register) => write!(f, "key await {:01X}", register),

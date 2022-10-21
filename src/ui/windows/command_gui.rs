@@ -76,7 +76,7 @@ impl CommandGui {
                 CommandWidget::new("Clear Screen", "cls", vec![]),
                 CommandWidget::new("Jump", "jmp", vec!["Address"]),
                 CommandWidget::new("Set Index", "index set", vec!["Address"]),
-                CommandWidget::new("Set Delay Timer", "timer delay", vec!["Register"]),
+                CommandWidget::new("Set Delay Timer", "timer set", vec!["Register"]),
                 CommandWidget::new("Get Delay Timer", "timer get", vec!["Register"]),
                 CommandWidget::new("Set Sound Timer", "timer sound", vec!["Register"]),
                 CommandWidget::new("Set Register", "set", vec!["Register", "Value"]),

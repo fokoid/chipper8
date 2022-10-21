@@ -149,7 +149,7 @@ impl Machine {
             Instruction::TimerGet(register) => {
                 self.registers[*register as usize] = self.delay_timer;
             }
-            Instruction::TimerDelay(register) => {
+            Instruction::TimerSet(register) => {
                 self.delay_timer = self.registers[*register as usize];
             }
             Instruction::TimerSound(register) => {
