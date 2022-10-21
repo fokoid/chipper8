@@ -146,8 +146,8 @@ impl Machine {
                 let char = self.registers[*register as usize] as usize & 0x0F;
                 self.index = config::FONT_RANGE.start + config::FONT_SPRITE_HEIGHT * char;
             }
-            Instruction::TimerSound(value) => {
-                self.sound_timer = *value;
+            Instruction::TimerSound(register) => {
+                self.sound_timer = self.registers[*register as usize];
             }
             Instruction::AwaitKey(register) => {
                 if let Some(key) = self.key_buffer {

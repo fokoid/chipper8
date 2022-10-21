@@ -99,8 +99,8 @@ impl Instruction {
                     Some(Token::Other(s)) => Ok(Instruction::TimerSound(
                         u8::from_str_radix(s, 16)?
                     )),
-                    Some(x) => Err(Error::SyntaxError(format!("timer sound requires a value but got {:?}", x))),
-                    None => Err(Error::SyntaxError(format!("timer sound requires a value"))),
+                    Some(x) => Err(Error::SyntaxError(format!("timer sound requires a register but got {:?}", x))),
+                    None => Err(Error::SyntaxError(format!("timer sound requires a register"))),
                 },
                 Some(_) => Err(Error::SyntaxError(String::from("allowed timer sub commands: sound"))),
                 None => Err(Error::SyntaxError(String::from("timer requires a sub command"))),
