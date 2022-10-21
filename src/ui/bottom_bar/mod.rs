@@ -48,9 +48,7 @@ impl BottomBar {
                 ui.label(label.monospace());
             }
             ui.separator();
-            ui.label(if let Some(rom) = &state.rom {
-                format!("Loaded ROM: {}.rom", rom.name)
-            } else { String::from("No ROM loaded") });
+            ui.label(format!("ROM: {}", state.rom.as_ref().map_or("none", |rom| &rom.name)));
             ui.separator();
             let key_buffer = machine.key_buffer.map(|key| String::from(Nibble::from(key)));
             ui.label(format!("Key buffer: {}", key_buffer.unwrap_or(String::from("none"))));
