@@ -102,6 +102,7 @@ impl eframe::App for ReplApp {
         self.state.memory_tags.insert(MemoryTag::Index,
                                       self.machine.index..self.machine.index + 1);
         self.ui.draw(ctx, &self.machine, &mut self.state);
+        self.machine.key_buffer = self.state.key_capture.key();
         if let Some(command) = &self.state.command_buffer.take() {
             self.state.command_history.append(command, true);
             match self.execute(command) {

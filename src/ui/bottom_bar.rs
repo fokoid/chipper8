@@ -6,6 +6,7 @@ use input::Input;
 use crate::command::{Command, MetaCommand};
 use crate::machine::Machine;
 use crate::ui::State;
+use crate::ui::util::Nibble;
 use crate::ui::util::table::TabularData;
 use crate::ui::windows::ProgramCounterHelper;
 
@@ -50,6 +51,9 @@ impl BottomBar {
             ui.label(if let Some(rom) = &state.rom {
                 format!("Loaded ROM: {}.rom", rom.name)
             } else { String::from("No ROM loaded") });
+            ui.separator();
+            let key_buffer = machine.key_buffer.map(|key| String::from(Nibble::from(key)));
+            ui.label(format!("Key buffer: {}", key_buffer.unwrap_or(String::from("none"))));
         });
     }
 }

@@ -69,6 +69,7 @@ impl eframe::App for EmulatorApp {
                 self.key_capture.update(ui);
             },
         );
+        self.machine.key_buffer = self.key_capture.key();
         if ctx.input().time - self.last_time > self.args.frame_time().as_secs_f64() {
             self.last_time = ctx.input().time;
             let next_instruction = self.machine.next_instruction().unwrap();

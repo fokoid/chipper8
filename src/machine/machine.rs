@@ -16,6 +16,7 @@ pub struct Machine {
     pub index: Pointer,
     pub delay_timer: Timer,
     pub sound_timer: Timer,
+    pub key_buffer: Option<u8>,
 }
 
 impl Machine {
@@ -29,6 +30,7 @@ impl Machine {
             delay_timer: 0,
             sound_timer: 0,
             registers: [0; config::NUM_REGISTERS],
+            key_buffer: None,
         };
         machine.memory[config::FONT_RANGE].clone_from_slice(&config::FONT_GLYPHS);
         machine
@@ -146,6 +148,13 @@ impl Machine {
             }
             Instruction::TimerSound(value) => {
                 self.sound_timer = *value;
+            }
+            Instruction::AwaitKey(register) => {
+                if let Some(key) = self.key_buffer {
+                    self.registers[*register as usize] = key;
+                } else {
+                    self.program_counter -= 2;
+                }
             }
         }
     }
