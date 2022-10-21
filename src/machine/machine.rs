@@ -146,6 +146,9 @@ impl Machine {
                 let char = self.registers[*register as usize] as usize & 0x0F;
                 self.index = config::FONT_RANGE.start + config::FONT_SPRITE_HEIGHT * char;
             }
+            Instruction::TimerGet(register) => {
+                self.registers[*register as usize] = self.delay_timer;
+            }
             Instruction::TimerDelay(register) => {
                 self.delay_timer = self.registers[*register as usize];
             }
