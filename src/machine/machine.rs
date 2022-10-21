@@ -129,7 +129,7 @@ impl Machine {
                 self.registers[*register as usize] = *value;
             }
             Instruction::Add(register, value) => {
-                self.registers[*register as usize] += *value;
+                self.registers[*register as usize] = self.registers[*register as usize].wrapping_add(*value);
             }
             Instruction::IndexSet(value) => {
                 self.index = *value as Pointer;
