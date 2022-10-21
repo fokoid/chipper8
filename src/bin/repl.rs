@@ -4,7 +4,6 @@ use chipper8::Result;
 use chipper8::ui::{MemoryTag, Rom, State, Ui};
 use eframe::NativeOptions;
 use egui::{Context, Vec2};
-use std::io;
 use std::path::PathBuf;
 
 fn main() -> Result<()> {
