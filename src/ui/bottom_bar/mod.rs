@@ -30,7 +30,7 @@ impl BottomBar {
             ui.add(Slider::new(&mut state.frames_per_second, 1..=120));
             ui.checkbox(&mut state.running, "Running");
             if ui.button("⏩").on_hover_text("Next Instruction").clicked() {
-                state.command_buffer = Some(Command::Meta(MetaCommand::Step));
+                state.command_buffer = Some(Command::Meta(MetaCommand::Tick));
             }
             ui.separator();
             self.input.ui(ui, state);

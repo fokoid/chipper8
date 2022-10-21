@@ -82,9 +82,9 @@ impl ReplApp {
                     self.machine.unload_rom(&mut rom);
                 }
             }
-            MetaCommand::Step => {
+            MetaCommand::Tick => {
                 self.state.running = false;
-                self.step();
+                self.tick();
             }
             MetaCommand::Play => {
                 self.state.running = true;
@@ -99,10 +99,10 @@ impl ReplApp {
         Ok(())
     }
 
-    fn step(&mut self) {
+    fn tick(&mut self) {
         let instruction = self.machine.next_instruction().unwrap();
         self.state.command_history.append(&Command::Instruction(instruction), false);
-        self.machine.step().unwrap();
+        self.machine.tick().unwrap();
     }
 }
 
@@ -128,7 +128,7 @@ impl eframe::App for ReplApp {
             // todo make timing here configurable
             if ctx.input().time - self.last_time > self.state.frame_time().as_secs_f64() {
                 self.last_time = ctx.input().time;
-                self.step();
+                self.tick();
             }
             ctx.request_repaint_after(self.state.frame_time());
         }

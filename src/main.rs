@@ -74,7 +74,7 @@ impl eframe::App for EmulatorApp {
             self.last_time = ctx.input().time;
             let next_instruction = self.machine.next_instruction().unwrap();
             println!("Executing: {}", next_instruction);
-            self.machine.step().unwrap();
+            self.machine.tick().unwrap();
         }
         ctx.request_repaint_after(self.args.frame_time());
     }

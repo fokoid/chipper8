@@ -159,7 +159,7 @@ impl Machine {
         }
     }
 
-    pub fn step(&mut self) -> crate::Result<()> {
+    pub fn tick(&mut self) -> crate::Result<()> {
         let instruction = self.next_instruction().unwrap();
         self.program_counter += 2;
         self.execute(&instruction);

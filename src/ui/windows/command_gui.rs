@@ -93,7 +93,7 @@ impl CommandGui {
                 CommandWidget::new("Play", ".play", vec![]),
                 CommandWidget::new("Pause", ".pause", vec![]),
                 CommandWidget::new("Play / Pause", ".play-pause", vec![]),
-                CommandWidget::new("Step", ".step", vec![]),
+                CommandWidget::new("Tick", ".tick", vec![]),
                 // todo: dropdown of allowed machine states
                 CommandWidget::new("Reset", ".reset", vec!["State"]),
                 // todo: dropdown of available ROMs

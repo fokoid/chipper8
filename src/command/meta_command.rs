@@ -11,7 +11,7 @@ pub enum MetaCommand {
     Reset(Option<MachineState>),
     LoadRom(String, Option<u16>),
     UnloadRom,
-    Step,
+    Tick,
     Play,
     Pause,
     PlayPause,
@@ -39,7 +39,7 @@ impl MetaCommand {
                 None => Err(Error::MetaSyntaxError(format!(".load requires a path"))),
             },
             Some(Token::Meta(".unload")) => Ok(MetaCommand::UnloadRom),
-            Some(Token::Meta(".step")) => Ok(MetaCommand::Step),
+            Some(Token::Meta(".tick")) => Ok(MetaCommand::Tick),
             Some(Token::Meta(".play")) => Ok(MetaCommand::Play),
             Some(Token::Meta(".pause")) => Ok(MetaCommand::Pause),
             Some(Token::Meta(".play-pause")) => Ok(MetaCommand::PlayPause),
@@ -64,7 +64,7 @@ impl Display for MetaCommand {
                 }
             }
             Self::UnloadRom => write!(f, ".unload"),
-            Self::Step => write!(f, ".step"),
+            Self::Tick => write!(f, ".tick"),
             Self::Play => write!(f, ".play"),
             Self::Pause => write!(f, ".pause"),
             Self::PlayPause => write!(f, ".play-pause"),
