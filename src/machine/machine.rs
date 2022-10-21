@@ -161,6 +161,8 @@ impl Machine {
 
     pub fn tick(&mut self) -> crate::Result<()> {
         let instruction = self.next_instruction().unwrap();
+        self.sound_timer -= if self.sound_timer > 0 { 1 } else { 0 };
+        self.delay_timer -= if self.delay_timer > 0 { 1 } else { 0 };
         self.program_counter += 2;
         self.execute(&instruction);
         Ok(())
