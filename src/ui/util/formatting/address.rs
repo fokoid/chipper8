@@ -6,6 +6,12 @@ use crate::machine::Pointer;
 
 pub struct Address(pub u16);
 
+impl From<u16> for Address {
+    fn from(value: u16) -> Self {
+        Self(value)
+    }
+}
+
 impl From<Pointer> for Address {
     fn from(pointer: Pointer) -> Self {
         Self(pointer as u16)

@@ -4,6 +4,8 @@ use chipper8::Result;
 use chipper8::ui::{MemoryTag, Rom, State, Ui};
 use eframe::NativeOptions;
 use egui::{Context, Vec2};
+use std::io;
+use std::path::PathBuf;
 
 fn main() -> Result<()> {
     let mut native_options = NativeOptions::default();
@@ -56,13 +58,23 @@ impl ReplApp {
                     };
                 };
             }
-            MetaCommand::LoadRom(path, address) => {
+            MetaCommand::LoadRom(name_or_path, address) => {
+                let mut rom = match Rom::from_file(name_or_path) {
+                    Ok(rom) => rom,
+                    Err(_) => {
+                        let mut path = PathBuf::new();
+                        path.push("roms");
+                        path.push(name_or_path);
+                        path.set_extension("rom");
+                        Rom::from_file(path)?
+                    }
+                };
+                let address = address.unwrap_or(0x200).into();
                 self.state.running = false;
                 if let Some(mut rom) = self.state.unload_rom() {
                     self.machine.unload_rom(&mut rom);
                 }
-                let mut rom = Rom::from_file(path)?;
-                self.machine.load_rom(&mut rom, *address as usize);
+                self.machine.load_rom(&mut rom, address);
                 self.state.load_rom(rom);
             }
             MetaCommand::UnloadRom => {
