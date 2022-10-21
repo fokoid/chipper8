@@ -6,9 +6,9 @@ CHIP-8 is widely recommended as a first emulator target due to its simplicity.
 
 ## Goals
 
-* [ ] compliant implementation of the CHIP-8 virtual machine
-* [ ] emulator/interpreter to run CHIP-8 ROMs
-* [ ] REPL with live visualisation of VM state
+* [ ] compliant implementation of the CHIP-8 virtual machine ([milestone #3](https://github.com/fokoid/chipper8/milestone/3))
+* [X] emulator/interpreter to run CHIP-8 ROMs ([issue #63](https://github.com/fokoid/chipper8/issues/63))
+* [X] REPL with live visualisation of VM state ([milestone #2](https://github.com/fokoid/chipper8/milestone/2))
 
 ## References
 
