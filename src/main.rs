@@ -6,7 +6,7 @@ use egui::{Context, Vec2};
 
 use chipper8::machine::Machine;
 use chipper8::Result;
-use chipper8::ui::Rom;
+use chipper8::ui::{KeyCapture, Rom};
 use chipper8::ui::windows::Display;
 use clap::Parser;
 
@@ -42,6 +42,7 @@ struct EmulatorApp {
     last_time: f64,
     display: Display,
     args: Args,
+    key_capture: KeyCapture,
 }
 
 impl EmulatorApp {
@@ -55,6 +56,7 @@ impl EmulatorApp {
             last_time: 0.0,
             display: Display::minimal(),
             args,
+            key_capture: KeyCapture::new(),
         }
     }
 }
@@ -64,6 +66,7 @@ impl eframe::App for EmulatorApp {
         egui::CentralPanel::default().show(
             ctx, |ui| {
                 self.display.ui_stateless(ui, &mut self.machine);
+                self.key_capture.update(ui);
             },
         );
         if ctx.input().time - self.last_time > self.args.frame_time().as_secs_f64() {

@@ -2,6 +2,7 @@ use egui::{Align, Checkbox, Context, Layout, Sense};
 
 use bottom_bar::BottomBar;
 pub use command_history::CommandHistory;
+pub use util::key_capture::KeyCapture;
 pub use state::{MemoryTag, Rom, State};
 use windows::Window;
 
@@ -31,7 +32,11 @@ impl Ui {
             self.bottom_bar.ui(ui, machine, state);
         });
         egui::CentralPanel::default().show(
-            ctx, |_ui| {},
+            ctx, |ui| {
+                if !state.key_capture_suspended {
+                    state.key_capture.update(ui);
+                }
+            },
         ).response.interact(Sense::click()).context_menu(|ui| {
             window_menu_ui(ui, &mut self.windows)
         });

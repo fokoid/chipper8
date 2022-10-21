@@ -9,6 +9,7 @@ use egui::Color32;
 use crate::{Error, Result};
 use crate::command::Command;
 use crate::machine;
+use super::KeyCapture;
 
 use super::command_history::CommandHistory;
 
@@ -17,7 +18,7 @@ pub struct State {
     pub command_history: CommandHistory,
     pub command_buffer: Option<Command>,
     pub error: Option<Error>,
-    pub keys: [bool; 16],
+    pub key_capture: KeyCapture,
     // when a text edit field has focus, do not send any key presses to the virtual keypad
     pub key_capture_suspended: bool,
     pub rom: Option<Rom>,
@@ -32,7 +33,7 @@ impl State {
             command_history: CommandHistory::new(),
             command_buffer: None,
             error: None,
-            keys: [false; 16],
+            key_capture: KeyCapture::new(),
             key_capture_suspended: false,
             rom: None,
             memory_tags: BTreeMap::from([

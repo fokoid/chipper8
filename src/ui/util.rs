@@ -10,6 +10,7 @@ mod image_builder;
 mod memory_display;
 pub mod table;
 mod formatting;
+pub mod key_capture;
 
 /// helper function to wrap textbox add with global key capture management
 pub fn add_text_edit(ui: &mut Ui, state: &mut State, widget: TextEdit) -> Response {
