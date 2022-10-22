@@ -1,3 +1,4 @@
+use std::fs;
 use std::path::PathBuf;
 
 use eframe::NativeOptions;
@@ -83,6 +84,12 @@ impl ReplApp {
                 if let Some(mut rom) = self.state.unload_rom() {
                     self.machine.unload_rom(&mut rom);
                 }
+            }
+            MetaCommand::DumpMachine(path) => {
+                fs::write(path, serde_json::to_string(&self.machine)?)?;
+            }
+            MetaCommand::LoadMachine(name_or_path) => {
+                self.machine = serde_json::from_str(&fs::read_to_string(name_or_path)?)?;
             }
             MetaCommand::Tick => {
                 self.state.running = false;

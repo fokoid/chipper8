@@ -105,6 +105,8 @@ impl CommandGui {
                 CommandWidget::new("Load Test: BC", ":load tests/bc", vec![]),
                 CommandWidget::new("Load Test: corax89", ":load tests/corax89", vec![]),
                 CommandWidget::new("Unload ROM", ":unload", vec![]),
+                CommandWidget::new("Dump Machine", ":dump", vec!["Filename"]),
+                CommandWidget::new("Load Machine", ":load-machine", vec!["Filename"]),
             ],
         }
     }

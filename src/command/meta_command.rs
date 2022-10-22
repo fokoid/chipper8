@@ -10,6 +10,8 @@ use super::tokens::{Token, Tokens};
 pub enum MetaCommand {
     Reset(Option<MachineState>),
     LoadRom(String, Option<u16>),
+    DumpMachine(String),
+    LoadMachine(String),
     UnloadRom,
     Tick,
     Play,
@@ -39,6 +41,20 @@ impl MetaCommand {
                 None => Err(Error::MetaSyntaxError(format!(":load requires a path"))),
             },
             Some(Token::Meta(":unload")) => Ok(MetaCommand::UnloadRom),
+            Some(Token::Meta(":dump")) => match tokens.next() {
+                Some(Token::Other(name_or_path)) => {
+                    Ok(MetaCommand::DumpMachine(name_or_path.into()))
+                }
+                Some(x) => Err(Error::MetaSyntaxError(format!(":dump requires a path but got {:?}", x))),
+                None => Err(Error::MetaSyntaxError(format!(":dump requires a path"))),
+            },
+            Some(Token::Meta(":load-machine")) => match tokens.next() {
+                Some(Token::Other(name_or_path)) => {
+                    Ok(MetaCommand::LoadMachine(name_or_path.into()))
+                }
+                Some(x) => Err(Error::MetaSyntaxError(format!(":load-machine requires a path but got {:?}", x))),
+                None => Err(Error::MetaSyntaxError(format!(":load-machine requires a path"))),
+            },
             Some(Token::Meta(":tick")) => Ok(MetaCommand::Tick),
             Some(Token::Meta(":play")) => Ok(MetaCommand::Play),
             Some(Token::Meta(":pause")) => Ok(MetaCommand::Pause),
@@ -63,6 +79,8 @@ impl Display for MetaCommand {
                     write!(f, ":load {}", path)
                 }
             }
+            Self::DumpMachine(path) => write!(f, ":dump {}", path),
+            Self::LoadMachine(path) => write!(f, ":load-machine {}", path),
             Self::UnloadRom => write!(f, ":unload"),
             Self::Tick => write!(f, ":tick"),
             Self::Play => write!(f, ":play"),

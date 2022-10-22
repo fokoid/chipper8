@@ -26,6 +26,8 @@ pub enum Error {
     // todo: move this into a separate error enum inside the machine module
     #[error("normal machine exit")]
     MachineExit,
+    #[error("JSON (de-)serialization error: {0}")]
+    JsonSerdeError(#[from] serde_json::Error),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

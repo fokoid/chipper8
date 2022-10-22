@@ -1,6 +1,6 @@
 use std::path::PathBuf;
-use std::time::{Duration, Instant};
 use std::thread;
+use std::time::{Duration, Instant};
 
 use clap::Parser;
 use eframe::NativeOptions;
@@ -123,7 +123,6 @@ impl EmulatorApp {
             key_capture: KeyCapture::new(),
         }
     }
-
 }
 
 impl eframe::App for EmulatorApp {
