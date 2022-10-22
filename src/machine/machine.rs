@@ -1,3 +1,5 @@
+use serde::{Serialize, Deserialize};
+
 use crate::{Error, Result};
 use crate::ui::Rom;
 
@@ -7,12 +9,12 @@ use super::instruction::{self, Instruction, OpCode, SetArgs, Source, Target};
 use super::stack::Stack;
 use super::types::{Pointer, Timer};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Machine {
-    pub registers: [u8; config::NUM_REGISTERS],
+    pub registers: Vec<u8>,
     pub stack: Stack,
-    pub memory: [u8; config::MEMORY_SIZE],
-    pub display: [u8; config::DISPLAY_SIZE],
+    pub memory: Vec<u8>,
+    pub display: Vec<u8>,
     pub program_counter: Pointer,
     pub index: Pointer,
     pub delay_timer: Timer,
@@ -23,14 +25,14 @@ pub struct Machine {
 impl Machine {
     pub fn new() -> Self {
         let mut machine = Self {
-            memory: [0; config::MEMORY_SIZE],
+            memory: vec![0; config::MEMORY_SIZE],
             stack: Stack::new(),
-            display: [0; config::DISPLAY_SIZE],
+            display: vec![0; config::DISPLAY_SIZE],
             program_counter: 0,
             index: 0,
             delay_timer: 0,
             sound_timer: 0,
-            registers: [0; config::NUM_REGISTERS],
+            registers: vec![0; config::NUM_REGISTERS],
             key_buffer: None,
         };
         machine.memory[config::FONT_RANGE].clone_from_slice(&config::FONT_GLYPHS);

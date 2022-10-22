@@ -1,15 +1,17 @@
+use serde::{Serialize, Deserialize};
+
 use super::config;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Stack {
-    pub data: [u16; config::STACK_SIZE],
+    pub data: Vec<u16>,
     pub pointer: usize,
 }
 
 impl Stack {
     pub fn new() -> Self {
         Self {
-            data: [0; config::STACK_SIZE],
+            data: vec![0; config::STACK_SIZE],
             pointer: 0,
         }
     }
