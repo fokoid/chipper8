@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use super::config;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Stack {
     pub data: Vec<u16>,
     pub pointer: usize,

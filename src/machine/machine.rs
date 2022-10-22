@@ -9,7 +9,7 @@ use super::instruction::{self, Instruction, OpCode, SetArgs, Source, Target};
 use super::stack::Stack;
 use super::types::{Pointer, Timer};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Machine {
     pub registers: Vec<u8>,
     pub stack: Stack,
