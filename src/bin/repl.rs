@@ -55,7 +55,7 @@ impl ReplApp {
                 self.machine.reset();
                 if let Some(state) = state {
                     match state {
-                        MachineState::Demo => self.machine.demo(),
+                        MachineState::Demo => self.machine.demo()?,
                     };
                 };
             }

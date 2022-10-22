@@ -5,6 +5,7 @@ pub enum Token<'a> {
     None,
     Meta(&'a str),
     Hex(&'a str),
+    Register(&'a str),
     Other(&'a str),
 }
 
@@ -16,6 +17,8 @@ impl<'a> From<&'a str> for Token<'a> {
                 Some('x') => Self::Hex(s),
                 _ => Self::Other(s),
             }
+            Some('V') if s.len() == 2 => Self::Register(s),
+            // todo: don't parse relative paths like `./foo` as Meta tokens
             Some('.') => Self::Meta(s),
             Some(_) => Self::Other(s),
         }
@@ -26,7 +29,7 @@ impl<'a> From<Token<'a>> for &'a str {
     fn from(token: Token<'a>) -> Self {
         match token {
             Token::None => "",
-            Token::Hex(s) | Token::Meta(s) | Token::Other(s) => s,
+            Token::Hex(s) | Token::Meta(s) | Token::Other(s) | Token::Register(s) => s,
         }
     }
 }

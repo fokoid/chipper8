@@ -4,8 +4,8 @@ pub use machine_state::MachineState;
 pub use meta_command::MetaCommand;
 use tokens::{Token, Tokens};
 
+use crate::{Error, Result};
 use crate::machine::{Instruction, OpCode};
-use crate::Result;
 
 pub mod tokens;
 pub mod meta_command;
@@ -25,6 +25,9 @@ impl Command {
                 let opcode = &OpCode::parse(tokens)?;
                 Ok(Some(Self::Instruction(opcode.as_instruction()?)))
             }
+            Some(token @ Token::Register(_)) => {
+                Err(Error::SyntaxError(format!("unexpected token {:?}", token)))
+            }
             Some(Token::Meta(_)) => Ok(Some(Self::Meta(MetaCommand::parse(tokens)?))),
             Some(Token::Other(_)) => Ok(Some(Self::Instruction(Instruction::parse(tokens)?))),
         }
@@ -35,7 +38,7 @@ impl Command {
     pub fn opcode(&self) -> Option<OpCode> {
         match self {
             Self::Meta(_) => None,
-            Self::Instruction(instruction) => Some(instruction.into()),
+            Self::Instruction(instruction) => Some(instruction.try_into().ok()?),
         }
     }
 

@@ -2,6 +2,8 @@ use std::fmt::{Debug, Display, Formatter};
 
 use crate::{Error, Result};
 use crate::command::tokens::{Token, Tokens};
+use crate::Error::NoOpcodeError;
+use crate::machine::instruction::{self, SetArgs, Source, Target};
 
 use super::Instruction;
 
@@ -40,26 +42,44 @@ impl Into<String> for OpCode {
     }
 }
 
-impl From<&Instruction> for OpCode {
-    fn from(instruction: &Instruction) -> Self {
-        OpCode(
+impl TryFrom<&Instruction> for OpCode {
+    type Error = Error;
+
+    fn try_from(instruction: &Instruction) -> Result<Self> {
+        Ok(OpCode(
             match instruction {
                 Instruction::ClearScreen => 0x00E0,
                 Instruction::Jump(address) => 0x1000 | (address & 0x0FFF),
-                Instruction::Set(register, value) =>
-                    0x6000 | u16::from_be_bytes([*register, *value]),
+                Instruction::Set { args: SetArgs { source, target } } => {
+                    match &target {
+                        Target::Register(vx) => match &source {
+                            Source::Value(value) =>
+                                0x6000 | u16::from_be_bytes([vx.index.into(), *value]),
+                            Source::Register(_vy) => todo!(),
+                        }
+                        Target::Timer(timer) => {
+                            let lower_byte: u8 = match timer {
+                                instruction::Timer::Delay => 0x15,
+                                instruction::Timer::Sound => 0x18,
+                            };
+                            let upper_byte: u8 = match &source {
+                                Source::Value(_) => Err(NoOpcodeError(instruction.clone()))?,
+                                Source::Register(vx) => 0xF0u8 | u8::from(vx.index),
+                            };
+                            u16::from_be_bytes([upper_byte, lower_byte])
+                        }
+                    }
+                }
                 Instruction::Add(register, value) =>
                     0x7000 | u16::from_be_bytes([*register, *value]),
                 Instruction::IndexSet(value) => 0xA000 | (value & 0x0FFF),
                 Instruction::Draw(vx, vy, height) =>
                     0xD000 | u16::from_be_bytes([*vx, vy.rotate_left(4) | *height]),
-                Instruction::TimerSet(register) => 0xF015 | u16::from_be_bytes([*register, 0]),
                 Instruction::TimerGet(register) => 0xF007 | u16::from_be_bytes([*register, 0]),
-                Instruction::TimerSound(register) => 0xF018 | u16::from_be_bytes([*register, 0]),
                 Instruction::Font(register) => 0xF029 | u16::from_be_bytes([*register, 0]),
                 Instruction::AwaitKey(register) => 0xF00A | u16::from_be_bytes([*register, 0]),
             }
-        )
+        ))
     }
 }
 
@@ -73,7 +93,12 @@ impl OpCode {
             0x1000 => Ok(Instruction::Jump(self.0 & 0x0FFF)),
             0x6000 => {
                 let [register, value] = (self.0 & 0x0FFF).to_be_bytes();
-                Ok(Instruction::Set(register, value))
+                Ok(Instruction::Set {
+                    args: SetArgs {
+                        source: Source::Value(value),
+                        target: Target::Register(register.try_into()?),
+                    }
+                })
             }
             0x7000 => {
                 let [register, value] = (self.0 & 0x0FFF).to_be_bytes();
@@ -90,8 +115,11 @@ impl OpCode {
                 match self.0 & 0x00FF {
                     0x0A => Ok(Instruction::AwaitKey((self.0 & 0x0F00).to_be_bytes()[0])),
                     0x07 => Ok(Instruction::TimerGet((self.0 & 0x0F00).to_be_bytes()[0])),
-                    0x15 => Ok(Instruction::TimerSet((self.0 & 0x0F00).to_be_bytes()[0])),
-                    0x18 => Ok(Instruction::TimerSound((self.0 & 0x0F00).to_be_bytes()[0])),
+                    byte @ (0x15 | 0x18) => {
+                        let target = Target::Timer(if byte == 0x15 { instruction::Timer::Delay } else { instruction::Timer::Sound });
+                        let source = Source::Register((self.0 & 0x0F00).to_be_bytes()[0].try_into()?);
+                        Ok(Instruction::Set { args: SetArgs { target, source } })
+                    }
                     0x29 => Ok(Instruction::Font((self.0 & 0x0F00).to_be_bytes()[0])),
                     _ => Err(Error::InvalidOpCode(OpCode(self.0))),
                 }

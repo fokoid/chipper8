@@ -1,8 +1,9 @@
+use crate::Result;
 use crate::ui::Rom;
 
 use super::config;
 use super::draw_options::DrawOptions;
-use super::instruction::{Instruction, OpCode};
+use super::instruction::{self, Instruction, OpCode, SetArgs, Source, Target};
 use super::stack::Stack;
 use super::types::{Pointer, Timer};
 
@@ -74,19 +75,20 @@ impl Machine {
         // todo: should we move program counter?
     }
 
-    pub fn demo(&mut self) {
+    pub fn demo(&mut self) -> Result<()> {
         self.program_counter = 1000;
         self.memory[self.program_counter] = 0x00E0;
         self.stack.push(0xAAA);
         self.stack.push(0xBBB);
         // put some instructions at these stack addresses show they show in the visualization
-        self.set_instruction_at_address(0xAAA, &Instruction::ClearScreen);
-        self.set_instruction_at_address(0xBBB, &Instruction::Font(3));
+        self.set_instruction_at_address(0xAAA, &Instruction::ClearScreen)?;
+        self.set_instruction_at_address(0xBBB, &Instruction::Font(3))?;
         self.registers[0] = 0x12;
         self.registers[1] = 0xAB;
         self.delay_timer = 0xF;
         self.sound_timer = 1;
         self.display[1000] = 0xFF;
+        Ok(())
     }
 
     pub fn byte_at_address(&self, address: usize) -> Option<u8> {
@@ -102,9 +104,10 @@ impl Machine {
         OpCode(self.word_at_address(address).unwrap_or(0)).as_instruction()
     }
 
-    fn set_instruction_at_address(&mut self, address: usize, instruction: &Instruction) {
-        let opcode: OpCode = instruction.into();
-        self.memory[address..address + 2].clone_from_slice(&opcode.bytes())
+    fn set_instruction_at_address(&mut self, address: usize, instruction: &Instruction) -> Result<()> {
+        let opcode: OpCode = instruction.try_into()?;
+        self.memory[address..address + 2].clone_from_slice(&opcode.bytes());
+        Ok(())
     }
 
     pub fn at_program_counter(&self) -> Option<u16> {
@@ -125,8 +128,17 @@ impl Machine {
             Instruction::Jump(address) => {
                 self.program_counter = *address as Pointer;
             }
-            Instruction::Set(register, value) => {
-                self.registers[*register as usize] = *value;
+            Instruction::Set { args: SetArgs { source, target } } => {
+                let source = match &source {
+                    Source::Value(x) => *x,
+                    Source::Register(r) => self.registers[u8::from(r.index) as usize],
+                };
+                let target = match &target {
+                    Target::Timer(instruction::Timer::Delay) => &mut self.delay_timer,
+                    Target::Timer(instruction::Timer::Sound) => &mut self.sound_timer,
+                    Target::Register(r) => &mut self.registers[u8::from(r.index) as usize],
+                };
+                *target = source;
             }
             Instruction::Add(register, value) => {
                 self.registers[*register as usize] = self.registers[*register as usize].wrapping_add(*value);
@@ -148,12 +160,6 @@ impl Machine {
             }
             Instruction::TimerGet(register) => {
                 self.registers[*register as usize] = self.delay_timer;
-            }
-            Instruction::TimerSet(register) => {
-                self.delay_timer = self.registers[*register as usize];
-            }
-            Instruction::TimerSound(register) => {
-                self.sound_timer = self.registers[*register as usize];
             }
             Instruction::AwaitKey(register) => {
                 if let Some(key) = self.key_buffer {
