@@ -2,7 +2,7 @@ use crate::ui::Rom;
 
 use super::config;
 use super::draw_options::DrawOptions;
-use super::instructions::{Instruction, OpCode};
+use super::instruction::{Instruction, OpCode};
 use super::stack::Stack;
 use super::types::{Pointer, Timer};
 

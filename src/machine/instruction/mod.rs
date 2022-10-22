@@ -1,7 +1,11 @@
 use std::fmt::{Debug, Display, Formatter};
 
+pub use opcode::OpCode;
+
 use crate::{Error, Result};
 use crate::command::tokens::{Token, Tokens};
+
+mod opcode;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Instruction {
@@ -140,67 +144,6 @@ impl Instruction {
     }
 }
 
-impl From<&Instruction> for OpCode {
-    fn from(instruction: &Instruction) -> Self {
-        OpCode(
-            match instruction {
-                Instruction::ClearScreen => 0x00E0,
-                Instruction::Jump(address) => 0x1000 | (address & 0x0FFF),
-                Instruction::Set(register, value) =>
-                    0x6000 | u16::from_be_bytes([*register, *value]),
-                Instruction::Add(register, value) =>
-                    0x7000 | u16::from_be_bytes([*register, *value]),
-                Instruction::IndexSet(value) => 0xA000 | (value & 0x0FFF),
-                Instruction::Draw(vx, vy, height) =>
-                    0xD000 | u16::from_be_bytes([*vx, vy.rotate_left(4) | *height]),
-                Instruction::TimerSet(register) => 0xF015 | u16::from_be_bytes([*register, 0]),
-                Instruction::TimerGet(register) => 0xF007 | u16::from_be_bytes([*register, 0]),
-                Instruction::TimerSound(register) => 0xF018 | u16::from_be_bytes([*register, 0]),
-                Instruction::Font(register) => 0xF029 | u16::from_be_bytes([*register, 0]),
-                Instruction::AwaitKey(register) => 0xF00A | u16::from_be_bytes([*register, 0]),
-            }
-        )
-    }
-}
-
-impl OpCode {
-    pub fn as_instruction(&self) -> Result<Instruction> {
-        match self.0 & 0xF000 {
-            0 => match self.0 & 0x0FFF {
-                0x0E0 => Ok(Instruction::ClearScreen),
-                _ => Err(Error::InvalidOpCode(OpCode(self.0))),
-            },
-            0x1000 => Ok(Instruction::Jump(self.0 & 0x0FFF)),
-            0x6000 => {
-                let [register, value] = (self.0 & 0x0FFF).to_be_bytes();
-                Ok(Instruction::Set(register, value))
-            }
-            0x7000 => {
-                let [register, value] = (self.0 & 0x0FFF).to_be_bytes();
-                Ok(Instruction::Add(register, value))
-            }
-            0xA000 => Ok(Instruction::IndexSet(self.0 & 0x0FFF)),
-            0xD000 => {
-                let [vx, lower] = (self.0 & 0xFFF).to_be_bytes();
-                let vy = lower.rotate_left(4) & 0x0F;
-                let height = lower & 0x0F;
-                Ok(Instruction::Draw(vx, vy, height))
-            }
-            0xF000 => {
-                match self.0 & 0x00FF {
-                    0x0A => Ok(Instruction::AwaitKey((self.0 & 0x0F00).to_be_bytes()[0])),
-                    0x07 => Ok(Instruction::TimerGet((self.0 & 0x0F00).to_be_bytes()[0])),
-                    0x15 => Ok(Instruction::TimerSet((self.0 & 0x0F00).to_be_bytes()[0])),
-                    0x18 => Ok(Instruction::TimerSound((self.0 & 0x0F00).to_be_bytes()[0])),
-                    0x29 => Ok(Instruction::Font((self.0 & 0x0F00).to_be_bytes()[0])),
-                    _ => Err(Error::InvalidOpCode(OpCode(self.0))),
-                }
-            }
-            _ => Err(Error::InvalidOpCode(OpCode(self.0))),
-        }
-    }
-}
-
 impl Display for Instruction {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -219,37 +162,5 @@ impl Display for Instruction {
     }
 }
 
-pub struct OpCode(pub u16);
-
-impl OpCode {
-    pub fn parse(mut tokens: Tokens) -> Result<Self> {
-        match tokens.next() {
-            Some(Token::Hex(s)) => {
-                Ok(OpCode(u16::from_str_radix(&s[2..], 16)?))
-            }
-            x => Err(Error::OpCodeSyntaxError(format!("{:?}", x))),
-        }
-    }
-
-    pub fn bytes(&self) -> [u8; 2] {
-        self.0.to_be_bytes()
-    }
-}
-
-impl Debug for OpCode {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(self, f)
-    }
-}
-
-impl Display for OpCode {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:04X}", self.0)
-    }
-}
-
-impl Into<String> for OpCode {
-    fn into(self) -> String {
-        format!("{}", self)
-    }
-}
+#[cfg(test)]
+mod tests;
