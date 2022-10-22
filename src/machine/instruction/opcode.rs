@@ -2,7 +2,6 @@ use std::fmt::{Debug, Display, Formatter};
 
 use crate::{Error, Result};
 use crate::command::tokens::{Token, Tokens};
-use crate::Error::NoOpcodeError;
 use crate::machine::instruction::{self, SetArgs, Source, Target};
 
 use super::Instruction;
@@ -48,6 +47,7 @@ impl TryFrom<&Instruction> for OpCode {
     fn try_from(instruction: &Instruction) -> Result<Self> {
         Ok(OpCode(
             match instruction {
+                Instruction::Exit => 0xF0FF,
                 Instruction::ClearScreen => 0x00E0,
                 Instruction::Jump(address) => 0x1000 | (address & 0x0FFF),
                 Instruction::Set { args: SetArgs { source, target } } => {
@@ -63,7 +63,7 @@ impl TryFrom<&Instruction> for OpCode {
                                 instruction::Timer::Sound => 0x18,
                             };
                             let upper_byte: u8 = match &source {
-                                Source::Value(_) => Err(NoOpcodeError(instruction.clone()))?,
+                                Source::Value(_) => Err(Error::NoOpcodeError(instruction.clone()))?,
                                 Source::Register(vx) => 0xF0u8 | u8::from(vx.index),
                             };
                             u16::from_be_bytes([upper_byte, lower_byte])
@@ -121,6 +121,7 @@ impl OpCode {
                         Ok(Instruction::Set { args: SetArgs { target, source } })
                     }
                     0x29 => Ok(Instruction::Font((self.0 & 0x0F00).to_be_bytes()[0])),
+                    0xFF => Ok(Instruction::Exit),
                     _ => Err(Error::InvalidOpCode(OpCode(self.0))),
                 }
             }

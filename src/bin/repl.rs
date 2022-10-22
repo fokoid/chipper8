@@ -41,7 +41,7 @@ impl ReplApp {
                 // so we should suspend the VM main loop if running
                 self.state.running = false;
                 // todo: Machine::execute should also return result
-                self.machine.execute(instruction);
+                self.machine.execute(instruction)?;
                 Ok(())
             }
             Command::Meta(meta) => self.execute_meta(meta),
@@ -123,6 +123,7 @@ impl eframe::App for ReplApp {
                 Ok(_) => {}
                 Err(error) => {
                     self.state.error = Some(error);
+                    self.state.running = false;
                 }
             };
         };
@@ -131,17 +132,15 @@ impl eframe::App for ReplApp {
             // todo make timing here configurable
             if ctx.input().time - self.last_time > self.state.frame_time().as_secs_f64() {
                 self.last_time = ctx.input().time;
-                if let Err(error) = self.tick() {
-                    self.state.error = Some(error);
+                self.state.error = self.tick().err().take();
+                if let Some(error) = &self.state.error {
                     self.state.running = false;
-                    if let Error::InvalidOpCode(_) = self.state.error.as_ref().unwrap() {
+                    if let Error::InvalidOpCode(_) = error {
                         if self.state.skip_unknown_opcode {
                             self.machine.program_counter += 2;
                             self.state.running = true;
                         }
                     }
-                } else {
-                    self.state.error = None;
                 }
             }
             ctx.request_repaint_after(self.state.frame_time());

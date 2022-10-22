@@ -78,7 +78,14 @@ impl eframe::App for EmulatorApp {
             match self.machine.next_instruction() {
                 Ok(instruction) => {
                     println!("Executing: {}", instruction);
-                    self.machine.tick().unwrap();
+                    match self.machine.tick() {
+                        Err(Error::MachineExit) => { self.terminated = true; }
+                        Ok(_) => {}
+                        Err(error) => {
+                            eprintln!("Error: {:?}", error);
+                            panic!("");
+                        }
+                    }
                 }
                 Err(error @ Error::InvalidOpCode(_)) => {
                     eprintln!("Error: {:?}", error);

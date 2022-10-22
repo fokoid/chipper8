@@ -23,6 +23,9 @@ pub enum Error {
     InvalidOpCode(OpCode),
     #[error("I/O error: {0}")]
     IoError(#[from] io::Error),
+    // todo: move this into a separate error enum inside the machine module
+    #[error("normal machine exit")]
+    MachineExit,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

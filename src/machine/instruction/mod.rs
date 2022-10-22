@@ -11,6 +11,7 @@ mod instructions;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Instruction {
+    Exit,
     ClearScreen,
     Jump(u16),
     Set { args: SetArgs },
@@ -26,6 +27,7 @@ impl Instruction {
     pub fn parse(mut tokens: Tokens) -> Result<Instruction> {
         // todo: parse entire token stream
         match tokens.next() {
+            Some(Token::Other("exit")) => Ok(Self::Exit),
             Some(Token::Other("cls")) => Ok(Self::ClearScreen),
             Some(Token::Other("jmp")) => match tokens.next() {
                 Some(Token::Other(s)) => Ok(Instruction::Jump(
@@ -118,6 +120,7 @@ impl Instruction {
 impl Display for Instruction {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Exit => write!(f, "exit"),
             Self::ClearScreen => write!(f, "cls"),
             Self::Jump(address) => write!(f, "jmp {:03X}", address),
             Self::Set { args } => write!(f, "set {} {}", args.target, args.source),

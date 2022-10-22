@@ -1,4 +1,4 @@
-use crate::Result;
+use crate::{Error, Result};
 use crate::ui::Rom;
 
 use super::config;
@@ -100,7 +100,7 @@ impl Machine {
         Some(u16::from_be_bytes(bytes))
     }
 
-    pub fn instruction_at_address(&self, address: usize) -> crate::Result<Instruction> {
+    pub fn instruction_at_address(&self, address: usize) -> Result<Instruction> {
         OpCode(self.word_at_address(address).unwrap_or(0)).as_instruction()
     }
 
@@ -114,7 +114,7 @@ impl Machine {
         self.word_at_address(self.program_counter)
     }
 
-    pub fn next_instruction(&self) -> crate::Result<Instruction> {
+    pub fn next_instruction(&self) -> Result<Instruction> {
         self.instruction_at_address(self.program_counter)
     }
 
@@ -122,8 +122,9 @@ impl Machine {
         self.byte_at_address(self.index)
     }
 
-    pub fn execute(&mut self, instruction: &Instruction) {
+    pub fn execute(&mut self, instruction: &Instruction) -> Result<()> {
         match instruction {
+            Instruction::Exit => { return Err(Error::MachineExit); }
             Instruction::ClearScreen => self.display.fill(0),
             Instruction::Jump(address) => {
                 self.program_counter = *address as Pointer;
@@ -168,15 +169,16 @@ impl Machine {
                     self.program_counter -= 2;
                 }
             }
-        }
+        };
+        Ok(())
     }
 
-    pub fn tick(&mut self) -> crate::Result<()> {
+    pub fn tick(&mut self) -> Result<()> {
         let instruction = self.next_instruction().unwrap();
         self.sound_timer -= if self.sound_timer > 0 { 1 } else { 0 };
         self.delay_timer -= if self.delay_timer > 0 { 1 } else { 0 };
         self.program_counter += 2;
-        self.execute(&instruction);
+        self.execute(&instruction)?;
         Ok(())
     }
 }
