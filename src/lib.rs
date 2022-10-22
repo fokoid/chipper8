@@ -1,5 +1,5 @@
-pub use errors::{Error, Result};
 pub use emulator::{Emulator, EmulatorConfig};
+pub use errors::{Error, Result};
 pub use machine::Machine;
 
 pub mod machine;
