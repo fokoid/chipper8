@@ -19,7 +19,7 @@ impl<'a> From<&'a str> for Token<'a> {
             }
             Some('V') if s.len() == 2 => Self::Register(s),
             // todo: don't parse relative paths like `./foo` as Meta tokens
-            Some('.') => Self::Meta(s),
+            Some(':') => Self::Meta(s),
             Some(_) => Self::Other(s),
         }
     }

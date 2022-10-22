@@ -92,16 +92,16 @@ impl CommandGui {
             name: "Meta Command GUI",
             // todo: split into horizontal groups
             commands: vec![
-                CommandWidget::new("Play", ".play", vec![]),
-                CommandWidget::new("Pause", ".pause", vec![]),
-                CommandWidget::new("Play / Pause", ".play-pause", vec![]),
-                CommandWidget::new("Tick", ".tick", vec![]),
+                CommandWidget::new("Play", ":play", vec![]),
+                CommandWidget::new("Pause", ":pause", vec![]),
+                CommandWidget::new("Play / Pause", ":play-pause", vec![]),
+                CommandWidget::new("Tick", ":tick", vec![]),
                 // todo: dropdown of allowed machine states
-                CommandWidget::new("Reset", ".reset", vec!["State"]),
+                CommandWidget::new("Reset", ":reset", vec!["State"]),
                 // todo: dropdown of available ROMs
-                CommandWidget::new("Load ROM", ".load", vec!["Filename", "Address"]),
-                CommandWidget::new("Load IBM", ".load ibm", vec![]),
-                CommandWidget::new("Unload ROM", ".unload", vec![]),
+                CommandWidget::new("Load ROM", ":load", vec!["Filename", "Address"]),
+                CommandWidget::new("Load IBM", ":load ibm", vec![]),
+                CommandWidget::new("Unload ROM", ":unload", vec![]),
             ],
         }
     }
