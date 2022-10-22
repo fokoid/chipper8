@@ -101,6 +101,8 @@ impl CommandGui {
                 // todo: dropdown of available ROMs
                 CommandWidget::new("Load ROM", ":load", vec!["Filename", "Address"]),
                 CommandWidget::new("Load IBM", ":load ibm", vec![]),
+                CommandWidget::new("Load Test: BC", ":load tests/bc", vec![]),
+                CommandWidget::new("Load Test: corax89", ":load tests/corax89", vec![]),
                 CommandWidget::new("Unload ROM", ":unload", vec![]),
             ],
         }
