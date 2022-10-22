@@ -86,7 +86,7 @@ impl ReplApp {
                 }
             }
             MetaCommand::DumpMachine(path) => {
-                fs::write(path, serde_json::to_string(&self.machine)?)?;
+                fs::write(path, serde_json::to_string_pretty(&self.machine)?)?;
             }
             MetaCommand::LoadMachine(name_or_path) => {
                 self.machine = serde_json::from_str(&fs::read_to_string(name_or_path)?)?;
