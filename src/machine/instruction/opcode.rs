@@ -47,7 +47,7 @@ impl TryFrom<&Instruction> for OpCode {
     fn try_from(instruction: &Instruction) -> Result<Self> {
         Ok(OpCode(
             match instruction {
-                Instruction::Exit => 0xF0FF,
+                Instruction::Exit => 0x00F0,
                 Instruction::ClearScreen => 0x00E0,
                 Instruction::Jump(address) => 0x1000 | (address & 0x0FFF),
                 Instruction::Set { args: SetArgs { source, target } } => {
@@ -88,6 +88,7 @@ impl OpCode {
         match self.0 & 0xF000 {
             0 => match self.0 & 0x0FFF {
                 0x0E0 => Ok(Instruction::ClearScreen),
+                0x0F0 => Ok(Instruction::Exit),
                 _ => Err(Error::InvalidOpCode(OpCode(self.0))),
             },
             0x1000 => Ok(Instruction::Jump(self.0 & 0x0FFF)),
@@ -121,7 +122,6 @@ impl OpCode {
                         Ok(Instruction::Set { args: SetArgs { target, source } })
                     }
                     0x29 => Ok(Instruction::Font((self.0 & 0x0F00).to_be_bytes()[0])),
-                    0xFF => Ok(Instruction::Exit),
                     _ => Err(Error::InvalidOpCode(OpCode(self.0))),
                 }
             }

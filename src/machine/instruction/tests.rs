@@ -11,7 +11,7 @@ fn round_trip_opcode_instruction_opcode() {
             invalid_opcodes += 1;
         }
     }
-    assert_eq!(invalid_opcodes, 44974);
+    assert_eq!(invalid_opcodes, 44973);
 }
 
 #[test]
@@ -29,5 +29,5 @@ fn round_trip_opcode_instruction_text_instruction_opcode() {
         }
     }
     eprintln!("{}", invalid_opcodes);
-    assert_eq!(invalid_opcodes, 44974);
+    assert_eq!(invalid_opcodes, 44973);
 }
