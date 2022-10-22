@@ -1,14 +1,14 @@
 use std::path::PathBuf;
 use std::time::Duration;
 
+use clap::Parser;
 use eframe::NativeOptions;
 use egui::{Context, Vec2};
 
+use chipper8::{Error, Result};
 use chipper8::machine::Machine;
-use chipper8::Result;
 use chipper8::ui::{KeyCapture, Rom};
 use chipper8::ui::windows::Display;
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -43,6 +43,7 @@ struct EmulatorApp {
     display: Display,
     args: Args,
     key_capture: KeyCapture,
+    terminated: bool,
 }
 
 impl EmulatorApp {
@@ -57,6 +58,7 @@ impl EmulatorApp {
             display: Display::minimal(),
             args,
             key_capture: KeyCapture::new(),
+            terminated: false,
         }
     }
 }
@@ -69,12 +71,21 @@ impl eframe::App for EmulatorApp {
                 self.key_capture.update(ui);
             },
         );
+        if self.terminated { return; }
         self.machine.key_buffer = self.key_capture.key();
         if ctx.input().time - self.last_time > self.args.frame_time().as_secs_f64() {
             self.last_time = ctx.input().time;
-            let next_instruction = self.machine.next_instruction().unwrap();
-            println!("Executing: {}", next_instruction);
-            self.machine.tick().unwrap();
+            match self.machine.next_instruction() {
+                Ok(instruction) => {
+                    println!("Executing: {}", instruction);
+                    self.machine.tick().unwrap();
+                }
+                Err(error @ Error::InvalidOpCode(_)) => {
+                    eprintln!("Error: {:?}", error);
+                    self.terminated = true;
+                }
+                _ => {}
+            }
         }
         ctx.request_repaint_after(self.args.frame_time());
     }

@@ -15,6 +15,7 @@ use super::KeyCapture;
 
 pub struct State {
     pub running: bool,
+    pub skip_unknown_opcode: bool,
     pub command_history: CommandHistory,
     pub command_buffer: Option<Command>,
     pub error: Option<Error>,
@@ -30,6 +31,7 @@ impl State {
     pub fn new() -> Self {
         Self {
             running: false,
+            skip_unknown_opcode: false,
             command_history: CommandHistory::new(),
             command_buffer: None,
             error: None,

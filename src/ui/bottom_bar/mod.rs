@@ -29,6 +29,7 @@ impl BottomBar {
             ui.label("Machine Tick Rate: ");
             ui.add(Slider::new(&mut state.frames_per_second, 1..=120));
             ui.checkbox(&mut state.running, "Running");
+            ui.checkbox(&mut state.skip_unknown_opcode, "Skip Unknown Opcode");
             if ui.button("⏩").on_hover_text("Next Instruction").clicked() {
                 state.command_buffer = Some(Command::Meta(MetaCommand::Tick));
             }

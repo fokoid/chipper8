@@ -1,10 +1,12 @@
-use chipper8::command::{Command, MachineState, MetaCommand};
-use chipper8::machine::Machine;
-use chipper8::Result;
-use chipper8::ui::{MemoryTag, Rom, State, Ui};
+use std::path::PathBuf;
+
 use eframe::NativeOptions;
 use egui::{Context, Vec2};
-use std::path::PathBuf;
+
+use chipper8::{Error, Result};
+use chipper8::command::{Command, MachineState, MetaCommand};
+use chipper8::machine::Machine;
+use chipper8::ui::{MemoryTag, Rom, State, Ui};
 
 fn main() -> Result<()> {
     let mut native_options = NativeOptions::default();
@@ -84,7 +86,7 @@ impl ReplApp {
             }
             MetaCommand::Tick => {
                 self.state.running = false;
-                self.tick();
+                self.tick()?;
             }
             MetaCommand::Play => {
                 self.state.running = true;
@@ -99,10 +101,11 @@ impl ReplApp {
         Ok(())
     }
 
-    fn tick(&mut self) {
-        let instruction = self.machine.next_instruction().unwrap();
+    fn tick(&mut self) -> crate::Result<()> {
+        let instruction = self.machine.next_instruction()?;
         self.state.command_history.append(&Command::Instruction(instruction), false);
-        self.machine.tick().unwrap();
+        self.machine.tick()?;
+        Ok(())
     }
 }
 
@@ -128,7 +131,18 @@ impl eframe::App for ReplApp {
             // todo make timing here configurable
             if ctx.input().time - self.last_time > self.state.frame_time().as_secs_f64() {
                 self.last_time = ctx.input().time;
-                self.tick();
+                if let Err(error) = self.tick() {
+                    self.state.error = Some(error);
+                    self.state.running = false;
+                    if let Error::InvalidOpCode(_) = self.state.error.as_ref().unwrap() {
+                        if self.state.skip_unknown_opcode {
+                            self.machine.program_counter += 2;
+                            self.state.running = true;
+                        }
+                    }
+                } else {
+                    self.state.error = None;
+                }
             }
             ctx.request_repaint_after(self.state.frame_time());
         }
