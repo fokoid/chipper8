@@ -1,3 +1,4 @@
+// todo: everywhere use types from machine::types here
 use serde::{Deserialize, Serialize};
 
 use crate::{Error, Result};
@@ -105,8 +106,8 @@ impl Machine {
     }
 
     pub fn instruction_at_address(&self, address: usize) -> Result<Instruction> {
-        let opcode = OpCode(self.word_at_address(address).unwrap_or(0));
-        Instruction::try_from(&opcode)
+        let opcode = OpCode(self.word_at_address(address).unwrap_or(0).into());
+        Instruction::try_from(opcode)
     }
 
     fn set_instruction_at_address(&mut self, address: usize, instruction: &Instruction) -> Result<()> {

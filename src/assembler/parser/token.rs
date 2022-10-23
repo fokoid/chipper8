@@ -1,7 +1,8 @@
 use ux::{u12, u4};
 
 use crate::{Error, Result};
-use crate::machine::types::{Address, Byte, Nibble, Register};
+use crate::machine::OpCode;
+use crate::machine::types::{Address, Byte, Nibble, Register, Word};
 
 #[derive(Debug)]
 pub enum Token<'a> {
@@ -132,5 +133,19 @@ impl TryFrom<Token<'_>> for Address {
 
     fn try_from(token: Token) -> Result<Self> {
         Ok(Self(u12::try_from(token)?))
+    }
+}
+
+impl TryFrom<Token<'_>> for OpCode {
+    type Error = Error;
+
+    fn try_from(token: Token) -> Result<Self> {
+        match token {
+            Token::Hex(s) => {
+                let word = Word::from(u16::from_str_radix(s, 16)?);
+                Ok(Self(word))
+            }
+            x => Err(Error::OpCodeSyntaxError(format!("{:?}", x))),
+        }
     }
 }

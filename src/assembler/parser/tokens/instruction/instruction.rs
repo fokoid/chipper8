@@ -1,5 +1,5 @@
 use crate::{Error, Result};
-use crate::machine::Instruction;
+use crate::machine::{Instruction, OpCode};
 
 use super::{Token, Tokens};
 
@@ -26,6 +26,10 @@ impl TryFrom<Tokens<'_>> for Instruction {
                 Some(Token::Other("await")) => Ok(Instruction::KeyAwait { args: tokens.try_into()? }),
                 Some(x) => Err(Error::SyntaxError(format!("key requires a subcommand, but got {:?}; allowed: await", x))),
                 None => Err(Error::SyntaxError(format!("key requires a subcommand; allowed: await"))),
+            }
+            Some(token @ Token::Hex(_)) => {
+                let opcode = OpCode::try_from(token)?;
+                Ok(opcode.try_into()?)
             }
             x => Err(Error::SyntaxError(format!("{:?}", x))),
         }

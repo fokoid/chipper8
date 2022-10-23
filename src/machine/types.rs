@@ -101,6 +101,31 @@ impl From<&Address> for usize {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Word(pub u16);
+
+impl Display for Word {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:#06X}", self.0)
+    }
+}
+
+impl From<u16> for Word {
+    fn from(value: u16) -> Self { Self(value) }
+}
+
+impl From<&Word> for u16 {
+    fn from(word: &Word) -> Self {
+        word.0
+    }
+}
+
+impl From<&Word> for usize {
+    fn from(word: &Word) -> Self {
+        u16::from(word) as usize
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Register(pub Nibble);
 
 impl Display for Register {
