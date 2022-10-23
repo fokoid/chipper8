@@ -1,8 +1,6 @@
 use std::fmt::{Debug, Display, Formatter};
 
-use ux::u4;
-
-use crate::machine::types::Register;
+use crate::machine::types::{Address, Byte, Nibble, Register};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Timer {
@@ -36,14 +34,14 @@ impl Display for Target {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Source {
-    Value(u8),
+    Byte(Byte),
     Register(Register),
 }
 
 impl Display for Source {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Value(x) => write!(f, "{:02X}", x),
+            Self::Byte(x) => write!(f, "{}", x),
             Self::Register(vx) => write!(f, "{}", vx),
         }
     }
@@ -56,8 +54,13 @@ pub struct SetArgs {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
+pub struct SetAddressArgs {
+    pub address: Address,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct DrawArgs {
     pub x: Register,
     pub y: Register,
-    pub height: u4,
+    pub height: Nibble,
 }

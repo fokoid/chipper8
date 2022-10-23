@@ -1,7 +1,7 @@
-use ux::u4;
+use ux::{u12, u4};
 
 use crate::{Error, Result};
-use crate::machine::types::Register;
+use crate::machine::types::{Address, Byte, Nibble, Register};
 
 #[derive(Debug)]
 pub enum Token<'a> {
@@ -17,10 +17,10 @@ impl<'a> From<&'a str> for Token<'a> {
         match s.chars().nth(0) {
             None => Self::None,
             Some('0') => match s.chars().nth(1) {
-                Some('x') => Self::Hex(s),
+                Some('x') => Self::Hex(&s[2..]),
                 _ => Self::Other(s),
             }
-            Some('V') if s.len() == 2 => Self::Register(s),
+            Some('V') if s.len() == 2 => Self::Register(&s[1..]),
             Some(':') => Self::Meta(s),
             Some(_) => Self::Other(s),
         }
@@ -43,22 +43,6 @@ impl<'a> From<Token<'a>> for String {
     }
 }
 
-impl TryFrom<Token<'_>> for u8 {
-    type Error = Error;
-
-    fn try_from(token: Token<'_>) -> Result<Self> {
-        match token {
-            Token::Other(s) => {
-                Ok(u8::from_str_radix(&s[1..], 10)?)
-            }
-            Token::Hex(s) => {
-                Ok(u8::from_str_radix(&s[1..], 16)?)
-            }
-            x => Err(Error::SyntaxError(format!("expected decimal or hex value, found {:?}", x))),
-        }
-    }
-}
-
 impl TryFrom<Token<'_>> for u4 {
     type Error = Error;
 
@@ -70,16 +54,83 @@ impl TryFrom<Token<'_>> for u4 {
     }
 }
 
+impl TryFrom<Token<'_>> for u8 {
+    type Error = Error;
+
+    fn try_from(token: Token<'_>) -> Result<Self> {
+        match token {
+            Token::Other(s) => {
+                Ok(u8::from_str_radix(s, 10)?)
+            }
+            Token::Hex(s) => {
+                Ok(u8::from_str_radix(s, 16)?)
+            }
+            x => Err(Error::SyntaxError(format!("expected decimal or hex value, found {:?}", x))),
+        }
+    }
+}
+
+impl TryFrom<Token<'_>> for u12 {
+    type Error = Error;
+
+    fn try_from(token: Token<'_>) -> Result<Self> {
+        let value = u16::try_from(token)?;
+        value.try_into().map_err(|_error|
+            Error::IntSizeError(String::from("word"), value.into())
+        )
+    }
+}
+
+impl TryFrom<Token<'_>> for u16 {
+    type Error = Error;
+
+    fn try_from(token: Token<'_>) -> Result<Self> {
+        match token {
+            Token::Other(s) => {
+                Ok(u16::from_str_radix(s, 10)?)
+            }
+            Token::Hex(s) => {
+                Ok(u16::from_str_radix(s, 16)?)
+            }
+            x => Err(Error::SyntaxError(format!("expected decimal or hex value, found {:?}", x))),
+        }
+    }
+}
+
 impl TryFrom<Token<'_>> for Register {
     type Error = Error;
 
-    fn try_from(token: Token) -> std::result::Result<Self, Self::Error> {
+    fn try_from(token: Token) -> Result<Self> {
         match token {
             Token::Register(s) => {
-                let value = u8::from_str_radix(&s[1..], 16)?;
+                let value = u8::from_str_radix(s, 16)?;
                 value.try_into()
             }
             x => Err(Error::SyntaxError(format!("expected register, found {:?}", x))),
         }
+    }
+}
+
+impl TryFrom<Token<'_>> for Nibble {
+    type Error = Error;
+
+    fn try_from(token: Token<'_>) -> Result<Self> {
+        Ok(Self(u4::try_from(token)?))
+    }
+}
+
+impl TryFrom<Token<'_>> for Byte {
+    type Error = Error;
+
+    fn try_from(token: Token<'_>) -> Result<Self> {
+        Ok(Self(u8::try_from(token)?))
+    }
+}
+
+impl TryFrom<Token<'_>> for Address {
+    type Error = Error;
+
+    fn try_from(token: Token) -> Result<Self> {
+        Ok(Self(u12::try_from(token)?))
     }
 }

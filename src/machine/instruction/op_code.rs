@@ -1,9 +1,7 @@
 use std::fmt::{Debug, Display, Formatter};
 
-use ux::u4;
-
 use crate::{Error, Result};
-use crate::machine::instruction::args::{self, DrawArgs, SetArgs, Source, Target};
+use crate::machine::instruction::args::{self, DrawArgs, SetAddressArgs, SetArgs, Source, Target};
 
 use super::Instruction;
 
@@ -41,12 +39,13 @@ impl TryFrom<&Instruction> for OpCode {
             match instruction {
                 Instruction::Exit => 0x00F0,
                 Instruction::ClearScreen => 0x00E0,
-                Instruction::Jump(address) => 0x1000 | (address & 0x0FFF),
+                Instruction::Jump { args } => 0x1000 | (u16::from(&args.address) & 0x0FFF),
+                Instruction::IndexSet { args } => 0xA000 | (u16::from(&args.address) & 0x0FFF),
                 Instruction::Set { args: SetArgs { source, target } } => {
                     match &target {
                         Target::Register(vx) => match &source {
-                            Source::Value(value) =>
-                                0x6000 | u16::from_be_bytes([vx.into(), *value]),
+                            Source::Byte(byte) =>
+                                0x6000 | u16::from_be_bytes([vx.into(), byte.into()]),
                             Source::Register(_vy) => todo!(),
                         }
                         Target::Timer(timer) => {
@@ -55,7 +54,7 @@ impl TryFrom<&Instruction> for OpCode {
                                 args::Timer::Sound => 0x18,
                             };
                             let upper_byte: u8 = match &source {
-                                Source::Value(_) => Err(Error::NoOpcodeError(instruction.clone()))?,
+                                Source::Byte(_) => Err(Error::NoOpcodeError(instruction.clone()))?,
                                 Source::Register(vx) => 0xF0u8 | u8::from(vx),
                             };
                             u16::from_be_bytes([upper_byte, lower_byte])
@@ -65,8 +64,8 @@ impl TryFrom<&Instruction> for OpCode {
                 Instruction::Add { args: SetArgs { source, target } } => {
                     match &target {
                         Target::Register(vx) => match &source {
-                            Source::Value(value) =>
-                                0x7000 | u16::from_be_bytes([vx.into(), *value]),
+                            Source::Byte(byte) =>
+                                0x7000 | u16::from_be_bytes([vx.into(), byte.into()]),
                             Source::Register(_vy) => todo!(),
                         }
                         Target::Timer(_) => {
@@ -74,9 +73,11 @@ impl TryFrom<&Instruction> for OpCode {
                         }
                     }
                 }
-                Instruction::IndexSet(value) => 0xA000 | (value & 0x0FFF),
-                Instruction::Draw { args: DrawArgs { x, y, height } } =>
-                    0xD000 | u16::from_be_bytes([u8::from(x), u8::from(y).rotate_left(4) | u8::from(*height)]),
+                Instruction::Draw { args } => {
+                    let upper_byte = 0xD0 | u8::from(&args.x);
+                    let lower_byte = u8::from(&args.y).rotate_left(4) | u8::from(&args.height);
+                    u16::from_be_bytes([upper_byte, lower_byte])
+                }
                 Instruction::TimerGet(register) => 0xF007 | u16::from_be_bytes([*register, 0]),
                 Instruction::Font(register) => 0xF029 | u16::from_be_bytes([*register, 0]),
                 Instruction::AwaitKey(register) => 0xF00A | u16::from_be_bytes([*register, 0]),
@@ -95,16 +96,18 @@ impl TryFrom<&OpCode> for Instruction {
                 0x0F0 => Ok(Instruction::Exit),
                 _ => Err(Error::InvalidOpCode(OpCode(opcode.0))),
             },
-            0x1000 => Ok(Instruction::Jump(opcode.0 & 0x0FFF)),
+            first @ (0x1000 | 0xA000) => {
+                let args = SetAddressArgs { address: (opcode.0 & 0x0FFF).try_into()? };
+                Ok(if first == 0x1000 { Instruction::Jump { args } } else { Instruction::IndexSet { args } })
+            }
             first @ (0x6000 | 0x7000) => {
-                let [register, value] = (opcode.0 & 0x0FFF).to_be_bytes();
+                let [register, lower_byte] = (opcode.0 & 0x0FFF).to_be_bytes();
                 let args = SetArgs {
-                    source: Source::Value(value),
+                    source: Source::Byte(lower_byte.into()),
                     target: Target::Register(register.try_into()?),
                 };
-                Ok(if first == 0x6000 { Instruction::Set { args } } else { Instruction::Add { args }})
+                Ok(if first == 0x6000 { Instruction::Set { args } } else { Instruction::Add { args } })
             }
-            0xA000 => Ok(Instruction::IndexSet(opcode.0 & 0x0FFF)),
             0xD000 => {
                 let [vx, lower] = (opcode.0 & 0xFFF).to_be_bytes();
                 let vy = lower.rotate_left(4) & 0x0F;
@@ -113,9 +116,7 @@ impl TryFrom<&OpCode> for Instruction {
                     args: DrawArgs {
                         x: vx.try_into()?,
                         y: vy.try_into()?,
-                        height: u4::try_from(height).map_err(|_error| {
-                            Error::IntSizeError(String::from("register"), height.into())
-                        })?,
+                        height: height.try_into()?,
                     }
                 })
             }

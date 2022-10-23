@@ -24,6 +24,7 @@ fn round_trip_opcode_instruction_text_instruction_opcode() {
         if let Ok(instruction) = Instruction::try_from(&opcode) {
             let text = format!("{}", instruction);
             let tokens = Tokens::from(text.as_str());
+            eprintln!("{}", text);
             let parsed: Instruction = tokens.try_into().unwrap();
             assert_eq!(parsed, instruction);
             assert_eq!(opcode.0, OpCode::try_from(&instruction).unwrap().0);

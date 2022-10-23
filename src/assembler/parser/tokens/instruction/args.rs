@@ -1,8 +1,20 @@
 use crate::{Error, Result};
 use crate::machine::instruction::args::{DrawArgs, SetArgs, Source, Target, Timer};
-use crate::machine::types::Register;
+use crate::machine::instruction::SetAddressArgs;
+use crate::machine::types::{Address, Nibble, Register};
 
 use super::{Token, Tokens};
+
+impl TryFrom<Tokens<'_>> for SetAddressArgs {
+    type Error = Error;
+
+    fn try_from(mut tokens: Tokens<'_>) -> Result<Self> {
+        let address = Address::try_from(tokens.next().ok_or(
+            Error::SyntaxError(String::from("expected an address"))
+        )?)?;
+        Ok(Self { address })
+    }
+}
 
 impl TryFrom<Tokens<'_>> for SetArgs {
     type Error = Error;
@@ -45,8 +57,8 @@ impl TryFrom<Token<'_>> for Source {
             Token::Register(_) => {
                 Ok(Self::Register(token.try_into()?))
             }
-            Token::Other(s) => {
-                Ok(Self::Value(u8::from_str_radix(s, 16)?))
+            token @ (Token::Hex(_) | Token::Other(_)) => {
+                Ok(Self::Byte(token.try_into()?))
             }
             x => {
                 Err(Error::SyntaxError(format!("expected register or value, found {:?}", x)))
@@ -65,18 +77,9 @@ impl TryFrom<Tokens<'_>> for DrawArgs {
         let y = Register::try_from(tokens.next().ok_or(
             Error::SyntaxError(String::from("draw requires a second register"))
         )?)?;
-        let height = u8::from_str_radix(match tokens.next().ok_or(
+        let height = Nibble::try_from(tokens.next().ok_or(
             Error::SyntaxError(String::from("draw requires a height"))
-        )? {
-            Token::Other(s) => Ok(s),
-            x => Err(Error::SyntaxError(format!("expected value, got {:?}", x)))
-        }?, 16)?;
-        Ok(Self {
-            x,
-            y,
-            height: height.try_into().map_err(|_error|
-                Error::IntSizeError(String::from("nibble"), height.into())
-            )?,
-        })
+        )?)?;
+        Ok(Self { x, y, height })
     }
 }

@@ -6,7 +6,7 @@ use crate::ui::Rom;
 use super::config;
 use super::draw_options::DrawOptions;
 use super::instruction::{Instruction, OpCode};
-use super::instruction::args::{self, DrawArgs, Source, Target};
+use super::instruction::args::{self, Source, Target};
 use super::stack::Stack;
 use super::types::{Pointer, Timer};
 
@@ -130,12 +130,15 @@ impl Machine {
         match instruction {
             Instruction::Exit => { return Err(Error::MachineExit); }
             Instruction::ClearScreen => self.display.fill(0),
-            Instruction::Jump(address) => {
-                self.program_counter = *address as Pointer;
+            Instruction::Jump { args } => {
+                self.program_counter = (&args.address).into();
+            }
+            Instruction::IndexSet { args } => {
+                self.index = (&args.address).into();
             }
             Instruction::Set { args } | Instruction::Add { args } => {
                 let source = match &args.source {
-                    Source::Value(x) => *x,
+                    Source::Byte(x) => x.into(),
                     Source::Register(r) => self.registers[usize::from(r)],
                 };
                 let target = match &args.target {
@@ -143,20 +146,17 @@ impl Machine {
                     Target::Timer(args::Timer::Sound) => &mut self.sound_timer,
                     Target::Register(r) => &mut self.registers[usize::from(r)],
                 };
-                if let Instruction::Set{ args: _ } = &instruction {
+                if let Instruction::Set { args: _ } = &instruction {
                     *target = source;
                 } else {
                     *target += source;
                 }
             }
-            Instruction::IndexSet(value) => {
-                self.index = *value as Pointer;
-            }
-            Instruction::Draw { args: DrawArgs { x, y, height } } => {
-                let x = self.registers[usize::from(x)] as usize % config::DISPLAY_WIDTH;
-                let y = self.registers[usize::from(y)] as usize % config::DISPLAY_HEIGHT;
+            Instruction::Draw { args } => {
+                let x = self.registers[usize::from(&args.x)] as usize % config::DISPLAY_WIDTH;
+                let y = self.registers[usize::from(&args.y)] as usize % config::DISPLAY_HEIGHT;
                 DrawOptions::new(
-                    &self.memory[self.index..self.index + u8::from(*height) as usize],
+                    &self.memory[self.index..self.index + u8::from(&args.height) as usize],
                     &mut self.display,
                     [config::DISPLAY_WIDTH, config::DISPLAY_HEIGHT],
                 ).at([x, y]).draw();

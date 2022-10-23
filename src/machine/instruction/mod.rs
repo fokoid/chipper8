@@ -1,4 +1,4 @@
-pub use args::{DrawArgs, SetArgs};
+pub use args::{DrawArgs, SetAddressArgs, SetArgs};
 pub use instruction::Instruction;
 pub use op_code::OpCode;
 
