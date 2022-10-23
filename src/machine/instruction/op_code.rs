@@ -36,19 +36,20 @@ impl TryFrom<&Instruction> for OpCode {
             Instruction::ClearScreen => 0x00E0,
             Instruction::Jump { args } => 0x1000 | (u16::from(&args.address) & 0x0FFF),
             Instruction::IndexSet { args } => 0xA000 | (u16::from(&args.address) & 0x0FFF),
-            Instruction::Set { args: SetArgs { source, target } } => {
-                match &target {
-                    Target::Register(vx) => match &source {
+            Instruction::Set { args } => {
+                match &args.target {
+                    Target::Register(vx) => match &args.source {
                         Source::Byte(byte) =>
                             0x6000 | u16::from_be_bytes([vx.into(), byte.into()]),
-                        Source::Register(_vy) => todo!(),
+                        Source::Register(vy) =>
+                            0x8000 | u16::from_be_bytes([vx.into(), u8::from(vy).rotate_left(4)]),
                     }
                     Target::Timer(timer) => {
                         let lower_byte: u8 = match timer {
                             args::Timer::Delay => 0x15,
                             args::Timer::Sound => 0x18,
                         };
-                        let upper_byte: u8 = match &source {
+                        let upper_byte: u8 = match &args.source {
                             Source::Byte(_) => Err(Error::NoOpcodeError(instruction.clone()))?,
                             Source::Register(vx) => 0xF0u8 | u8::from(vx),
                         };
@@ -56,12 +57,15 @@ impl TryFrom<&Instruction> for OpCode {
                     }
                 }
             }
-            Instruction::Add { args: SetArgs { source, target } } => {
-                match &target {
-                    Target::Register(vx) => match &source {
+            Instruction::Add { args } => {
+                match &args.target {
+                    Target::Register(vx) => match &args.source {
                         Source::Byte(byte) =>
                             0x7000 | u16::from_be_bytes([vx.into(), byte.into()]),
-                        Source::Register(_vy) => todo!(),
+                        Source::Register(vy) => {
+                            let lower = u8::from(vy).rotate_left(4) | 0x04;
+                            0x8000 | u16::from_be_bytes([vx.into(), lower])
+                        }
                     }
                     Target::Timer(_) => {
                         panic!("not implemented");
@@ -93,17 +97,29 @@ impl TryFrom<OpCode> for Instruction {
                 0x0F0 => Ok(Instruction::Exit),
                 _ => Err(Error::InvalidOpCode(opcode)),
             },
-            first @ (0x1000 | 0xA000) => {
+            0x1000 | 0xA000 => {
                 let args = SetAddressArgs { address: rest.try_into()? };
-                Ok(if first == 0x1000 { Instruction::Jump { args } } else { Instruction::IndexSet { args } })
+                Ok(if highest == 0x1000 { Instruction::Jump { args } } else { Instruction::IndexSet { args } })
             }
-            first @ (0x6000 | 0x7000) => {
+            0x6000 | 0x7000 => {
                 let [register, lower_byte] = rest.to_be_bytes();
                 let args = SetArgs {
                     source: Source::Byte(lower_byte.into()),
                     target: Target::Register(register.try_into()?),
+                    // for assignment 0x6000 carry, doesn't matter, but addition 0x7000 is the one
+                    // arithmetic operation on CHIP-8 for which the carry bit should not be set
+                    carry: false,
                 };
-                Ok(if first == 0x6000 { Instruction::Set { args } } else { Instruction::Add { args } })
+                Ok(if highest == 0x7000 { Instruction::Add { args } } else { Instruction::Set { args } })
+            }
+            0x8000 if rest & 0x00F == 0 || rest & 0x00F == 4 => {
+                let [vx, vy] = rest.to_be_bytes();
+                let args = SetArgs {
+                    source: Source::Register((vy & 0xF0).rotate_right(4).try_into()?),
+                    target: Target::Register(vx.try_into()?),
+                    carry: true,
+                };
+                Ok(if rest & 0x00F == 4 { Instruction::Add { args } } else { Instruction::Set { args } })
             }
             0xD000 => {
                 let [vx, lower] = rest.to_be_bytes();
@@ -126,7 +142,8 @@ impl TryFrom<OpCode> for Instruction {
                     byte @ (0x15 | 0x18) => {
                         let target = Target::Timer(if byte == 0x15 { args::Timer::Delay } else { args::Timer::Sound });
                         let source = Source::Register(register);
-                        Ok(Instruction::Set { args: SetArgs { target, source } })
+                        // todo: different args for this? presence of carry flag here is confusing
+                        Ok(Instruction::Set { args: SetArgs { target, source, carry: true } })
                     }
                     _ => Err(Error::InvalidOpCode(opcode)),
                 }

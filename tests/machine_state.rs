@@ -1,5 +1,6 @@
-use chipper8::{Emulator, EmulatorConfig, Machine};
 use std::fs;
+
+use chipper8::{Emulator, EmulatorConfig, Machine};
 
 fn test_state(name: &str) {
     let rom_path = format!("tests/roms/{}.rom", name);

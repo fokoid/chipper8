@@ -26,11 +26,10 @@ impl TryFrom<Tokens<'_>> for SetArgs {
         let source = Source::try_from(tokens.next().ok_or(
             Error::SyntaxError(String::from("set requires a source"))
         )?)?;
-        if let Some(x) = tokens.next() {
-            Err(Error::SyntaxError(format!("unexpected token {:?}", x)))
-        } else {
-            Ok(Self { target, source })
-        }
+        // carry flag only matters for arithmetic, not assignment. the only case when carry flag is
+        // not set is constant addition 0x7000
+        let carry = if let Source::Byte(_) = &source { false } else { true };
+        Ok(Self { target, source, carry })
     }
 }
 

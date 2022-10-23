@@ -151,7 +151,9 @@ impl Machine {
                 if let Instruction::Set { args: _ } = &instruction {
                     *target = source;
                 } else {
-                    *target += source;
+                    let (result, carry_flag) = target.overflowing_add(source);
+                    *target = result;
+                    self.registers[0xF] = u8::from(carry_flag & args.carry);
                 }
             }
             Instruction::Draw { args } => {

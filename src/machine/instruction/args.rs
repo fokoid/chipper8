@@ -47,10 +47,12 @@ impl Display for Source {
     }
 }
 
+// todo: probably rename to ArithmeticArgs
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SetArgs {
     pub target: Target,
     pub source: Source,
+    pub carry: bool,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
