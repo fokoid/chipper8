@@ -1,6 +1,6 @@
 use std::fmt::{Debug, Display, Formatter};
 
-pub use instructions::{Register, SetArgs, Source, Target, Timer};
+pub use instructions::{DrawArgs, SetArgs, Source, Target, Timer};
 pub use opcode::OpCode;
 
 use crate::{Error, Result};
@@ -18,7 +18,7 @@ pub enum Instruction {
     Add(u8, u8),
     IndexSet(u16),
     TimerGet(u8),
-    Draw(u8, u8, u8),
+    Draw{ args: DrawArgs },
     Font(u8),
     AwaitKey(u8),
 }
@@ -38,6 +38,7 @@ impl Instruction {
                 None => Err(Error::SyntaxError(format!("jmp requires an address"))),
             }
             Some(Token::Other("set")) => Ok(Instruction::Set { args: SetArgs::parse(tokens)? }),
+            Some(Token::Other("draw")) => Ok(Instruction::Draw { args: DrawArgs::parse(tokens)? }),
             Some(Token::Other("add")) => match tokens.next() {
                 Some(Token::Other(s)) => {
                     // todo: bounds checking (12 bit address)
@@ -64,28 +65,6 @@ impl Instruction {
                     None => Err(Error::SyntaxError(format!("index set requires an address"))),
                 },
                 None | Some(_) => Err(Error::SyntaxError(String::from("allowed index sub commands: set"))),
-            },
-            Some(Token::Other("draw")) => match tokens.next() {
-                Some(Token::Other(s)) => {
-                    // todo: bounds checking (12 bit address)
-                    let vx = u8::from_str_radix(s, 16)?;
-                    match tokens.next() {
-                        Some(Token::Other(s)) => {
-                            let vy = u8::from_str_radix(s, 16)?;
-                            match tokens.next() {
-                                Some(Token::Other(s)) => Ok(Instruction::Draw(
-                                    vx, vy, u8::from_str_radix(s, 16)?,
-                                )),
-                                Some(x) => Err(Error::SyntaxError(format!("draw requires a value {:?}", x))),
-                                None => Err(Error::SyntaxError(format!("draw requires a value"))),
-                            }
-                        }
-                        Some(x) => Err(Error::SyntaxError(format!("draw requires a second register but got {:?}", x))),
-                        None => Err(Error::SyntaxError(format!("draw requires a second register"))),
-                    }
-                }
-                Some(x) => Err(Error::SyntaxError(format!("draw requires a register but got {:?}", x))),
-                None => Err(Error::SyntaxError(format!("draw requires a register"))),
             },
             Some(Token::Other("timer")) => match tokens.next() {
                 Some(Token::Other("get")) => match tokens.next() {
@@ -126,7 +105,7 @@ impl Display for Instruction {
             Self::Set { args } => write!(f, "set {} {}", args.target, args.source),
             Self::Add(register, value) => write!(f, "add {:01X} {:02X}", register, value),
             Self::IndexSet(value) => write!(f, "index set {:03X}", value),
-            Self::Draw(vx, vy, height) => write!(f, "draw {:01X} {:01X} {:01X}", vx, vy, height),
+            Self::Draw { args } => write!(f, "draw {} {} {:01X}", args.x, args.y, args.height),
             Self::Font(vx) => write!(f, "font {:01X}", vx),
             Self::TimerGet(register) => write!(f, "timer get {:02X}", register),
             Self::AwaitKey(register) => write!(f, "key await {:01X}", register),

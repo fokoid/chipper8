@@ -5,7 +5,7 @@ use crate::ui::Rom;
 
 use super::config;
 use super::draw_options::DrawOptions;
-use super::instruction::{self, Instruction, OpCode, SetArgs, Source, Target};
+use super::instruction::{self, Instruction, OpCode, SetArgs, DrawArgs, Source, Target};
 use super::stack::Stack;
 use super::types::{Pointer, Timer};
 
@@ -149,10 +149,11 @@ impl Machine {
             Instruction::IndexSet(value) => {
                 self.index = *value as Pointer;
             }
-            Instruction::Draw(vx, vy, height) => {
-                let [x, y] = [self.registers[*vx as usize] as usize % config::DISPLAY_WIDTH, self.registers[*vy as usize] as usize % config::DISPLAY_HEIGHT];
+            Instruction::Draw{ args: DrawArgs { x, y, height } } => {
+                let x = self.registers[u8::from(x.index) as usize] as usize % config::DISPLAY_WIDTH;
+                let y = self.registers[u8::from(y.index) as usize] as usize % config::DISPLAY_HEIGHT;
                 DrawOptions::new(
-                    &self.memory[self.index..self.index + *height as usize],
+                    &self.memory[self.index..self.index + u8::from(*height) as usize],
                     &mut self.display,
                     [config::DISPLAY_WIDTH, config::DISPLAY_HEIGHT],
                 ).at([x, y]).draw();

@@ -1,8 +1,10 @@
 use std::fmt::{Debug, Display, Formatter};
 
+use ux::u4;
+
 use crate::{Error, Result};
 use crate::command::tokens::{Token, Tokens};
-use crate::machine::instruction::{self, SetArgs, Source, Target};
+use crate::machine::instruction::{self, DrawArgs, SetArgs, Source, Target};
 
 use super::Instruction;
 
@@ -73,8 +75,8 @@ impl TryFrom<&Instruction> for OpCode {
                 Instruction::Add(register, value) =>
                     0x7000 | u16::from_be_bytes([*register, *value]),
                 Instruction::IndexSet(value) => 0xA000 | (value & 0x0FFF),
-                Instruction::Draw(vx, vy, height) =>
-                    0xD000 | u16::from_be_bytes([*vx, vy.rotate_left(4) | *height]),
+                Instruction::Draw{ args: DrawArgs { x, y, height}} =>
+                    0xD000 | u16::from_be_bytes([u8::from(x.index), u8::from(y.index).rotate_left(4) | u8::from(*height)]),
                 Instruction::TimerGet(register) => 0xF007 | u16::from_be_bytes([*register, 0]),
                 Instruction::Font(register) => 0xF029 | u16::from_be_bytes([*register, 0]),
                 Instruction::AwaitKey(register) => 0xF00A | u16::from_be_bytes([*register, 0]),
@@ -110,7 +112,15 @@ impl OpCode {
                 let [vx, lower] = (self.0 & 0xFFF).to_be_bytes();
                 let vy = lower.rotate_left(4) & 0x0F;
                 let height = lower & 0x0F;
-                Ok(Instruction::Draw(vx, vy, height))
+                Ok(Instruction::Draw {
+                    args: DrawArgs {
+                        x: vx.try_into()?,
+                        y: vy.try_into()?,
+                        height: u4::try_from(height).map_err(|_error| {
+                            Error::IntSizeError(String::from("register"), height.into())
+                        })?
+                    }
+                })
             }
             0xF000 => {
                 match self.0 & 0x00FF {
