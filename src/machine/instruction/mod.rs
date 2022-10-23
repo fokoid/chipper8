@@ -1,10 +1,10 @@
 use std::fmt::{Debug, Display, Formatter};
 
-pub use instructions::{Register, DrawArgs, SetArgs, Source, Target, Timer};
+pub use args::{DrawArgs, SetArgs};
 pub use opcode::OpCode;
 
+pub mod args;
 mod opcode;
-mod instructions;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Instruction {
@@ -15,7 +15,7 @@ pub enum Instruction {
     Add(u8, u8),
     IndexSet(u16),
     TimerGet(u8),
-    Draw{ args: DrawArgs },
+    Draw { args: DrawArgs },
     Font(u8),
     AwaitKey(u8),
 }

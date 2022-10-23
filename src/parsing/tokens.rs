@@ -1,8 +1,9 @@
 use std::str::SplitWhitespace;
 
 use crate::{Error, Result};
+use crate::command::{Command, MachineState, MetaCommand};
 use crate::machine::{Instruction, OpCode};
-use crate::command::{Command, MetaCommand, MachineState};
+
 use super::token::Token;
 
 #[derive(Debug)]
@@ -139,7 +140,7 @@ impl TryFrom<Tokens<'_>> for Option<Command> {
             None | Some(Token::None) => Ok(None),
             Some(Token::Hex(_)) => {
                 let opcode = OpCode::try_from(tokens)?;
-                Ok(Some(Command::Instruction(opcode.as_instruction()?)))
+                Ok(Some(Command::Instruction(Instruction::try_from(&opcode)?)))
             }
             Some(token @ Token::Register(_)) => {
                 Err(Error::SyntaxError(format!("unexpected token {:?}", token)))

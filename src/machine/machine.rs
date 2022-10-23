@@ -5,7 +5,8 @@ use crate::ui::Rom;
 
 use super::config;
 use super::draw_options::DrawOptions;
-use super::instruction::{self, Instruction, OpCode, SetArgs, DrawArgs, Source, Target};
+use super::instruction::{Instruction, OpCode};
+use super::instruction::args::{self, DrawArgs, SetArgs, Source, Target};
 use super::stack::Stack;
 use super::types::{Pointer, Timer};
 
@@ -103,7 +104,8 @@ impl Machine {
     }
 
     pub fn instruction_at_address(&self, address: usize) -> Result<Instruction> {
-        OpCode(self.word_at_address(address).unwrap_or(0)).as_instruction()
+        let opcode = OpCode(self.word_at_address(address).unwrap_or(0));
+        Instruction::try_from(&opcode)
     }
 
     fn set_instruction_at_address(&mut self, address: usize, instruction: &Instruction) -> Result<()> {
@@ -134,12 +136,12 @@ impl Machine {
             Instruction::Set { args: SetArgs { source, target } } => {
                 let source = match &source {
                     Source::Value(x) => *x,
-                    Source::Register(r) => self.registers[u8::from(r.index) as usize],
+                    Source::Register(r) => self.registers[usize::from(r)],
                 };
                 let target = match &target {
-                    Target::Timer(instruction::Timer::Delay) => &mut self.delay_timer,
-                    Target::Timer(instruction::Timer::Sound) => &mut self.sound_timer,
-                    Target::Register(r) => &mut self.registers[u8::from(r.index) as usize],
+                    Target::Timer(args::Timer::Delay) => &mut self.delay_timer,
+                    Target::Timer(args::Timer::Sound) => &mut self.sound_timer,
+                    Target::Register(r) => &mut self.registers[usize::from(r)],
                 };
                 *target = source;
             }
@@ -149,9 +151,9 @@ impl Machine {
             Instruction::IndexSet(value) => {
                 self.index = *value as Pointer;
             }
-            Instruction::Draw{ args: DrawArgs { x, y, height } } => {
-                let x = self.registers[u8::from(x.index) as usize] as usize % config::DISPLAY_WIDTH;
-                let y = self.registers[u8::from(y.index) as usize] as usize % config::DISPLAY_HEIGHT;
+            Instruction::Draw { args: DrawArgs { x, y, height } } => {
+                let x = self.registers[usize::from(x)] as usize % config::DISPLAY_WIDTH;
+                let y = self.registers[usize::from(y)] as usize % config::DISPLAY_HEIGHT;
                 DrawOptions::new(
                     &self.memory[self.index..self.index + u8::from(*height) as usize],
                     &mut self.display,

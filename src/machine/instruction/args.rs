@@ -1,6 +1,8 @@
 use std::fmt::{Debug, Display, Formatter};
 
-use super::Register;
+use ux::u4;
+
+use crate::machine::types::Register;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Timer {
@@ -51,4 +53,11 @@ impl Display for Source {
 pub struct SetArgs {
     pub target: Target,
     pub source: Source,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct DrawArgs {
+    pub x: Register,
+    pub y: Register,
+    pub height: u4,
 }

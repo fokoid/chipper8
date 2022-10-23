@@ -1,6 +1,6 @@
 use crate::{Error, Result};
+use crate::machine::instruction::args::{SetArgs, Source, Target, Timer};
 use crate::parsing::{Token, Tokens};
-use crate::machine::instruction::{SetArgs, Target, Source, Timer};
 
 impl TryFrom<Tokens<'_>> for SetArgs {
     type Error = Error;

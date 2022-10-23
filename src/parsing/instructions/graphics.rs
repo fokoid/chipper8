@@ -1,6 +1,7 @@
 use crate::{Error, Result};
+use crate::machine::instruction::DrawArgs;
+use crate::machine::types::Register;
 use crate::parsing::{Token, Tokens};
-use crate::machine::instruction::{DrawArgs, Register};
 
 impl TryFrom<Tokens<'_>> for DrawArgs {
     type Error = Error;
@@ -18,8 +19,12 @@ impl TryFrom<Tokens<'_>> for DrawArgs {
             Token::Other(s) => Ok(s),
             x => Err(Error::SyntaxError(format!("expected value, got {:?}", x)))
         }?, 16)?;
-        Ok(Self { x, y, height: height.try_into().map_err(|_error|
-            Error::IntSizeError(String::from("nibble"), height.into())
-        )? })
+        Ok(Self {
+            x,
+            y,
+            height: height.try_into().map_err(|_error|
+                Error::IntSizeError(String::from("nibble"), height.into())
+            )?,
+        })
     }
 }

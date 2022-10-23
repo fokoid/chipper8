@@ -1,6 +1,7 @@
 use ux::u4;
+
 use crate::{Error, Result};
-use crate::machine::Register;
+use crate::machine::types::Register;
 
 #[derive(Debug)]
 pub enum Token<'a> {
