@@ -1,13 +1,13 @@
 use std::fmt::{Debug, Display, Formatter};
 
-use super::args::{DrawArgs, RegisterArgs, SetAddressArgs, SetArgs};
+use super::args::{DrawArgs, RegisterArgs, AddressArgs, SetArgs};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Instruction {
     Exit,
     Graphics(Graphics),
     Flow(Flow),
-    IndexSet { args: SetAddressArgs },
+    IndexSet { args: AddressArgs },
     Set { args: SetArgs },
     Add { args: SetArgs },
     GetTimer { args: RegisterArgs },
@@ -24,7 +24,7 @@ pub enum Graphics {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Flow {
     Return,
-    Jump { args: SetAddressArgs },
+    Jump { args: AddressArgs },
 }
 
 impl Display for Instruction {

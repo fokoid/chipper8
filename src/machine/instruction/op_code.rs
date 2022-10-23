@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display, Formatter};
 
 use crate::{Error, Result};
-use crate::machine::instruction::args::{self, DrawArgs, RegisterArgs, SetAddressArgs, SetArgs, Source, Target};
+use crate::machine::instruction::args::{self, DrawArgs, RegisterArgs, AddressArgs, SetArgs, Source, Target};
 use crate::machine::instruction::{Flow, Graphics};
 use crate::machine::types::{Register, Word};
 
@@ -105,7 +105,7 @@ impl TryFrom<OpCode> for Instruction {
                 _ => Err(Error::InvalidOpCode(opcode)),
             },
             0x1000 | 0xA000 => {
-                let args = SetAddressArgs { address: rest.try_into()? };
+                let args = AddressArgs { address: rest.try_into()? };
                 Ok(if highest == 0x1000 { Instruction::Flow(Flow::Jump { args }) } else { Instruction::IndexSet { args } })
             }
             0x6000 | 0x7000 => {

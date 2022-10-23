@@ -1,11 +1,11 @@
 use crate::{Error, Result};
 use crate::machine::instruction::args::{DrawArgs, RegisterArgs, SetArgs, Source, Target, Timer};
-use crate::machine::instruction::SetAddressArgs;
+use crate::machine::instruction::AddressArgs;
 use crate::machine::types::{Address, Nibble, Register};
 
 use super::{Token, Tokens};
 
-impl TryFrom<Tokens<'_>> for SetAddressArgs {
+impl TryFrom<Tokens<'_>> for AddressArgs {
     type Error = Error;
 
     fn try_from(mut tokens: Tokens<'_>) -> Result<Self> {

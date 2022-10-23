@@ -56,7 +56,7 @@ pub struct SetArgs {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct SetAddressArgs {
+pub struct AddressArgs {
     pub address: Address,
 }
 
