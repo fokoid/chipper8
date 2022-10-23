@@ -2,11 +2,11 @@
 
 This directory contains a number of CHIP-8 ROMs for testing and demonstration purposes.
 
-| ROM           | Description                                                        | License   | Source                                                              |
-|---------------|--------------------------------------------------------------------|-----------|---------------------------------------------------------------------|
-| `key_display` | Displays last pressed key, then blocks waiting for keyboard input. | Project   |                                                                     |
-| `chip8-test`  | Tests CHIP-8 instruction set.                                      | MIT       | [corax89/chip8-test-rom](https://github.com/corax89/chip8-test-rom) |
-| `BC_test`     | Tests CHIP-8 instruction set.                                      | See below | BestCoder                                                           |
+| ROM             | Description                                                        | License   | Source                                                              |
+|-----------------|--------------------------------------------------------------------|-----------|---------------------------------------------------------------------|
+| `key_display`   | Displays last pressed key, then blocks waiting for keyboard input. | Project   |                                                                     |
+| `tests/corax89` | Tests CHIP-8 instruction set.                                      | MIT       | [corax89/chip8-test-rom](https://github.com/corax89/chip8-test-rom) |
+| `tests/bc`      | Tests CHIP-8 instruction set.                                      | See below | BestCoder                                                           |
 
 ## Details
 
