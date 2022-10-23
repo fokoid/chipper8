@@ -1,5 +1,5 @@
 use crate::{Error, Result};
-use crate::machine::{Instruction, OpCode};
+use crate::machine::instruction::{Graphics, Instruction, OpCode};
 
 use super::{Token, Tokens};
 
@@ -10,12 +10,11 @@ impl TryFrom<Tokens<'_>> for Instruction {
         // todo: parse entire token stream
         match tokens.next() {
             Some(Token::Other("exit")) => Ok(Self::Exit),
-            Some(Token::Other("cls")) => Ok(Self::ClearScreen),
+            Some(Token::Other("graphics")) => Ok(Self::Graphics(tokens.try_into()?)),
             Some(Token::Other("jmp")) => Ok(Instruction::Jump { args: tokens.try_into()? }),
             Some(Token::Other("index")) => Ok(Instruction::IndexSet { args: tokens.try_into()? }),
             Some(Token::Other("set")) => Ok(Instruction::Set { args: tokens.try_into()? }),
             Some(Token::Other("add")) => Ok(Instruction::Add { args: tokens.try_into()? }),
-            Some(Token::Other("draw")) => Ok(Instruction::Draw { args: tokens.try_into()? }),
             Some(Token::Other("get")) => match tokens.next() {
                 Some(Token::Other("timer")) => Ok(Instruction::GetTimer { args: tokens.try_into()? }),
                 Some(x) => Err(Error::SyntaxError(format!("get requires a subcommand, but got {:?}; allowed: timer", x))),
@@ -32,6 +31,24 @@ impl TryFrom<Tokens<'_>> for Instruction {
                 Ok(opcode.try_into()?)
             }
             x => Err(Error::SyntaxError(format!("{:?}", x))),
+        }
+    }
+}
+
+impl TryFrom<Tokens<'_>> for Graphics {
+    type Error = Error;
+
+    fn try_from(mut tokens: Tokens<'_>) -> Result<Self> {
+        match tokens.next() {
+            Some(Token::Other("clear")) => Ok(Graphics::Clear),
+            Some(Token::Other("draw")) => Ok(Graphics::Draw { args: tokens.try_into()? }),
+            Some(Token::Other(s)) => Err(Error::SyntaxError(format!(
+                "unrecognized graphics system instruction {}", s
+            ))),
+            Some(x) => Err(Error::SyntaxError(format!(
+                "expected graphics system instruction, got {:?}", x
+            ))),
+            None => Err(Error::SyntaxError(format!("expected graphics system instruction"))),
         }
     }
 }

@@ -1,5 +1,5 @@
 pub use args::{DrawArgs, SetAddressArgs, SetArgs};
-pub use instruction::Instruction;
+pub use instruction::{Graphics, Instruction};
 pub use op_code::OpCode;
 
 pub mod args;

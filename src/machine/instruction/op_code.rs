@@ -2,6 +2,7 @@ use std::fmt::{Debug, Display, Formatter};
 
 use crate::{Error, Result};
 use crate::machine::instruction::args::{self, DrawArgs, RegisterArgs, SetAddressArgs, SetArgs, Source, Target};
+use crate::machine::instruction::Graphics;
 use crate::machine::types::{Register, Word};
 
 use super::Instruction;
@@ -33,7 +34,14 @@ impl TryFrom<&Instruction> for OpCode {
     fn try_from(instruction: &Instruction) -> Result<Self> {
         let op_code = match instruction {
             Instruction::Exit => 0x00F0,
-            Instruction::ClearScreen => 0x00E0,
+            Instruction::Graphics(graphics) => match graphics {
+                Graphics::Clear => 0x00E0,
+                Graphics::Draw { args } => {
+                    let upper_byte = 0xD0 | u8::from(&args.x);
+                    let lower_byte = u8::from(&args.y).rotate_left(4) | u8::from(&args.height);
+                    u16::from_be_bytes([upper_byte, lower_byte])
+                }
+            }
             Instruction::Jump { args } => 0x1000 | (u16::from(&args.address) & 0x0FFF),
             Instruction::IndexSet { args } => 0xA000 | (u16::from(&args.address) & 0x0FFF),
             Instruction::Set { args } => {
@@ -72,11 +80,6 @@ impl TryFrom<&Instruction> for OpCode {
                     }
                 }
             }
-            Instruction::Draw { args } => {
-                let upper_byte = 0xD0 | u8::from(&args.x);
-                let lower_byte = u8::from(&args.y).rotate_left(4) | u8::from(&args.height);
-                u16::from_be_bytes([upper_byte, lower_byte])
-            }
             // todo: deduplicate
             Instruction::GetTimer { args } => 0xF007 | u16::from_be_bytes([u8::from(&args.register), 0]),
             Instruction::Font { args } => 0xF029 | u16::from_be_bytes([u8::from(&args.register), 0]),
@@ -93,7 +96,7 @@ impl TryFrom<OpCode> for Instruction {
         let (highest, rest) = (opcode.0.0 & 0xF000, opcode.0.0 & 0x0FFF);
         match highest {
             0 => match rest {
-                0x0E0 => Ok(Instruction::ClearScreen),
+                0x0E0 => Ok(Instruction::Graphics(Graphics::Clear)),
                 0x0F0 => Ok(Instruction::Exit),
                 _ => Err(Error::InvalidOpCode(opcode)),
             },
@@ -125,13 +128,13 @@ impl TryFrom<OpCode> for Instruction {
                 let [vx, lower] = rest.to_be_bytes();
                 let vy = lower.rotate_left(4) & 0x0F;
                 let height = lower & 0x0F;
-                Ok(Instruction::Draw {
+                Ok(Instruction::Graphics(Graphics::Draw {
                     args: DrawArgs {
                         x: vx.try_into()?,
                         y: vy.try_into()?,
                         height: height.try_into()?,
                     }
-                })
+                }))
             }
             0xF000 => {
                 let register = Register::try_from((rest & 0x0F00).to_be_bytes()[0])?;

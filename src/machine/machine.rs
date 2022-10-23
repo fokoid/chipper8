@@ -7,7 +7,7 @@ use crate::ui::Rom;
 
 use super::config;
 use super::draw_options::DrawOptions;
-use super::instruction::{Instruction, OpCode};
+use super::instruction::{Graphics, Instruction, OpCode};
 use super::instruction::args::{self, Source, Target};
 use super::stack::Stack;
 use super::types::{Pointer, Timer};
@@ -86,7 +86,7 @@ impl Machine {
         self.stack.push(0xAAA);
         self.stack.push(0xBBB);
         // put some instructions at these stack addresses show they show in the visualization
-        self.set_instruction_at_address(0xAAA, &Instruction::ClearScreen)?;
+        self.set_instruction_at_address(0xAAA, &Instruction::Graphics(Graphics::Clear))?;
         self.set_instruction_at_address(0xBBB, &Instruction::try_from(Tokens::from("font 0x3")).unwrap())?;
         self.registers[0] = 0x12;
         self.registers[1] = 0xAB;
@@ -131,7 +131,18 @@ impl Machine {
     pub fn execute(&mut self, instruction: &Instruction) -> Result<()> {
         match instruction {
             Instruction::Exit => { return Err(Error::MachineExit); }
-            Instruction::ClearScreen => self.display.fill(0),
+            Instruction::Graphics(graphics) => match graphics {
+                Graphics::Clear => { self.display.fill(0); }
+                Graphics::Draw { args } => {
+                    let x = self.registers[usize::from(&args.x)] as usize % config::DISPLAY_WIDTH;
+                    let y = self.registers[usize::from(&args.y)] as usize % config::DISPLAY_HEIGHT;
+                    DrawOptions::new(
+                        &self.memory[self.index..self.index + u8::from(&args.height) as usize],
+                        &mut self.display,
+                        [config::DISPLAY_WIDTH, config::DISPLAY_HEIGHT],
+                    ).at([x, y]).draw();
+                }
+            }
             Instruction::Jump { args } => {
                 self.program_counter = (&args.address).into();
             }
@@ -155,15 +166,6 @@ impl Machine {
                     *target = result;
                     self.registers[0xF] = u8::from(carry_flag & args.carry);
                 }
-            }
-            Instruction::Draw { args } => {
-                let x = self.registers[usize::from(&args.x)] as usize % config::DISPLAY_WIDTH;
-                let y = self.registers[usize::from(&args.y)] as usize % config::DISPLAY_HEIGHT;
-                DrawOptions::new(
-                    &self.memory[self.index..self.index + u8::from(&args.height) as usize],
-                    &mut self.display,
-                    [config::DISPLAY_WIDTH, config::DISPLAY_HEIGHT],
-                ).at([x, y]).draw();
             }
             Instruction::Font { args } => {
                 let char = self.registers[usize::from(&args.register)] as usize & 0x0F;
