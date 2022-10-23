@@ -7,9 +7,9 @@ use std::time::Duration;
 use egui::Color32;
 
 use crate::{Error, Result};
+use crate::assembler::Tokens;
 use crate::command::Command;
 use crate::machine;
-use crate::parsing::Tokens;
 
 use super::command_history::CommandHistory;
 use super::KeyCapture;
