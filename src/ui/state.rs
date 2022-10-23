@@ -9,6 +9,7 @@ use egui::Color32;
 use crate::{Error, Result};
 use crate::command::Command;
 use crate::machine;
+use crate::parsing::Tokens;
 
 use super::command_history::CommandHistory;
 use super::KeyCapture;
@@ -53,7 +54,8 @@ impl State {
     }
 
     pub fn parse_command(&mut self, input: &str) {
-        match Command::parse(input.into()) {
+        let tokens = Tokens::from(input);
+        match tokens.try_into() {
             Ok(Some(command)) => {
                 self.command_buffer.replace(command);
                 self.error.take();

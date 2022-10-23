@@ -3,7 +3,6 @@ use std::fmt::{Debug, Display, Formatter};
 use ux::u4;
 
 use crate::{Error, Result};
-use crate::command::tokens::{Token, Tokens};
 use crate::machine::instruction::{self, DrawArgs, SetArgs, Source, Target};
 
 use super::Instruction;
@@ -11,15 +10,6 @@ use super::Instruction;
 pub struct OpCode(pub u16);
 
 impl OpCode {
-    pub fn parse(mut tokens: Tokens) -> Result<Self> {
-        match tokens.next() {
-            Some(Token::Hex(s)) => {
-                Ok(OpCode(u16::from_str_radix(&s[2..], 16)?))
-            }
-            x => Err(Error::OpCodeSyntaxError(format!("{:?}", x))),
-        }
-    }
-
     pub fn bytes(&self) -> [u8; 2] {
         self.0.to_be_bytes()
     }

@@ -1,4 +1,5 @@
 use super::*;
+use crate::parsing::Tokens;
 
 #[test]
 fn round_trip_opcode_instruction_opcode() {
@@ -21,7 +22,8 @@ fn round_trip_opcode_instruction_text_instruction_opcode() {
         let opcode = OpCode(opcode);
         if let Ok(instruction) = opcode.as_instruction() {
             let text = format!("{}", instruction);
-            let parsed = Instruction::parse(Tokens::from(text.as_str())).unwrap();
+            let tokens = Tokens::from(text.as_str());
+            let parsed: Instruction = tokens.try_into().unwrap();
             assert_eq!(parsed, instruction);
             assert_eq!(opcode.0, OpCode::try_from(&instruction).unwrap().0);
         } else {
