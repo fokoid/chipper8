@@ -16,30 +16,16 @@ impl TryFrom<Tokens<'_>> for Instruction {
             Some(Token::Other("set")) => Ok(Instruction::Set { args: tokens.try_into()? }),
             Some(Token::Other("add")) => Ok(Instruction::Add { args: tokens.try_into()? }),
             Some(Token::Other("draw")) => Ok(Instruction::Draw { args: tokens.try_into()? }),
-            Some(Token::Other("timer")) => match tokens.next() {
-                Some(Token::Other("get")) => match tokens.next() {
-                    Some(Token::Other(s)) => Ok(Instruction::TimerGet(
-                        u8::from_str_radix(s, 16)?
-                    )),
-                    Some(x) => Err(Error::SyntaxError(format!("timer get requires a register but got {:?}", x))),
-                    None => Err(Error::SyntaxError(format!("timer get requires a register"))),
-                },
-                Some(_) => Err(Error::SyntaxError(String::from("allowed timer sub commands: get"))),
-                None => Err(Error::SyntaxError(String::from("timer requires a sub command"))),
-            },
-            Some(Token::Other("font")) => match tokens.next() {
-                Some(Token::Other(s)) => Ok(Instruction::Font(u8::from_str_radix(s, 16)?)),
-                Some(x) => Err(Error::SyntaxError(format!("font requires a register but got {:?}", x))),
-                None => Err(Error::SyntaxError(format!("font requires a register"))),
-            },
+            Some(Token::Other("get")) => match tokens.next() {
+                Some(Token::Other("timer")) => Ok(Instruction::GetTimer { args: tokens.try_into()? }),
+                Some(x) => Err(Error::SyntaxError(format!("get requires a subcommand, but got {:?}; allowed: timer", x))),
+                None => Err(Error::SyntaxError(format!("get requires a subcommand; allowed: timer"))),
+            }
+            Some(Token::Other("font")) => Ok(Instruction::Font { args: tokens.try_into()? }),
             Some(Token::Other("key")) => match tokens.next() {
-                Some(Token::Other("await")) => match tokens.next() {
-                    Some(Token::Other(s)) => Ok(Instruction::AwaitKey(u8::from_str_radix(s, 16)?)),
-                    Some(x) => Err(Error::SyntaxError(format!("key await requires a register but got {:?}", x))),
-                    None => Err(Error::SyntaxError(format!("key await requires a register"))),
-                }
-                Some(x) => Err(Error::SyntaxError(format!("key requires a subcommand but got {:?}", x))),
-                None => Err(Error::SyntaxError(format!("key requires a subcommand"))),
+                Some(Token::Other("await")) => Ok(Instruction::KeyAwait { args: tokens.try_into()? }),
+                Some(x) => Err(Error::SyntaxError(format!("key requires a subcommand, but got {:?}; allowed: await", x))),
+                None => Err(Error::SyntaxError(format!("key requires a subcommand; allowed: await"))),
             }
             x => Err(Error::SyntaxError(format!("{:?}", x))),
         }

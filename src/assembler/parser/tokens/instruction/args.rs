@@ -1,5 +1,5 @@
 use crate::{Error, Result};
-use crate::machine::instruction::args::{DrawArgs, SetArgs, Source, Target, Timer};
+use crate::machine::instruction::args::{DrawArgs, RegisterArgs, SetArgs, Source, Target, Timer};
 use crate::machine::instruction::SetAddressArgs;
 use crate::machine::types::{Address, Nibble, Register};
 
@@ -81,5 +81,16 @@ impl TryFrom<Tokens<'_>> for DrawArgs {
             Error::SyntaxError(String::from("draw requires a height"))
         )?)?;
         Ok(Self { x, y, height })
+    }
+}
+
+impl TryFrom<Tokens<'_>> for RegisterArgs {
+    type Error = Error;
+
+    fn try_from(mut tokens: Tokens<'_>) -> Result<Self> {
+        let register = Register::try_from(tokens.next().ok_or(
+            Error::SyntaxError(String::from("expected a register"))
+        )?)?;
+        Ok(Self { register })
     }
 }

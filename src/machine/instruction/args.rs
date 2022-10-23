@@ -64,3 +64,8 @@ pub struct DrawArgs {
     pub y: Register,
     pub height: Nibble,
 }
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct RegisterArgs {
+    pub register: Register,
+}

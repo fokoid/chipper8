@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{Error, Result};
+use crate::assembler::Tokens;
 use crate::ui::Rom;
 
 use super::config;
@@ -85,7 +86,7 @@ impl Machine {
         self.stack.push(0xBBB);
         // put some instructions at these stack addresses show they show in the visualization
         self.set_instruction_at_address(0xAAA, &Instruction::ClearScreen)?;
-        self.set_instruction_at_address(0xBBB, &Instruction::Font(3))?;
+        self.set_instruction_at_address(0xBBB, &Instruction::try_from(Tokens::from("font 0x3")).unwrap())?;
         self.registers[0] = 0x12;
         self.registers[1] = 0xAB;
         self.delay_timer = 0xF;
@@ -161,16 +162,16 @@ impl Machine {
                     [config::DISPLAY_WIDTH, config::DISPLAY_HEIGHT],
                 ).at([x, y]).draw();
             }
-            Instruction::Font(register) => {
-                let char = self.registers[*register as usize] as usize & 0x0F;
+            Instruction::Font { args } => {
+                let char = self.registers[usize::from(&args.register)] as usize & 0x0F;
                 self.index = config::FONT_RANGE.start + config::FONT_SPRITE_HEIGHT * char;
             }
-            Instruction::TimerGet(register) => {
-                self.registers[*register as usize] = self.delay_timer;
+            Instruction::GetTimer { args } => {
+                self.registers[usize::from(&args.register)] = self.delay_timer;
             }
-            Instruction::AwaitKey(register) => {
+            Instruction::KeyAwait { args } => {
                 if let Some(key) = self.key_buffer {
-                    self.registers[*register as usize] = key;
+                    self.registers[usize::from(&args.register)] = key;
                 } else {
                     self.program_counter -= 2;
                 }
