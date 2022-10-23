@@ -24,6 +24,7 @@ pub enum Graphics {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Flow {
     Return,
+    Call { args: AddressArgs },
     Jump { args: AddressArgs },
 }
 
@@ -55,7 +56,8 @@ impl Display for Graphics {
 impl Display for Flow {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Flow::Jump { args } => write!(f, "jump {}", args.address),
+            Self::Jump { args } => write!(f, "jump {}", args.address),
+            Self::Call { args } => write!(f, "call {}", args.address),
             Self::Return => write!(f, "return"),
         }
     }

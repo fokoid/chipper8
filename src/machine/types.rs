@@ -5,6 +5,7 @@ use ux::{u12, u4};
 use crate::{Error, Result};
 
 pub type Timer = u8;
+// todo: remove this in favour of the Address type
 pub type Pointer = usize;
 
 #[derive(Clone, Debug, Eq, PartialEq)]

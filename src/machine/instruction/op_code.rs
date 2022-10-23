@@ -44,6 +44,7 @@ impl TryFrom<&Instruction> for OpCode {
             }
             Instruction::Flow(flow) => match flow {
                 Flow::Return => 0x00EE,
+                Flow::Call { args } => 0x2000 | (u16::from(&args.address) & 0x0FFF),
                 Flow::Jump { args } => 0x1000 | (u16::from(&args.address) & 0x0FFF),
             }
             Instruction::IndexSet { args } => 0xA000 | (u16::from(&args.address) & 0x0FFF),
@@ -104,9 +105,14 @@ impl TryFrom<OpCode> for Instruction {
                 0x0F0 => Ok(Instruction::Exit),
                 _ => Err(Error::InvalidOpCode(opcode)),
             },
-            0x1000 | 0xA000 => {
+            0x1000 | 0x2000 | 0xA000 => {
                 let args = AddressArgs { address: rest.try_into()? };
-                Ok(if highest == 0x1000 { Instruction::Flow(Flow::Jump { args }) } else { Instruction::IndexSet { args } })
+                Ok(match highest >> 12 {
+                    0x1 => Instruction::Flow(Flow::Jump { args }),
+                    0x2 => Instruction::Flow(Flow::Call { args }),
+                    0xA => Instruction::IndexSet { args },
+                    _ => panic!("how did we get here?!"),
+                })
             }
             0x6000 | 0x7000 => {
                 let [register, lower_byte] = rest.to_be_bytes();

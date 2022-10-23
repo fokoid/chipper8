@@ -147,6 +147,10 @@ impl Machine {
                 Flow::Jump { args } => {
                     self.program_counter = (&args.address).into();
                 }
+                Flow::Call { args } => {
+                    self.stack.push(self.program_counter.into());
+                    self.program_counter = usize::from(&args.address);
+                }
                 Flow::Return => {
                     self.program_counter = self.stack.pop().into();
                 }

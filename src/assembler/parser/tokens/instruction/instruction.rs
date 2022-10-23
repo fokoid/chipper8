@@ -13,6 +13,7 @@ impl TryFrom<Tokens<'_>> for Instruction {
             Some(Token::Other("graphics")) => Ok(Self::Graphics(tokens.try_into()?)),
             Some(Token::Other("return")) => Ok(Instruction::Flow(Flow::Return)),
             Some(Token::Other("jump")) => Ok(Instruction::Flow(Flow::Jump { args: tokens.try_into()? })),
+            Some(Token::Other("call")) => Ok(Instruction::Flow(Flow::Call { args: tokens.try_into()? })),
             Some(Token::Other("index")) => Ok(Instruction::IndexSet { args: tokens.try_into()? }),
             Some(Token::Other("set")) => Ok(Instruction::Set { args: tokens.try_into()? }),
             Some(Token::Other("add")) => Ok(Instruction::Add { args: tokens.try_into()? }),

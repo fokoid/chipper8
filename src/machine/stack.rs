@@ -1,10 +1,11 @@
 use serde::{Deserialize, Serialize};
 
 use super::config;
+use super::types::Pointer;
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Stack {
-    pub data: Vec<u16>,
+    pub data: Vec<Pointer>,
     pub pointer: usize,
 }
 
@@ -16,7 +17,7 @@ impl Stack {
         }
     }
 
-    pub fn pop(&mut self) -> u16 {
+    pub fn pop(&mut self) -> Pointer {
         if self.pointer == 0 {
             panic!("pop() on empty stack");
         };
@@ -24,7 +25,7 @@ impl Stack {
         self.data[self.pointer]
     }
 
-    pub fn push(&mut self, value: u16) {
+    pub fn push(&mut self, value: Pointer) {
         if self.pointer == config::STACK_SIZE {
             panic!("push({}) on full stack", value);
         }
