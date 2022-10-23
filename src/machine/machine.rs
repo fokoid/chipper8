@@ -6,7 +6,7 @@ use crate::ui::Rom;
 use super::config;
 use super::draw_options::DrawOptions;
 use super::instruction::{Instruction, OpCode};
-use super::instruction::args::{self, DrawArgs, SetArgs, Source, Target};
+use super::instruction::args::{self, DrawArgs, Source, Target};
 use super::stack::Stack;
 use super::types::{Pointer, Timer};
 
@@ -133,20 +133,21 @@ impl Machine {
             Instruction::Jump(address) => {
                 self.program_counter = *address as Pointer;
             }
-            Instruction::Set { args: SetArgs { source, target } } => {
-                let source = match &source {
+            Instruction::Set { args } | Instruction::Add { args } => {
+                let source = match &args.source {
                     Source::Value(x) => *x,
                     Source::Register(r) => self.registers[usize::from(r)],
                 };
-                let target = match &target {
+                let target = match &args.target {
                     Target::Timer(args::Timer::Delay) => &mut self.delay_timer,
                     Target::Timer(args::Timer::Sound) => &mut self.sound_timer,
                     Target::Register(r) => &mut self.registers[usize::from(r)],
                 };
-                *target = source;
-            }
-            Instruction::Add(register, value) => {
-                self.registers[*register as usize] = self.registers[*register as usize].wrapping_add(*value);
+                if let Instruction::Set{ args: _ } = &instruction {
+                    *target = source;
+                } else {
+                    *target += source;
+                }
             }
             Instruction::IndexSet(value) => {
                 self.index = *value as Pointer;

@@ -20,23 +20,8 @@ impl TryFrom<Tokens<'_>> for Instruction {
                 None => Err(Error::SyntaxError(format!("jmp requires an address"))),
             }
             Some(Token::Other("set")) => Ok(Instruction::Set { args: tokens.try_into()? }),
+            Some(Token::Other("add")) => Ok(Instruction::Add { args: tokens.try_into()? }),
             Some(Token::Other("draw")) => Ok(Instruction::Draw { args: tokens.try_into()? }),
-            Some(Token::Other("add")) => match tokens.next() {
-                Some(Token::Other(s)) => {
-                    // todo: bounds checking (12 bit address)
-                    let register = u8::from_str_radix(s, 16)?;
-                    match tokens.next() {
-                        Some(Token::Other(s)) => Ok(Instruction::Add(
-                            register,
-                            u8::from_str_radix(s, 16)?,
-                        )),
-                        Some(x) => Err(Error::SyntaxError(format!("add requires a value but got {:?}", x))),
-                        None => Err(Error::SyntaxError(format!("add requires a value"))),
-                    }
-                }
-                Some(x) => Err(Error::SyntaxError(format!("add requires a register but got {:?}", x))),
-                None => Err(Error::SyntaxError(format!("add requires a register"))),
-            },
             Some(Token::Other("index")) => match tokens.next() {
                 Some(Token::Other("set")) => match tokens.next() {
                     Some(Token::Other(s)) => Ok(Instruction::IndexSet(

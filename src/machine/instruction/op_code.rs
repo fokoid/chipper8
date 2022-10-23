@@ -62,8 +62,18 @@ impl TryFrom<&Instruction> for OpCode {
                         }
                     }
                 }
-                Instruction::Add(register, value) =>
-                    0x7000 | u16::from_be_bytes([*register, *value]),
+                Instruction::Add { args: SetArgs { source, target } } => {
+                    match &target {
+                        Target::Register(vx) => match &source {
+                            Source::Value(value) =>
+                                0x7000 | u16::from_be_bytes([vx.into(), *value]),
+                            Source::Register(_vy) => todo!(),
+                        }
+                        Target::Timer(_) => {
+                            panic!("not implemented");
+                        }
+                    }
+                }
                 Instruction::IndexSet(value) => 0xA000 | (value & 0x0FFF),
                 Instruction::Draw { args: DrawArgs { x, y, height } } =>
                     0xD000 | u16::from_be_bytes([u8::from(x), u8::from(y).rotate_left(4) | u8::from(*height)]),
@@ -86,18 +96,13 @@ impl TryFrom<&OpCode> for Instruction {
                 _ => Err(Error::InvalidOpCode(OpCode(opcode.0))),
             },
             0x1000 => Ok(Instruction::Jump(opcode.0 & 0x0FFF)),
-            0x6000 => {
+            first @ (0x6000 | 0x7000) => {
                 let [register, value] = (opcode.0 & 0x0FFF).to_be_bytes();
-                Ok(Instruction::Set {
-                    args: SetArgs {
-                        source: Source::Value(value),
-                        target: Target::Register(register.try_into()?),
-                    }
-                })
-            }
-            0x7000 => {
-                let [register, value] = (opcode.0 & 0x0FFF).to_be_bytes();
-                Ok(Instruction::Add(register, value))
+                let args = SetArgs {
+                    source: Source::Value(value),
+                    target: Target::Register(register.try_into()?),
+                };
+                Ok(if first == 0x6000 { Instruction::Set { args } } else { Instruction::Add { args }})
             }
             0xA000 => Ok(Instruction::IndexSet(opcode.0 & 0x0FFF)),
             0xD000 => {
