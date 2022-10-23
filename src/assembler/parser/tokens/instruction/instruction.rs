@@ -1,5 +1,5 @@
 use crate::{Error, Result};
-use crate::machine::instruction::{Graphics, Instruction, OpCode};
+use crate::machine::instruction::{Flow, Graphics, Instruction, OpCode};
 
 use super::{Token, Tokens};
 
@@ -11,7 +11,8 @@ impl TryFrom<Tokens<'_>> for Instruction {
         match tokens.next() {
             Some(Token::Other("exit")) => Ok(Self::Exit),
             Some(Token::Other("graphics")) => Ok(Self::Graphics(tokens.try_into()?)),
-            Some(Token::Other("jmp")) => Ok(Instruction::Jump { args: tokens.try_into()? }),
+            Some(Token::Other("return")) => Ok(Instruction::Flow(Flow::Return)),
+            Some(Token::Other("jump")) => Ok(Instruction::Flow(Flow::Jump { args: tokens.try_into()? })),
             Some(Token::Other("index")) => Ok(Instruction::IndexSet { args: tokens.try_into()? }),
             Some(Token::Other("set")) => Ok(Instruction::Set { args: tokens.try_into()? }),
             Some(Token::Other("add")) => Ok(Instruction::Add { args: tokens.try_into()? }),

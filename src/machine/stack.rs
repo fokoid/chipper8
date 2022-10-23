@@ -20,9 +20,8 @@ impl Stack {
         if self.pointer == 0 {
             panic!("pop() on empty stack");
         };
-        let value = self.data[self.pointer];
         self.pointer -= 1;
-        value
+        self.data[self.pointer]
     }
 
     pub fn push(&mut self, value: u16) {

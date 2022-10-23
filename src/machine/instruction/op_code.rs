@@ -2,7 +2,7 @@ use std::fmt::{Debug, Display, Formatter};
 
 use crate::{Error, Result};
 use crate::machine::instruction::args::{self, DrawArgs, RegisterArgs, SetAddressArgs, SetArgs, Source, Target};
-use crate::machine::instruction::Graphics;
+use crate::machine::instruction::{Flow, Graphics};
 use crate::machine::types::{Register, Word};
 
 use super::Instruction;
@@ -42,7 +42,10 @@ impl TryFrom<&Instruction> for OpCode {
                     u16::from_be_bytes([upper_byte, lower_byte])
                 }
             }
-            Instruction::Jump { args } => 0x1000 | (u16::from(&args.address) & 0x0FFF),
+            Instruction::Flow(flow) => match flow {
+                Flow::Return => 0x00EE,
+                Flow::Jump { args } => 0x1000 | (u16::from(&args.address) & 0x0FFF),
+            }
             Instruction::IndexSet { args } => 0xA000 | (u16::from(&args.address) & 0x0FFF),
             Instruction::Set { args } => {
                 match &args.target {
@@ -97,12 +100,13 @@ impl TryFrom<OpCode> for Instruction {
         match highest {
             0 => match rest {
                 0x0E0 => Ok(Instruction::Graphics(Graphics::Clear)),
+                0x0EE => Ok(Instruction::Flow(Flow::Return)),
                 0x0F0 => Ok(Instruction::Exit),
                 _ => Err(Error::InvalidOpCode(opcode)),
             },
             0x1000 | 0xA000 => {
                 let args = SetAddressArgs { address: rest.try_into()? };
-                Ok(if highest == 0x1000 { Instruction::Jump { args } } else { Instruction::IndexSet { args } })
+                Ok(if highest == 0x1000 { Instruction::Flow(Flow::Jump { args }) } else { Instruction::IndexSet { args } })
             }
             0x6000 | 0x7000 => {
                 let [register, lower_byte] = rest.to_be_bytes();

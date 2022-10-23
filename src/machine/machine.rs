@@ -7,7 +7,7 @@ use crate::ui::Rom;
 
 use super::config;
 use super::draw_options::DrawOptions;
-use super::instruction::{Graphics, Instruction, OpCode};
+use super::instruction::{Flow, Graphics, Instruction, OpCode};
 use super::instruction::args::{self, Source, Target};
 use super::stack::Stack;
 use super::types::{Pointer, Timer};
@@ -87,7 +87,7 @@ impl Machine {
         self.stack.push(0xBBB);
         // put some instructions at these stack addresses show they show in the visualization
         self.set_instruction_at_address(0xAAA, &Instruction::Graphics(Graphics::Clear))?;
-        self.set_instruction_at_address(0xBBB, &Instruction::try_from(Tokens::from("font 0x3")).unwrap())?;
+        self.set_instruction_at_address(0xBBB, &Instruction::try_from(Tokens::from("font V3")).unwrap())?;
         self.registers[0] = 0x12;
         self.registers[1] = 0xAB;
         self.delay_timer = 0xF;
@@ -143,8 +143,13 @@ impl Machine {
                     ).at([x, y]).draw();
                 }
             }
-            Instruction::Jump { args } => {
-                self.program_counter = (&args.address).into();
+            Instruction::Flow(flow) => match flow {
+                Flow::Jump { args } => {
+                    self.program_counter = (&args.address).into();
+                }
+                Flow::Return => {
+                    self.program_counter = self.stack.pop().into();
+                }
             }
             Instruction::IndexSet { args } => {
                 self.index = (&args.address).into();
