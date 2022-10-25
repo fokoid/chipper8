@@ -26,6 +26,7 @@ pub enum Flow {
     Return,
     Call { args: JumpArgs },
     Jump { args: JumpArgs },
+    Sys { args: JumpArgs },
 }
 
 impl Display for Instruction {
@@ -56,6 +57,7 @@ impl Display for Graphics {
 impl Display for Flow {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Sys { args } => write!(f, "sys {}", args),
             Self::Jump { args } => write!(f, "jump {}", args),
             Self::Call { args } => write!(f, "call {}", args),
             Self::Return => write!(f, "return"),

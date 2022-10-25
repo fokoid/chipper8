@@ -151,22 +151,29 @@ impl Machine {
                 }
             }
             Instruction::Flow(flow) => match flow {
-                Flow::Jump { args } => {
-                    self.program_counter = args.address.clone();
-                    if let Some(register) = &args.register {
-                        self.program_counter.advance(self.registers[usize::from(register)].into());
-                    }
-                }
-                Flow::Call { args } => {
-                    // todo: can we swap here?
-                    self.stack.push(self.program_counter.clone());
-                    self.program_counter = args.address.clone();
-                    if let Some(register) = &args.register {
-                        self.program_counter.advance(self.registers[usize::from(register)].into());
-                    }
-                }
                 Flow::Return => {
                     self.program_counter = self.stack.pop().into();
+                }
+                Flow::Jump { args } | Flow::Call { args } | Flow::Sys { args } => {
+                    let mut address = args.address.clone();
+                    if let Some(register) = &args.register {
+                        address.advance(self.registers[usize::from(register)].into());
+                    }
+                    match flow {
+                        Flow::Jump { args: _ } => { self.program_counter = address; }
+                        Flow::Call { args: _ } => {
+                            // todo: can we swap here?
+                            self.stack.push(self.program_counter.clone());
+                            self.program_counter = address;
+                        }
+                        Flow::Sys { args: _ } => {
+                            panic!("not implemented: sys call");
+                        }
+                        Flow::Return => {
+                            // todo: can we avoid this?
+                            panic!("how did we get here?");
+                        }
+                    }
                 }
             }
             Instruction::IndexSet { args } => {

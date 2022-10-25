@@ -44,14 +44,27 @@ impl TryFrom<&Instruction> for OpCode {
             }
             Instruction::Flow(flow) => match flow {
                 Flow::Return => 0x00EE,
-                Flow::Call { args } => match args.register {
-                    Some(_) => panic!("not implemented"),
-                    None => 0x2000 | (u16::from(&args.address) & 0x0FFF),
-                }
-                Flow::Jump { args } => match &args.register {
-                    None => 0x1000 | (u16::from(&args.address) & 0x0FFF),
-                    Some(Register(x)) if u8::from(x.0) == 0 => 0xB000 | (u16::from(&args.address) & 0x0FFF),
-                    Some(_) => panic!("jump NNN VX not implmented for VX != 0"),
+                Flow::Sys { args } | Flow::Call { args } | Flow::Jump { args } => {
+                    let rest = u16::from(&args.address) & 0x0FFF;
+                    match flow {
+                        Flow::Sys { args } => match args.register {
+                            Some(_) => panic!("not implemented"),
+                            None => 0x0000 | rest,
+                        }
+                        Flow::Jump { args } => match &args.register {
+                            None => 0x1000 | rest,
+                            Some(Register(x)) if u8::from(x.0) == 0 => 0xB000 | rest,
+                            Some(_) => panic!("jump NNN VX not implmented for VX != 0"),
+                        }
+                        Flow::Call { args } => match args.register {
+                            Some(_) => panic!("not implemented"),
+                            None => 0x2000 | rest,
+                        }
+                        Flow::Return => {
+                            // todo: can we avoid this?
+                            panic!("how did we get here?");
+                        }
+                    }
                 }
             }
             Instruction::IndexSet { args } => 0xA000 | (u16::from(&args.address) & 0x0FFF),
@@ -110,7 +123,12 @@ impl TryFrom<OpCode> for Instruction {
                 0x0E0 => Ok(Instruction::Graphics(Graphics::Clear)),
                 0x0EE => Ok(Instruction::Flow(Flow::Return)),
                 0x0F0 => Ok(Instruction::Exit),
-                _ => Err(Error::InvalidOpCode(opcode)),
+                // todo: NullOpcode() instead?
+                0x0000 => Err(Error::InvalidOpCode(OpCode(0x0000u16.into()))),
+                rest => {
+                    let args = JumpArgs { address: rest.try_into()?, register: None };
+                    Ok(Instruction::Flow(Flow::Sys { args }))
+                }
             },
             highest @ (0x1 | 0x2 | 0xA | 0xB) => {
                 let register = if highest == 0xB { Some(Register::try_from(0).unwrap()) } else { None };

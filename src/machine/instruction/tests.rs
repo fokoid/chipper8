@@ -11,5 +11,5 @@ fn round_trip_opcode_instruction_opcode() {
             invalid_opcodes += 1;
         }
     }
-    assert_eq!(invalid_opcodes, 36268);
+    assert_eq!(invalid_opcodes, 32176);
 }

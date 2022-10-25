@@ -12,6 +12,7 @@ impl TryFrom<Tokens<'_>> for Instruction {
             Some(Token::Other("exit")) => Ok(Self::Exit),
             Some(Token::Other("graphics")) => Ok(Self::Graphics(tokens.try_into()?)),
             Some(Token::Other("return")) => Ok(Instruction::Flow(Flow::Return)),
+            Some(Token::Other("sys")) => Ok(Instruction::Flow(Flow::Sys { args: tokens.try_into()? })),
             Some(Token::Other("jump")) => Ok(Instruction::Flow(Flow::Jump { args: tokens.try_into()? })),
             Some(Token::Other("call")) => Ok(Instruction::Flow(Flow::Call { args: tokens.try_into()? })),
             Some(Token::Other("index")) => Ok(Instruction::IndexSet { args: tokens.try_into()? }),
