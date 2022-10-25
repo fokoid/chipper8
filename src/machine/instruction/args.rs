@@ -56,11 +56,6 @@ pub struct SetArgs {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct AddressArgs {
-    pub address: Address,
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct DrawArgs {
     pub x: Register,
     pub y: Register,
@@ -70,4 +65,20 @@ pub struct DrawArgs {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct RegisterArgs {
     pub register: Register,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct JumpArgs {
+    pub address: Address,
+    pub register: Option<Register>,
+}
+
+impl Display for JumpArgs {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        if let Some(register) = &self.register {
+            write!(f, "{} {}", self.address, register)
+        } else {
+            write!(f, "{}", self.address)
+        }
+    }
 }

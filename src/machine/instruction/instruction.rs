@@ -1,13 +1,13 @@
 use std::fmt::{Debug, Display, Formatter};
 
-use super::args::{AddressArgs, DrawArgs, RegisterArgs, SetArgs};
+use super::args::{DrawArgs, JumpArgs, RegisterArgs, SetArgs};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Instruction {
     Exit,
     Graphics(Graphics),
     Flow(Flow),
-    IndexSet { args: AddressArgs },
+    IndexSet { args: JumpArgs },
     Set { args: SetArgs },
     Add { args: SetArgs },
     GetTimer { args: RegisterArgs },
@@ -24,8 +24,8 @@ pub enum Graphics {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Flow {
     Return,
-    Call { args: AddressArgs },
-    Jump { args: AddressArgs },
+    Call { args: JumpArgs },
+    Jump { args: JumpArgs },
 }
 
 impl Display for Instruction {
@@ -34,7 +34,7 @@ impl Display for Instruction {
             Self::Exit => write!(f, "exit"),
             Self::Graphics(graphics) => write!(f, "graphics {}", graphics),
             Self::Flow(flow) => write!(f, "{}", flow),
-            Self::IndexSet { args } => write!(f, "index {}", args.address),
+            Self::IndexSet { args } => write!(f, "index {}", args),
             Self::Set { args } => write!(f, "set {} {}", args.target, args.source),
             Self::Add { args } => write!(f, "add {} {}", args.target, args.source),
             Self::Font { args } => write!(f, "font {}", args.register),
@@ -56,8 +56,8 @@ impl Display for Graphics {
 impl Display for Flow {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Jump { args } => write!(f, "jump {}", args.address),
-            Self::Call { args } => write!(f, "call {}", args.address),
+            Self::Jump { args } => write!(f, "jump {}", args),
+            Self::Call { args } => write!(f, "call {}", args),
             Self::Return => write!(f, "return"),
         }
     }

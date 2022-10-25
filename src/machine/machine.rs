@@ -153,11 +153,17 @@ impl Machine {
             Instruction::Flow(flow) => match flow {
                 Flow::Jump { args } => {
                     self.program_counter = args.address.clone();
+                    if let Some(register) = &args.register {
+                        self.program_counter.advance(self.registers[usize::from(register)].into());
+                    }
                 }
                 Flow::Call { args } => {
                     // todo: can we swap here?
                     self.stack.push(self.program_counter.clone());
                     self.program_counter = args.address.clone();
+                    if let Some(register) = &args.register {
+                        self.program_counter.advance(self.registers[usize::from(register)].into());
+                    }
                 }
                 Flow::Return => {
                     self.program_counter = self.stack.pop().into();

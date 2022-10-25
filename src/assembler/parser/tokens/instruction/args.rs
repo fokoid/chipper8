@@ -1,18 +1,20 @@
 use crate::{Error, Result};
-use crate::machine::instruction::AddressArgs;
-use crate::machine::instruction::args::{DrawArgs, RegisterArgs, SetArgs, Source, Target, Timer};
+use crate::machine::instruction::args::{DrawArgs, JumpArgs, RegisterArgs, SetArgs, Source, Target, Timer};
 use crate::machine::types::{Address, Nibble, Register};
 
 use super::{Token, Tokens};
 
-impl TryFrom<Tokens<'_>> for AddressArgs {
+impl TryFrom<Tokens<'_>> for JumpArgs {
     type Error = Error;
 
     fn try_from(mut tokens: Tokens<'_>) -> Result<Self> {
         let address = Address::try_from(tokens.next().ok_or(
             Error::SyntaxError(String::from("expected an address"))
         )?)?;
-        Ok(Self { address })
+        let register = if let Some(token) = tokens.next() {
+            Some(token.try_into()?)
+        } else { None };
+        Ok(Self { address, register })
     }
 }
 

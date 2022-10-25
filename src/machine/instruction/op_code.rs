@@ -2,7 +2,7 @@ use std::fmt::{Debug, Display, Formatter};
 
 use crate::{Error, Result};
 use crate::machine::instruction::{Flow, Graphics};
-use crate::machine::instruction::args::{self, AddressArgs, DrawArgs, RegisterArgs, SetArgs, Source, Target};
+use crate::machine::instruction::args::{self, DrawArgs, JumpArgs, RegisterArgs, SetArgs, Source, Target};
 use crate::machine::types::{Register, Word};
 
 use super::Instruction;
@@ -44,8 +44,15 @@ impl TryFrom<&Instruction> for OpCode {
             }
             Instruction::Flow(flow) => match flow {
                 Flow::Return => 0x00EE,
-                Flow::Call { args } => 0x2000 | (u16::from(&args.address) & 0x0FFF),
-                Flow::Jump { args } => 0x1000 | (u16::from(&args.address) & 0x0FFF),
+                Flow::Call { args } => match args.register {
+                    Some(_) => panic!("not implemented"),
+                    None => 0x2000 | (u16::from(&args.address) & 0x0FFF),
+                }
+                Flow::Jump { args } => match &args.register {
+                    None => 0x1000 | (u16::from(&args.address) & 0x0FFF),
+                    Some(Register(x)) if u8::from(x.0) == 0 => 0xB000 | (u16::from(&args.address) & 0x0FFF),
+                    Some(_) => panic!("jump NNN VX not implmented for VX != 0"),
+                }
             }
             Instruction::IndexSet { args } => 0xA000 | (u16::from(&args.address) & 0x0FFF),
             Instruction::Set { args } => {
@@ -98,23 +105,24 @@ impl TryFrom<OpCode> for Instruction {
 
     fn try_from(opcode: OpCode) -> Result<Self> {
         let (highest, rest) = (opcode.0.0 & 0xF000, opcode.0.0 & 0x0FFF);
-        match highest {
+        match highest >> 12 {
             0 => match rest {
                 0x0E0 => Ok(Instruction::Graphics(Graphics::Clear)),
                 0x0EE => Ok(Instruction::Flow(Flow::Return)),
                 0x0F0 => Ok(Instruction::Exit),
                 _ => Err(Error::InvalidOpCode(opcode)),
             },
-            0x1000 | 0x2000 | 0xA000 => {
-                let args = AddressArgs { address: rest.try_into()? };
-                Ok(match highest >> 12 {
-                    0x1 => Instruction::Flow(Flow::Jump { args }),
+            highest @ (0x1 | 0x2 | 0xA | 0xB) => {
+                let register = if highest == 0xB { Some(Register::try_from(0).unwrap()) } else { None };
+                let args = JumpArgs { address: rest.try_into()?, register };
+                Ok(match highest {
+                    0x1 | 0xB => Instruction::Flow(Flow::Jump { args }),
                     0x2 => Instruction::Flow(Flow::Call { args }),
                     0xA => Instruction::IndexSet { args },
                     _ => panic!("how did we get here?!"),
                 })
             }
-            0x6000 | 0x7000 => {
+            highest @ (0x6 | 0x7) => {
                 let [register, lower_byte] = rest.to_be_bytes();
                 let args = SetArgs {
                     source: Source::Byte(lower_byte.into()),
@@ -123,9 +131,9 @@ impl TryFrom<OpCode> for Instruction {
                     // arithmetic operation on CHIP-8 for which the carry bit should not be set
                     carry: false,
                 };
-                Ok(if highest == 0x7000 { Instruction::Add { args } } else { Instruction::Set { args } })
+                Ok(if highest == 0x7 { Instruction::Add { args } } else { Instruction::Set { args } })
             }
-            0x8000 if rest & 0x00F == 0 || rest & 0x00F == 4 => {
+            0x8 if rest & 0x00F == 0 || rest & 0x00F == 4 => {
                 let [vx, vy] = rest.to_be_bytes();
                 let args = SetArgs {
                     source: Source::Register((vy & 0xF0).rotate_right(4).try_into()?),
@@ -134,7 +142,7 @@ impl TryFrom<OpCode> for Instruction {
                 };
                 Ok(if rest & 0x00F == 4 { Instruction::Add { args } } else { Instruction::Set { args } })
             }
-            0xD000 => {
+            0xD => {
                 let [vx, lower] = rest.to_be_bytes();
                 let vy = lower.rotate_left(4) & 0x0F;
                 let height = lower & 0x0F;
@@ -146,7 +154,7 @@ impl TryFrom<OpCode> for Instruction {
                     }
                 }))
             }
-            0xF000 => {
+            0xF => {
                 let register = Register::try_from((rest & 0x0F00).to_be_bytes()[0])?;
                 match rest & 0x00FF {
                     0x0A => Ok(Instruction::KeyAwait { args: RegisterArgs { register } }),
