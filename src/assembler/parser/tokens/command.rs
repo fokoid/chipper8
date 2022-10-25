@@ -1,5 +1,6 @@
 use crate::{Error, Result};
 use crate::command::{Command, MachineState, MetaCommand};
+use crate::machine::Address;
 
 use super::{Token, Tokens};
 
@@ -29,14 +30,12 @@ impl TryFrom<Tokens<'_>> for MetaCommand {
             Some(Token::Meta(":load")) => match tokens.next() {
                 Some(Token::Other(name_or_path)) => {
                     let name_or_path = String::from(name_or_path);
-                    // default to address 200 which is what ROMs typically expect anyway
                     match tokens.next() {
-                        Some(Token::Other(s)) => {
-                            let address = u16::from_str_radix(s, 16)?;
+                        Some(token) => {
+                            let address = Address::try_from(token)?;
                             Ok(MetaCommand::LoadRom(name_or_path, Some(address)))
                         }
                         None => Ok(MetaCommand::LoadRom(name_or_path, None)),
-                        Some(x) => Err(Error::MetaSyntaxError(format!(":load requires an address but got {:?}", x))),
                     }
                 }
                 Some(x) => Err(Error::MetaSyntaxError(format!(":load requires a path but got {:?}", x))),

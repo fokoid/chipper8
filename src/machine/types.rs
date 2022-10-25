@@ -1,12 +1,12 @@
 use std::fmt::{Display, Formatter};
+use std::ops::{Add, Range, Sub};
 
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use ux::{u12, u4};
 
 use crate::{Error, Result};
 
 pub type Timer = u8;
-// todo: remove this in favour of the Address type
-pub type Pointer = usize;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Nibble(pub u4);
@@ -72,6 +72,45 @@ impl From<&Byte> for usize {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Address(pub u12);
 
+impl Serialize for Address {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error> where S: Serializer {
+        u16::from(self.0).serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for Address {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error> where D: Deserializer<'de> {
+        let value = u16::deserialize(deserializer)?;
+        Ok(Self::try_from(value).unwrap())
+    }
+}
+
+impl Address {
+    pub fn new() -> Self {
+        Self(0u8.into())
+    }
+
+    pub fn as_index(&self) -> usize {
+        usize::from(self)
+    }
+
+    pub fn as_range(&self, size: usize) -> Range<usize> {
+        self.as_index()..self.as_index() + size
+    }
+
+    pub fn advance(&mut self, offset: u12) {
+        self.0 = self.0.add(offset);
+    }
+
+    pub fn step(&mut self) {
+        self.0 = self.0.add(2u8.into());
+    }
+
+    pub fn step_back(&mut self) {
+        self.0 = self.0.sub(2u8.into());
+    }
+}
+
 impl Display for Address {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:#05X}", self.0)
@@ -84,6 +123,17 @@ impl TryFrom<u16> for Address {
     fn try_from(value: u16) -> Result<Self> {
         let address: u12 = value.try_into().map_err(|_error|
             Error::IntSizeError(String::from("12 bit address"), value.into())
+        )?;
+        Ok(Self(address))
+    }
+}
+
+impl TryFrom<usize> for Address {
+    type Error = Error;
+
+    fn try_from(value: usize) -> Result<Self> {
+        let address: u12 = value.try_into().map_err(|_error|
+            Error::IntSizeError(String::from("12 bit address"), value as u32)
         )?;
         Ok(Self(address))
     }

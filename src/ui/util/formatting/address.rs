@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 
 use egui::WidgetText;
 
-use crate::machine::Pointer;
+use crate::machine;
 
 pub struct Address(pub u16);
 
@@ -12,9 +12,17 @@ impl From<u16> for Address {
     }
 }
 
-impl From<Pointer> for Address {
-    fn from(pointer: Pointer) -> Self {
-        Self(pointer as u16)
+// todo: get rid of this
+impl From<usize> for Address {
+    fn from(value: usize) -> Self {
+        let value = (value & 0x0000FFFF) as u16;
+        value.into()
+    }
+}
+
+impl From<&machine::Address> for Address {
+    fn from(address: &machine::Address) -> Self {
+        Self(u16::from(address))
     }
 }
 

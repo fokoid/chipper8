@@ -1,10 +1,10 @@
 use egui::{Ui, WidgetText};
 
-use crate::machine::Machine;
+use crate::machine::{Machine, types};
 use crate::ui::util::{Address, Word};
 use crate::ui::util::table::{ColumnSpec, TableSpec, TabularData};
 
-pub fn address_row(prefix: &str, address: usize, machine: &Machine) -> Vec<WidgetText> {
+pub fn address_row(prefix: &str, address: &types::Address, machine: &Machine) -> Vec<WidgetText> {
     let instruction = if let Ok(instruction) = machine.instruction_at_address(address) {
         format!("{}", instruction)
     } else {

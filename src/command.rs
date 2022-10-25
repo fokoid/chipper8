@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display, Formatter};
 
-use crate::machine::{Instruction, OpCode};
-use crate::ui::util::Address;
+use crate::machine::{Address, Instruction, OpCode};
+use crate::ui;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Command {
@@ -50,7 +50,7 @@ impl Display for MachineState {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum MetaCommand {
     Reset(Option<MachineState>),
-    LoadRom(String, Option<u16>),
+    LoadRom(String, Option<Address>),
     DumpMachine(String),
     LoadMachine(String),
     UnloadRom,
@@ -69,7 +69,7 @@ impl Display for MetaCommand {
             }),
             Self::LoadRom(path, address) => {
                 if let Some(address) = address {
-                    write!(f, ":load {} {}", path, Address::from(*address))
+                    write!(f, ":load {} {}", path, ui::util::Address::from(address))
                 } else {
                     write!(f, ":load {}", path)
                 }

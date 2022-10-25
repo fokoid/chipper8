@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 
 use egui::WidgetText;
 
-use crate::machine::Pointer;
+use crate::machine::types;
 
 pub struct Decimal(pub u16);
 
@@ -12,9 +12,9 @@ impl From<u8> for Decimal {
     }
 }
 
-impl From<Pointer> for Decimal {
-    fn from(pointer: Pointer) -> Self {
-        Self(pointer as u16)
+impl From<&types::Address> for Decimal {
+    fn from(address: &types::Address) -> Self {
+        Self(u16::from(address))
     }
 }
 

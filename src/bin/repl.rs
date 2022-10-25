@@ -71,12 +71,11 @@ impl ReplApp {
                         Rom::from_file(path)?
                     }
                 };
-                let address = address.unwrap_or(0x200).into();
                 self.state.running = false;
                 if let Some(mut rom) = self.state.unload_rom() {
                     self.machine.unload_rom(&mut rom);
                 }
-                self.machine.load_rom(&mut rom, address);
+                self.machine.load_rom(&mut rom, address.as_ref());
                 self.state.load_rom(rom);
             }
             MetaCommand::UnloadRom => {
@@ -118,10 +117,8 @@ impl ReplApp {
 
 impl eframe::App for ReplApp {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
-        self.state.memory_tags.insert(MemoryTag::ProgramCounter,
-                                      self.machine.program_counter..self.machine.program_counter + 2);
-        self.state.memory_tags.insert(MemoryTag::Index,
-                                      self.machine.index..self.machine.index + 1);
+        self.state.memory_tags.insert(MemoryTag::ProgramCounter, self.machine.program_counter.as_range(2));
+        self.state.memory_tags.insert(MemoryTag::Index, self.machine.index.as_range(1));
         self.ui.draw(ctx, &self.machine, &mut self.state);
         self.machine.key_buffer = self.state.key_capture.key();
         if let Some(command) = &self.state.command_buffer.take() {
@@ -144,7 +141,7 @@ impl eframe::App for ReplApp {
                     self.state.running = false;
                     if let Error::InvalidOpCode(_) = error {
                         if self.state.skip_unknown_opcode {
-                            self.machine.program_counter += 2;
+                            self.machine.program_counter.step();
                             self.state.running = true;
                         }
                     }

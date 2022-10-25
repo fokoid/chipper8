@@ -1,7 +1,7 @@
 pub use draw_options::DrawOptions;
 pub use instruction::{Instruction, OpCode};
 pub use machine::Machine;
-pub use types::{Pointer, Timer};
+pub use types::{Address, Timer};
 
 pub mod config;
 mod draw_options;

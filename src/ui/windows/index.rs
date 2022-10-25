@@ -16,8 +16,8 @@ impl<'a> TabularData for IndexHelper<'a> {
         vec![
             vec![
                 "Addr".into(),
-                Address::from(self.machine.index).into(),
-                Decimal::from(self.machine.index).into(),
+                Address::from(&self.machine.index).into(),
+                Decimal::from(&self.machine.index).into(),
             ],
             vec![
                 "Byte".into(),
@@ -67,7 +67,7 @@ impl WindowContent for Index {
         self.buffer.fill(0);
         let height = self.draw_height % 16;
         DrawOptions::new(
-            &machine.memory[machine.index..machine.index + height],
+            &machine.memory[machine.index.as_range(height)],
             &mut self.buffer,
             [8, 16],
         ).draw();
@@ -77,7 +77,8 @@ impl WindowContent for Index {
                 ui.add(Slider::new(&mut self.draw_height, 0..=15));
             });
             self.display.ui(ui, &self.buffer, Vec::new(), |index| {
-                vec![RichText::new(format!("Glyph row at memory offset {}", Address::from(machine.index + index / 8)))]
+                let address = usize::from(&machine.index) + index / 8;
+                vec![RichText::new(format!("Glyph row at memory offset {}", Address::from(address)))]
             });
         });
     }

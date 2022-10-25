@@ -30,7 +30,7 @@ impl Emulator {
     pub fn new(config: EmulatorConfig) -> Result<Self> {
         let mut rom = Rom::from_file(&config.rom_path).unwrap();
         let mut machine = Machine::new();
-        machine.load_rom(&mut rom, 0x200);
+        machine.load_rom(&mut rom, None);
         println!("CHIPPER-8: running ROM '{}'.", rom.name);
         Ok(Self {
             machine,

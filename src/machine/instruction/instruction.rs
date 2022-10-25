@@ -1,6 +1,6 @@
 use std::fmt::{Debug, Display, Formatter};
 
-use super::args::{DrawArgs, RegisterArgs, AddressArgs, SetArgs};
+use super::args::{AddressArgs, DrawArgs, RegisterArgs, SetArgs};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Instruction {

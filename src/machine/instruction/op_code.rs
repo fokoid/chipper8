@@ -1,8 +1,8 @@
 use std::fmt::{Debug, Display, Formatter};
 
 use crate::{Error, Result};
-use crate::machine::instruction::args::{self, DrawArgs, RegisterArgs, AddressArgs, SetArgs, Source, Target};
 use crate::machine::instruction::{Flow, Graphics};
+use crate::machine::instruction::args::{self, AddressArgs, DrawArgs, RegisterArgs, SetArgs, Source, Target};
 use crate::machine::types::{Register, Word};
 
 use super::Instruction;

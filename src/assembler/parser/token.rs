@@ -77,7 +77,7 @@ impl TryFrom<Token<'_>> for u12 {
     fn try_from(token: Token<'_>) -> Result<Self> {
         let value = u16::try_from(token)?;
         value.try_into().map_err(|_error|
-            Error::IntSizeError(String::from("word"), value.into())
+            Error::IntSizeError(String::from("12 bit integer"), value.into())
         )
     }
 }
@@ -132,7 +132,12 @@ impl TryFrom<Token<'_>> for Address {
     type Error = Error;
 
     fn try_from(token: Token) -> Result<Self> {
-        Ok(Self(u12::try_from(token)?))
+        let value = u12::try_from(token);
+        if let Err(Error::IntSizeError(_, value)) = &value {
+            Err(Error::IntSizeError(String::from("12 bit address"), *value))
+        } else {
+            Ok(Self(value?))
+        }
     }
 }
 

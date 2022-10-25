@@ -1,6 +1,6 @@
 use egui::{Color32, RichText, Ui};
 
-use crate::machine::Machine;
+use crate::machine::{Machine, types};
 use crate::ui::State;
 use crate::ui::util::{Address, Byte, Word};
 use crate::ui::util::MemoryDisplay;
@@ -27,21 +27,25 @@ impl WindowContent for Memory {
         }
         self.display.ui(ui,
                         &machine.memory,
-                        vec![machine.program_counter, machine.program_counter + 1, machine.index],
+                        vec![usize::from(&machine.program_counter),
+                             usize::from(&machine.program_counter) + 1,
+                             usize::from(&machine.index)],
                         |index| hover_text(index, machine, state));
     }
 }
 
 fn hover_text(index: usize, machine: &Machine, state: &State) -> Vec<RichText> {
+    // todo: don't panic here
+    let address = types::Address::try_from(index).expect("index exceeds allowed machine memory size");
     let mut lines = vec![
         RichText::new(format!("At memory offset 0x{}:", Address::from(index))),
     ];
-    if let Some(word) = machine.word_at_address(index) {
+    if let Some(word) = machine.word_at_address(&address) {
         lines.push(RichText::new(format!(" · Word {}", Word::from(word))));
-    } else if let Some(byte) = machine.byte_at_address(index) {
+    } else if let Some(byte) = machine.byte_at_address(&address) {
         lines.push(RichText::new(format!(" · Byte {}", Byte::from(byte))));
     }
-    if let Ok(instruction) = machine.instruction_at_address(index) {
+    if let Ok(instruction) = machine.instruction_at_address(&address) {
         lines.push(RichText::new(format!(" · Instruction: {}", instruction)));
     }
     for (tag, range) in &state.memory_tags {

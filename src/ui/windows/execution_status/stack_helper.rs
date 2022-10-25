@@ -17,7 +17,11 @@ impl<'a> TabularData for StackHelper<'a> {
             } else {
                 format!(" {:01X} ", index)
             };
-            shared::address_row(&prefix, *address as usize, self.machine)
+            if let Some(address) = address {
+                shared::address_row(&prefix, address, self.machine)
+            } else {
+                vec![prefix.into(), "".into(), "".into(), "".into()]
+            }
         }).collect();
         rows.push(vec![
             (if 16 == self.machine.stack.pointer { "> <" } else { "   " }).into(),

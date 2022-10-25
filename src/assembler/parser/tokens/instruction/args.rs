@@ -1,6 +1,6 @@
 use crate::{Error, Result};
-use crate::machine::instruction::args::{DrawArgs, RegisterArgs, SetArgs, Source, Target, Timer};
 use crate::machine::instruction::AddressArgs;
+use crate::machine::instruction::args::{DrawArgs, RegisterArgs, SetArgs, Source, Target, Timer};
 use crate::machine::types::{Address, Nibble, Register};
 
 use super::{Token, Tokens};

@@ -11,6 +11,6 @@ pub struct ProgramCounterHelper<'a> {
 
 impl<'a> TabularData for ProgramCounterHelper<'a> {
     fn rows(&self) -> Vec<Vec<WidgetText>> {
-        vec![shared::address_row("", self.machine.program_counter, self.machine)]
+        vec![shared::address_row("", &self.machine.program_counter, self.machine)]
     }
 }
