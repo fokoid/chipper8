@@ -15,6 +15,7 @@ impl TryFrom<Tokens<'_>> for Instruction {
             Some(Token::Other("sys")) => Ok(Instruction::Flow(Flow::Sys { args: tokens.try_into()? })),
             Some(Token::Other("jump")) => Ok(Instruction::Flow(Flow::Jump { args: tokens.try_into()? })),
             Some(Token::Other("call")) => Ok(Instruction::Flow(Flow::Call { args: tokens.try_into()? })),
+            Some(Token::Other("branch")) => Ok(Instruction::Flow(Flow::Branch { args: tokens.try_into()? })),
             Some(Token::Other("index")) => Ok(Instruction::IndexSet { args: tokens.try_into()? }),
             Some(Token::Other("set")) => Ok(Instruction::Set { args: tokens.try_into()? }),
             Some(Token::Other("add")) => Ok(Instruction::Add { args: tokens.try_into()? }),

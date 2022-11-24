@@ -82,3 +82,25 @@ impl Display for JumpArgs {
         }
     }
 }
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum Comparator {
+    Equal,
+    NotEqual,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct BranchArgs {
+    pub lhs: Source,
+    pub rhs: Source,
+    pub comparator: Comparator,
+}
+
+impl Display for BranchArgs {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} {}{}", self.lhs, self.rhs, match self.comparator {
+            Comparator::Equal => "",
+            Comparator::NotEqual => " !",
+        })
+    }
+}

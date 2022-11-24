@@ -1,6 +1,6 @@
 use std::fmt::{Debug, Display, Formatter};
 
-use super::args::{DrawArgs, JumpArgs, RegisterArgs, SetArgs};
+use super::args::{BranchArgs, DrawArgs, JumpArgs, RegisterArgs, SetArgs};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Instruction {
@@ -27,6 +27,7 @@ pub enum Flow {
     Call { args: JumpArgs },
     Jump { args: JumpArgs },
     Sys { args: JumpArgs },
+    Branch { args: BranchArgs },
 }
 
 impl Display for Instruction {
@@ -61,6 +62,7 @@ impl Display for Flow {
             Self::Jump { args } => write!(f, "jump {}", args),
             Self::Call { args } => write!(f, "call {}", args),
             Self::Return => write!(f, "return"),
+            Self::Branch { args } => write!(f, "branch {}", args),
         }
     }
 }

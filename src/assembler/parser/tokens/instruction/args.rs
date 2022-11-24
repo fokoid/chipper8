@@ -1,5 +1,5 @@
 use crate::{Error, Result};
-use crate::machine::instruction::args::{DrawArgs, JumpArgs, RegisterArgs, SetArgs, Source, Target, Timer};
+use crate::machine::instruction::args::{BranchArgs, Comparator, DrawArgs, JumpArgs, RegisterArgs, SetArgs, Source, Target, Timer};
 use crate::machine::types::{Address, Nibble, Register};
 
 use super::{Token, Tokens};
@@ -93,5 +93,32 @@ impl TryFrom<Tokens<'_>> for RegisterArgs {
             Error::SyntaxError(String::from("expected a register"))
         )?)?;
         Ok(Self { register })
+    }
+}
+
+impl TryFrom<Option<Token<'_>>> for Comparator {
+    type Error = Error;
+
+    fn try_from(token: Option<Token<'_>>) -> Result<Self> {
+        match token {
+            Some(Token::Other(s)) if s == "!" => Ok(Self::NotEqual),
+            Some(x) => Err(Error::SyntaxError(format!("expected a comparator, got {:?}", x))),
+            None => Ok(Self::Equal)
+        }
+    }
+}
+
+impl TryFrom<Tokens<'_>> for BranchArgs {
+    type Error = Error;
+
+    fn try_from(mut tokens: Tokens<'_>) -> Result<Self> {
+        let lhs = Source::try_from(tokens.next().ok_or(
+            Error::SyntaxError(String::from("conditional requires a LHS expression"))
+        )?)?;
+        let rhs = Source::try_from(tokens.next().ok_or(
+            Error::SyntaxError(String::from("conditional requires a LHS expression"))
+        )?)?;
+        let comparator = Comparator::try_from(tokens.next())?;
+        Ok(Self { lhs, rhs, comparator })
     }
 }

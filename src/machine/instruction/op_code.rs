@@ -2,7 +2,7 @@ use std::fmt::{Debug, Display, Formatter};
 
 use crate::{Error, Result};
 use crate::machine::instruction::{Flow, Graphics};
-use crate::machine::instruction::args::{self, DrawArgs, JumpArgs, RegisterArgs, SetArgs, Source, Target};
+use crate::machine::instruction::args::{self, BranchArgs, Comparator, DrawArgs, JumpArgs, RegisterArgs, SetArgs, Source, Target};
 use crate::machine::types::{Register, Word};
 
 use super::Instruction;
@@ -54,17 +54,37 @@ impl TryFrom<&Instruction> for OpCode {
                         Flow::Jump { args } => match &args.register {
                             None => 0x1000 | rest,
                             Some(Register(x)) if u8::from(x.0) == 0 => 0xB000 | rest,
-                            Some(_) => panic!("jump NNN VX not implmented for VX != 0"),
+                            Some(_) => panic!("jump NNN VX not implemented for VX != 0"),
                         }
                         Flow::Call { args } => match args.register {
                             Some(_) => panic!("not implemented"),
                             None => 0x2000 | rest,
                         }
-                        Flow::Return => {
+                        Flow::Return | Flow::Branch { args: _ } => {
                             // todo: can we avoid this?
                             panic!("how did we get here?");
                         }
                     }
+                }
+                Flow::Branch { args } => {
+                    let lower_byte: u8 = match &args.rhs {
+                        Source::Byte(b) => b.into(),
+                        Source::Register(r) => u8::from(r).rotate_left(4),
+                    };
+                    let upper_byte: u8 = match &args.rhs {
+                        Source::Byte(_) => match &args.comparator {
+                            Comparator::Equal => 0x30u8,
+                            Comparator::NotEqual => 0x40u8,
+                        }
+                        Source::Register(_) => match &args.comparator {
+                            Comparator::Equal => 0x50u8,
+                            Comparator::NotEqual => 0x90u8,
+                        }
+                    } | match &args.lhs {
+                        Source::Byte(_) => panic!("not implemented"),
+                        Source::Register(r) => u8::from(r),
+                    };
+                    u16::from_be_bytes([upper_byte, lower_byte])
                 }
             }
             Instruction::IndexSet { args } => 0xA000 | (u16::from(&args.address) & 0x0FFF),
@@ -124,7 +144,7 @@ impl TryFrom<OpCode> for Instruction {
                 0x0EE => Ok(Instruction::Flow(Flow::Return)),
                 0x0F0 => Ok(Instruction::Exit),
                 // todo: NullOpcode() instead?
-                0x0000 => Err(Error::InvalidOpCode(OpCode(0x0000u16.into()))),
+                0x0000 => Err(Error::InvalidOpCode(opcode)),
                 rest => {
                     let args = JumpArgs { address: rest.try_into()?, register: None };
                     Ok(Instruction::Flow(Flow::Sys { args }))
@@ -139,6 +159,27 @@ impl TryFrom<OpCode> for Instruction {
                     0xA => Instruction::IndexSet { args },
                     _ => panic!("how did we get here?!"),
                 })
+            }
+            highest @ (0x3 | 0x4 | 0x5 | 0x9) => {
+                let [register, lower_byte] = rest.to_be_bytes();
+                let args = BranchArgs {
+                    lhs: Source::Register(register.try_into()?),
+                    rhs: if highest == 0x3 || highest == 0x4 {
+                        Source::Byte(lower_byte.into())
+                    } else {
+                        if 0xF & lower_byte == 0 {
+                            Ok(Source::Register(Register::try_from(lower_byte.rotate_right(4) & 0xF)?))
+                        } else {
+                            Err(Error::InvalidOpCode(opcode))
+                        }?
+                    },
+                    comparator: if highest == 0x3 || highest == 0x5 {
+                        Comparator::Equal
+                    } else {
+                        Comparator::NotEqual
+                    },
+                };
+                Ok(Instruction::Flow(Flow::Branch { args }))
             }
             highest @ (0x6 | 0x7) => {
                 let [register, lower_byte] = rest.to_be_bytes();

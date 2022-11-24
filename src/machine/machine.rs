@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Error, Result};
 use crate::assembler::Tokens;
+use crate::machine::instruction::args::Comparator;
 use crate::ui::Rom;
 
 use super::config;
@@ -169,11 +170,28 @@ impl Machine {
                         Flow::Sys { args: _ } => {
                             panic!("not implemented: sys call");
                         }
-                        Flow::Return => {
+                        Flow::Return | Flow::Branch { args: _ } => {
                             // todo: can we avoid this?
                             panic!("how did we get here?");
                         }
                     }
+                }
+                Flow::Branch { args } => {
+                    // todo extract logic for 'get value of Source'
+                    let lhs: u8 = match &args.lhs {
+                        Source::Byte(x) => x.into(),
+                        Source::Register(r) => self.registers[usize::from(r)],
+                    };
+                    let rhs: u8 = match &args.rhs {
+                        Source::Byte(x) => x.into(),
+                        Source::Register(r) => self.registers[usize::from(r)],
+                    };
+                    if match &args.comparator {
+                        Comparator::Equal => lhs == rhs,
+                        Comparator::NotEqual => lhs != rhs,
+                    } {
+                        self.program_counter.step();
+                    };
                 }
             }
             Instruction::IndexSet { args } => {
