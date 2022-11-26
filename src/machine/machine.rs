@@ -224,6 +224,17 @@ impl Machine {
                         let (result, _carry_flag) = target.overflowing_add(source);
                         *target = result;
                     }
+                    BinaryOp::Subtract => {
+                        let (result, carry_flag) = target.overflowing_sub(source);
+                        *target = result;
+                        self.registers[0xF] = 1 - u8::from(carry_flag);
+                    }
+                    // todo: deduplicate with BinaryOp::Subtract?
+                    BinaryOp::SubtractAlt => {
+                        let (result, carry_flag) = source.overflowing_sub(*target);
+                        *target = result;
+                        self.registers[0xF] = 1 - u8::from(carry_flag);
+                    }
                 }
             }
             Instruction::Font { args } => {

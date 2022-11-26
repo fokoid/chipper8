@@ -98,12 +98,14 @@ impl TryFrom<&Instruction> for OpCode {
                                 0x6000 | u16::from_be_bytes([vx.into(), byte.into()]),
                             BinaryOp::AddWrapping =>
                                 0x7000 | u16::from_be_bytes([vx.into(), byte.into()]),
-                            BinaryOp::Add => Err(Error::NoOpcodeError(instruction.clone()))?,
+                            _ => Err(Error::NoOpcodeError(instruction.clone()))?,
                         },
                         Source::Register(vy) => {
                             let lowest_nibble: u8 = match &args.op {
                                 BinaryOp::Assign => 0x0,
                                 BinaryOp::Add => 0x4,
+                                BinaryOp::Subtract => 0x5,
+                                BinaryOp::SubtractAlt => 0x7,
                                 BinaryOp::AddWrapping => Err(Error::NoOpcodeError(instruction.clone()))?,
                             };
                             u16::from_be_bytes([u8::from(vx) | 0x80, u8::from(vy).rotate_left(4) | lowest_nibble])
@@ -208,10 +210,12 @@ impl TryFrom<OpCode> for Instruction {
                     source: Source::Register((vy & 0xF0).rotate_right(4).try_into()?),
                     target: Target::Register(vx.try_into()?),
                     op: match lowest {
-                        0x0 => Ok(BinaryOp::Assign),
-                        0x4 => Ok(BinaryOp::Add),
-                        _ => Err(Error::InvalidOpCode(opcode)),
-                    }?,
+                        0x0 => BinaryOp::Assign,
+                        0x4 => BinaryOp::Add,
+                        0x5 => BinaryOp::Subtract,
+                        0x7 => BinaryOp::SubtractAlt,
+                        _ => Err(Error::InvalidOpCode(opcode))?,
+                    },
                 };
                 Ok(Instruction::Arithmetic { args })
             }

@@ -71,6 +71,8 @@ impl TryFrom<Token<'_>> for BinaryOp {
             Token::Other("=") => Ok(BinaryOp::Assign),
             Token::Other("+=") => Ok(BinaryOp::Add),
             Token::Other("+~") => Ok(BinaryOp::AddWrapping),
+            Token::Other("-=") => Ok(BinaryOp::Subtract),
+            Token::Other("-~") => Ok(BinaryOp::SubtractAlt),
             x => Err(Error::SyntaxError(format!("expected binary operation, found {:?}", x))),
         }
     }

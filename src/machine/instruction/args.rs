@@ -54,6 +54,9 @@ pub enum BinaryOp {
     Assign,
     Add,
     AddWrapping,
+    Subtract,
+    // VX = VY - VX (can we think of better name for this?)
+    SubtractAlt,
 }
 
 impl Display for BinaryOp {
@@ -63,6 +66,9 @@ impl Display for BinaryOp {
             Self::Add => "+=",
             // todo: nicer syntax
             Self::AddWrapping => "+~",
+            Self::Subtract => "-=",
+            // todo: nicer syntax
+            Self::SubtractAlt => "-~",
         })
     }
 }
