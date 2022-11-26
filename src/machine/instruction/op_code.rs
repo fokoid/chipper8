@@ -2,7 +2,7 @@ use std::fmt::{Debug, Display, Formatter};
 
 use crate::{Error, Result};
 use crate::machine::instruction::{Flow, Graphics};
-use crate::machine::instruction::args::{self, BinaryOp, BinaryOpArgs, BranchArgs, Comparator, DrawArgs, JumpArgs, RegisterArgs, Source, Target};
+use crate::machine::instruction::args::{self, BinaryOp, BinaryOpArgs, BranchArgs, Comparator, DrawArgs, JumpArgs, RegisterArgs, Source, Target, Timer};
 use crate::machine::types::{Register, Word};
 
 use super::Instruction;
@@ -70,6 +70,7 @@ impl TryFrom<&Instruction> for OpCode {
                     let lower_byte: u8 = match &args.rhs {
                         Source::Byte(b) => b.into(),
                         Source::Register(r) => u8::from(r).rotate_left(4),
+                        Source::Timer(_) => Err(Error::NoOpcodeError(instruction.clone()))?,
                     };
                     let upper_byte: u8 = match &args.rhs {
                         Source::Byte(_) => match &args.comparator {
@@ -80,9 +81,10 @@ impl TryFrom<&Instruction> for OpCode {
                             Comparator::Equal => 0x50u8,
                             Comparator::NotEqual => 0x90u8,
                         }
+                        Source::Timer(_) => Err(Error::NoOpcodeError(instruction.clone()))?,
                     } | match &args.lhs {
-                        Source::Byte(_) => panic!("not implemented"),
                         Source::Register(r) => u8::from(r),
+                        Source::Byte(_) | Source::Timer(_) => Err(Error::NoOpcodeError(instruction.clone()))?,
                     };
                     u16::from_be_bytes([upper_byte, lower_byte])
                 }
@@ -93,18 +95,22 @@ impl TryFrom<&Instruction> for OpCode {
                     Target::Register(vx) => match &args.source {
                         Source::Byte(byte) => match &args.op {
                             BinaryOp::Assign =>
-                                Ok(0x6000 | u16::from_be_bytes([vx.into(), byte.into()])),
+                                0x6000 | u16::from_be_bytes([vx.into(), byte.into()]),
                             BinaryOp::AddWrapping =>
-                                Ok(0x7000 | u16::from_be_bytes([vx.into(), byte.into()])),
-                            BinaryOp::Add => Err(Error::NoOpcodeError(instruction.clone())),
-                        }?,
+                                0x7000 | u16::from_be_bytes([vx.into(), byte.into()]),
+                            BinaryOp::Add => Err(Error::NoOpcodeError(instruction.clone()))?,
+                        },
                         Source::Register(vy) => {
                             let lowest_nibble: u8 = match &args.op {
-                                BinaryOp::Assign => Ok(0x0),
-                                BinaryOp::Add => Ok(0x4),
-                                BinaryOp::AddWrapping => Err(Error::NoOpcodeError(instruction.clone())),
-                            }?;
+                                BinaryOp::Assign => 0x0,
+                                BinaryOp::Add => 0x4,
+                                BinaryOp::AddWrapping => Err(Error::NoOpcodeError(instruction.clone()))?,
+                            };
                             u16::from_be_bytes([u8::from(vx) | 0x80, u8::from(vy).rotate_left(4) | lowest_nibble])
+                        }
+                        Source::Timer(timer) => match timer {
+                            Timer::Delay => 0xF007 | u16::from_be_bytes([u8::from(vx), 0]),
+                            Timer::Sound => Err(Error::NoOpcodeError(instruction.clone()))?,
                         }
                     }
                     Target::Timer(timer) => {
@@ -117,8 +123,9 @@ impl TryFrom<&Instruction> for OpCode {
                             };
                             let upper_byte: u8 = match &args.source {
                                 // todo: replace panics with this elsewhere
-                                Source::Byte(_) => Err(Error::NoOpcodeError(instruction.clone()))?,
                                 Source::Register(vx) => 0xF0u8 | u8::from(vx),
+                                Source::Byte(_) | Source::Timer(_) =>
+                                    Err(Error::NoOpcodeError(instruction.clone()))?,
                             };
                             Ok(u16::from_be_bytes([upper_byte, lower_byte]))
                         }?
@@ -126,7 +133,6 @@ impl TryFrom<&Instruction> for OpCode {
                 }
             }
             // todo: deduplicate
-            Instruction::GetTimer { args } => 0xF007 | u16::from_be_bytes([u8::from(&args.register), 0]),
             Instruction::Font { args } => 0xF029 | u16::from_be_bytes([u8::from(&args.register), 0]),
             Instruction::KeyAwait { args } => 0xF00A | u16::from_be_bytes([u8::from(&args.register), 0]),
         };
@@ -225,7 +231,13 @@ impl TryFrom<OpCode> for Instruction {
                 let register = Register::try_from((rest & 0x0F00).to_be_bytes()[0])?;
                 match rest & 0x00FF {
                     0x0A => Ok(Instruction::KeyAwait { args: RegisterArgs { register } }),
-                    0x07 => Ok(Instruction::GetTimer { args: RegisterArgs { register } }),
+                    0x07 => Ok(Instruction::Arithmetic {
+                        args: BinaryOpArgs {
+                            op: BinaryOp::Assign,
+                            source: Source::Timer(Timer::Delay),
+                            target: Target::Register(register),
+                        }
+                    }),
                     0x29 => Ok(Instruction::Font { args: RegisterArgs { register } }),
                     byte @ (0x15 | 0x18) => {
                         let target = Target::Timer(if byte == 0x15 { args::Timer::Delay } else { args::Timer::Sound });

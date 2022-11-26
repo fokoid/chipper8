@@ -9,7 +9,6 @@ pub enum Instruction {
     Flow(Flow),
     IndexSet { args: JumpArgs },
     Arithmetic { args: BinaryOpArgs },
-    GetTimer { args: RegisterArgs },
     Font { args: RegisterArgs },
     KeyAwait { args: RegisterArgs },
 }
@@ -38,7 +37,6 @@ impl Display for Instruction {
             Self::IndexSet { args } => write!(f, "index {}", args),
             Self::Arithmetic { args } => write!(f, "arithmetic {} {} {}", args.target, args.op, args.source),
             Self::Font { args } => write!(f, "font {}", args.register),
-            Self::GetTimer { args } => write!(f, "get timer {}", args.register),
             Self::KeyAwait { args } => write!(f, "key await {}", args.register),
         }
     }

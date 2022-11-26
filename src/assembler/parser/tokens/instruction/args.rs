@@ -58,6 +58,8 @@ impl TryFrom<Token<'_>> for Source {
             Token::Register(_) => {
                 Ok(Self::Register(token.try_into()?))
             }
+            Token::Other("delay") => Ok(Self::Timer(Timer::Delay)),
+            Token::Other("sound") => Ok(Self::Timer(Timer::Sound)),
             token @ (Token::Hex(_) | Token::Other(_)) => {
                 Ok(Self::Byte(token.try_into()?))
             }

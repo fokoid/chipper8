@@ -36,6 +36,7 @@ impl Display for Target {
 pub enum Source {
     Byte(Byte),
     Register(Register),
+    Timer(Timer),
 }
 
 impl Display for Source {
@@ -43,6 +44,7 @@ impl Display for Source {
         match self {
             Self::Byte(x) => write!(f, "{}", x),
             Self::Register(vx) => write!(f, "{}", vx),
+            Self::Timer(timer) => write!(f, "{}", timer),
         }
     }
 }

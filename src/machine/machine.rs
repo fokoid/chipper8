@@ -134,6 +134,17 @@ impl Machine {
         self.byte_at_address(&self.index)
     }
 
+    fn read_source(&self, source: &Source) -> u8 {
+        match &source {
+            Source::Byte(x) => x.into(),
+            Source::Register(r) => self.registers[usize::from(r)],
+            Source::Timer(timer) => match timer {
+                args::Timer::Delay => self.delay_timer,
+                args::Timer::Sound => self.sound_timer,
+            }
+        }
+    }
+
     pub fn execute(&mut self, instruction: &Instruction) -> Result<()> {
         match instruction {
             Instruction::Exit => { return Err(Error::MachineExit); }
@@ -178,14 +189,8 @@ impl Machine {
                 }
                 Flow::Branch { args } => {
                     // todo extract logic for 'get value of Source'
-                    let lhs: u8 = match &args.lhs {
-                        Source::Byte(x) => x.into(),
-                        Source::Register(r) => self.registers[usize::from(r)],
-                    };
-                    let rhs: u8 = match &args.rhs {
-                        Source::Byte(x) => x.into(),
-                        Source::Register(r) => self.registers[usize::from(r)],
-                    };
+                    let lhs: u8 = self.read_source(&args.lhs);
+                    let rhs: u8 = self.read_source(&args.rhs);
                     if match &args.comparator {
                         Comparator::Equal => lhs == rhs,
                         Comparator::NotEqual => lhs != rhs,
@@ -199,10 +204,7 @@ impl Machine {
                 self.index = args.address.clone();
             }
             Instruction::Arithmetic { args } => {
-                let source = match &args.source {
-                    Source::Byte(x) => x.into(),
-                    Source::Register(r) => self.registers[usize::from(r)],
-                };
+                let source = self.read_source(&args.source);
                 let target = match &args.target {
                     Target::Timer(args::Timer::Delay) => &mut self.delay_timer,
                     Target::Timer(args::Timer::Sound) => &mut self.sound_timer,
@@ -228,9 +230,6 @@ impl Machine {
                 let char = self.registers[usize::from(&args.register)] as usize & 0x0F;
                 let index = config::FONT_RANGE.start + config::FONT_SPRITE_HEIGHT * char;
                 self.index = Address::try_from(index)?;
-            }
-            Instruction::GetTimer { args } => {
-                self.registers[usize::from(&args.register)] = self.delay_timer;
             }
             Instruction::KeyAwait { args } => {
                 if let Some(key) = self.key_buffer {
