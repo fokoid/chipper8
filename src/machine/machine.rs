@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Error, Result};
 use crate::assembler::Tokens;
-use crate::machine::instruction::args::Comparator;
+use crate::machine::instruction::args::{BinaryOp, Comparator};
 use crate::ui::Rom;
 
 use super::config;
@@ -198,7 +198,7 @@ impl Machine {
                 // todo: can we take ownership of args here to avoid the copy?
                 self.index = args.address.clone();
             }
-            Instruction::Set { args } | Instruction::Add { args } => {
+            Instruction::Arithmetic { args } => {
                 let source = match &args.source {
                     Source::Byte(x) => x.into(),
                     Source::Register(r) => self.registers[usize::from(r)],
@@ -208,12 +208,20 @@ impl Machine {
                     Target::Timer(args::Timer::Sound) => &mut self.sound_timer,
                     Target::Register(r) => &mut self.registers[usize::from(r)],
                 };
-                if let Instruction::Set { args: _ } = &instruction {
-                    *target = source;
-                } else {
-                    let (result, carry_flag) = target.overflowing_add(source);
-                    *target = result;
-                    self.registers[0xF] = u8::from(carry_flag & args.carry);
+                match &args.op {
+                    BinaryOp::Assign => {
+                        *target = source;
+                    }
+                    BinaryOp::Add => {
+                        let (result, carry_flag) = target.overflowing_add(source);
+                        *target = result;
+                        self.registers[0xF] = u8::from(carry_flag);
+                    }
+                    // todo: deduplicate with BinaryOp::Add?
+                    BinaryOp::AddWrapping => {
+                        let (result, _carry_flag) = target.overflowing_add(source);
+                        *target = result;
+                    }
                 }
             }
             Instruction::Font { args } => {

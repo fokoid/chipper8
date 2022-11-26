@@ -1,5 +1,5 @@
 use crate::{Error, Result};
-use crate::machine::instruction::args::{BranchArgs, Comparator, DrawArgs, JumpArgs, RegisterArgs, SetArgs, Source, Target, Timer};
+use crate::machine::instruction::args::{BinaryOp, BinaryOpArgs, BranchArgs, Comparator, DrawArgs, JumpArgs, RegisterArgs, Source, Target, Timer};
 use crate::machine::types::{Address, Nibble, Register};
 
 use super::{Token, Tokens};
@@ -18,20 +18,20 @@ impl TryFrom<Tokens<'_>> for JumpArgs {
     }
 }
 
-impl TryFrom<Tokens<'_>> for SetArgs {
+impl TryFrom<Tokens<'_>> for BinaryOpArgs {
     type Error = Error;
 
     fn try_from(mut tokens: Tokens) -> Result<Self> {
         let target = Target::try_from(tokens.next().ok_or(
-            Error::SyntaxError(String::from("set requires a target"))
+            Error::SyntaxError(String::from("arithmetic requires a target"))
+        )?)?;
+        let op = BinaryOp::try_from(tokens.next().ok_or(
+            Error::SyntaxError(String::from("arithmetic requires an operation"))
         )?)?;
         let source = Source::try_from(tokens.next().ok_or(
-            Error::SyntaxError(String::from("set requires a source"))
+            Error::SyntaxError(String::from("arithmetic requires a source"))
         )?)?;
-        // carry flag only matters for arithmetic, not assignment. the only case when carry flag is
-        // not set is constant addition 0x7000
-        let carry = if let Source::Byte(_) = &source { false } else { true };
-        Ok(Self { target, source, carry })
+        Ok(Self { target, source, op })
     }
 }
 
@@ -64,6 +64,19 @@ impl TryFrom<Token<'_>> for Source {
             x => {
                 Err(Error::SyntaxError(format!("expected register or value, found {:?}", x)))
             }
+        }
+    }
+}
+
+impl TryFrom<Token<'_>> for BinaryOp {
+    type Error = Error;
+
+    fn try_from(token: Token<'_>) -> Result<Self> {
+        match token {
+            Token::Other("=") => Ok(BinaryOp::Assign),
+            Token::Other("+=") => Ok(BinaryOp::Add),
+            Token::Other("+~") => Ok(BinaryOp::AddWrapping),
+            x => Err(Error::SyntaxError(format!("expected binary operation, found {:?}", x))),
         }
     }
 }

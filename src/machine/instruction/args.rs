@@ -47,12 +47,29 @@ impl Display for Source {
     }
 }
 
-// todo: probably rename to ArithmeticArgs
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct SetArgs {
+pub enum BinaryOp {
+    Assign,
+    Add,
+    AddWrapping,
+}
+
+impl Display for BinaryOp {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", match self {
+            Self::Assign => "=",
+            Self::Add => "+=",
+            // todo: nicer syntax
+            Self::AddWrapping => "+~",
+        })
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct BinaryOpArgs {
     pub target: Target,
     pub source: Source,
-    pub carry: bool,
+    pub op: BinaryOp,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]

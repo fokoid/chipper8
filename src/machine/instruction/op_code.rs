@@ -2,7 +2,7 @@ use std::fmt::{Debug, Display, Formatter};
 
 use crate::{Error, Result};
 use crate::machine::instruction::{Flow, Graphics};
-use crate::machine::instruction::args::{self, BranchArgs, Comparator, DrawArgs, JumpArgs, RegisterArgs, SetArgs, Source, Target};
+use crate::machine::instruction::args::{self, BinaryOp, BinaryOpArgs, BranchArgs, Comparator, DrawArgs, JumpArgs, RegisterArgs, Source, Target};
 use crate::machine::types::{Register, Word};
 
 use super::Instruction;
@@ -88,39 +88,40 @@ impl TryFrom<&Instruction> for OpCode {
                 }
             }
             Instruction::IndexSet { args } => 0xA000 | (u16::from(&args.address) & 0x0FFF),
-            Instruction::Set { args } => {
+            Instruction::Arithmetic { args } => {
                 match &args.target {
                     Target::Register(vx) => match &args.source {
-                        Source::Byte(byte) =>
-                            0x6000 | u16::from_be_bytes([vx.into(), byte.into()]),
-                        Source::Register(vy) =>
-                            0x8000 | u16::from_be_bytes([vx.into(), u8::from(vy).rotate_left(4)]),
-                    }
-                    Target::Timer(timer) => {
-                        let lower_byte: u8 = match timer {
-                            args::Timer::Delay => 0x15,
-                            args::Timer::Sound => 0x18,
-                        };
-                        let upper_byte: u8 = match &args.source {
-                            Source::Byte(_) => Err(Error::NoOpcodeError(instruction.clone()))?,
-                            Source::Register(vx) => 0xF0u8 | u8::from(vx),
-                        };
-                        u16::from_be_bytes([upper_byte, lower_byte])
-                    }
-                }
-            }
-            Instruction::Add { args } => {
-                match &args.target {
-                    Target::Register(vx) => match &args.source {
-                        Source::Byte(byte) =>
-                            0x7000 | u16::from_be_bytes([vx.into(), byte.into()]),
+                        Source::Byte(byte) => match &args.op {
+                            BinaryOp::Assign =>
+                                Ok(0x6000 | u16::from_be_bytes([vx.into(), byte.into()])),
+                            BinaryOp::AddWrapping =>
+                                Ok(0x7000 | u16::from_be_bytes([vx.into(), byte.into()])),
+                            BinaryOp::Add => Err(Error::NoOpcodeError(instruction.clone())),
+                        }?,
                         Source::Register(vy) => {
-                            let lower = u8::from(vy).rotate_left(4) | 0x04;
-                            0x8000 | u16::from_be_bytes([vx.into(), lower])
+                            let lowest_nibble: u8 = match &args.op {
+                                BinaryOp::Assign => Ok(0x0),
+                                BinaryOp::Add => Ok(0x4),
+                                BinaryOp::AddWrapping => Err(Error::NoOpcodeError(instruction.clone())),
+                            }?;
+                            u16::from_be_bytes([u8::from(vx) | 0x80, u8::from(vy).rotate_left(4) | lowest_nibble])
                         }
                     }
-                    Target::Timer(_) => {
-                        panic!("not implemented");
+                    Target::Timer(timer) => {
+                        if args.op != BinaryOp::Assign {
+                            Err(Error::NoOpcodeError(instruction.clone()))
+                        } else {
+                            let lower_byte: u8 = match timer {
+                                args::Timer::Delay => 0x15,
+                                args::Timer::Sound => 0x18,
+                            };
+                            let upper_byte: u8 = match &args.source {
+                                // todo: replace panics with this elsewhere
+                                Source::Byte(_) => Err(Error::NoOpcodeError(instruction.clone()))?,
+                                Source::Register(vx) => 0xF0u8 | u8::from(vx),
+                            };
+                            Ok(u16::from_be_bytes([upper_byte, lower_byte]))
+                        }?
                     }
                 }
             }
@@ -143,7 +144,7 @@ impl TryFrom<OpCode> for Instruction {
                 0x0E0 => Ok(Instruction::Graphics(Graphics::Clear)),
                 0x0EE => Ok(Instruction::Flow(Flow::Return)),
                 0x0F0 => Ok(Instruction::Exit),
-                // todo: NullOpcode() instead?
+                // todo: NullOpcode() instead? (because 0x0000 is likely to be due to PC pointing to uninitialized memory)
                 0x0000 => Err(Error::InvalidOpCode(opcode)),
                 rest => {
                     let args = JumpArgs { address: rest.try_into()?, register: None };
@@ -183,23 +184,30 @@ impl TryFrom<OpCode> for Instruction {
             }
             highest @ (0x6 | 0x7) => {
                 let [register, lower_byte] = rest.to_be_bytes();
-                let args = SetArgs {
+                let args = BinaryOpArgs {
                     source: Source::Byte(lower_byte.into()),
                     target: Target::Register(register.try_into()?),
-                    // for assignment 0x6000 carry, doesn't matter, but addition 0x7000 is the one
-                    // arithmetic operation on CHIP-8 for which the carry bit should not be set
-                    carry: false,
+                    op: match highest {
+                        0x6 => Ok(BinaryOp::Assign),
+                        0x7 => Ok(BinaryOp::AddWrapping),
+                        _ => Err(Error::InvalidOpCode(opcode))
+                    }?,
                 };
-                Ok(if highest == 0x7 { Instruction::Add { args } } else { Instruction::Set { args } })
+                Ok(Instruction::Arithmetic { args })
             }
-            0x8 if rest & 0x00F == 0 || rest & 0x00F == 4 => {
+            0x8 => {
+                let lowest = rest & 0x00F;
                 let [vx, vy] = rest.to_be_bytes();
-                let args = SetArgs {
+                let args = BinaryOpArgs {
                     source: Source::Register((vy & 0xF0).rotate_right(4).try_into()?),
                     target: Target::Register(vx.try_into()?),
-                    carry: true,
+                    op: match lowest {
+                        0x0 => Ok(BinaryOp::Assign),
+                        0x4 => Ok(BinaryOp::Add),
+                        _ => Err(Error::InvalidOpCode(opcode)),
+                    }?,
                 };
-                Ok(if rest & 0x00F == 4 { Instruction::Add { args } } else { Instruction::Set { args } })
+                Ok(Instruction::Arithmetic { args })
             }
             0xD => {
                 let [vx, lower] = rest.to_be_bytes();
@@ -223,7 +231,7 @@ impl TryFrom<OpCode> for Instruction {
                         let target = Target::Timer(if byte == 0x15 { args::Timer::Delay } else { args::Timer::Sound });
                         let source = Source::Register(register);
                         // todo: different args for this? presence of carry flag here is confusing
-                        Ok(Instruction::Set { args: SetArgs { target, source, carry: true } })
+                        Ok(Instruction::Arithmetic { args: BinaryOpArgs { target, source, op: BinaryOp::Assign } })
                     }
                     _ => Err(Error::InvalidOpCode(opcode)),
                 }

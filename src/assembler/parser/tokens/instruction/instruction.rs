@@ -17,8 +17,7 @@ impl TryFrom<Tokens<'_>> for Instruction {
             Some(Token::Other("call")) => Ok(Instruction::Flow(Flow::Call { args: tokens.try_into()? })),
             Some(Token::Other("branch")) => Ok(Instruction::Flow(Flow::Branch { args: tokens.try_into()? })),
             Some(Token::Other("index")) => Ok(Instruction::IndexSet { args: tokens.try_into()? }),
-            Some(Token::Other("set")) => Ok(Instruction::Set { args: tokens.try_into()? }),
-            Some(Token::Other("add")) => Ok(Instruction::Add { args: tokens.try_into()? }),
+            Some(Token::Other("arithmetic")) => Ok(Instruction::Arithmetic { args: tokens.try_into()? }),
             Some(Token::Other("get")) => match tokens.next() {
                 Some(Token::Other("timer")) => Ok(Instruction::GetTimer { args: tokens.try_into()? }),
                 Some(x) => Err(Error::SyntaxError(format!("get requires a subcommand, but got {:?}; allowed: timer", x))),
