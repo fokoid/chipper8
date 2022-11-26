@@ -35,7 +35,7 @@ impl Display for Instruction {
             Self::Graphics(graphics) => write!(f, "graphics {}", graphics),
             Self::Flow(flow) => write!(f, "{}", flow),
             Self::IndexSet { args } => write!(f, "index {}", args),
-            Self::Arithmetic { args } => write!(f, "arithmetic {} {} {}", args.target, args.op, args.source),
+            Self::Arithmetic { args } => write!(f, "{} {} {}", args.target, args.op, args.source),
             Self::Font { args } => write!(f, "font {}", args.register),
             Self::KeyAwait { args } => write!(f, "key await {}", args.register),
         }

@@ -7,6 +7,11 @@ impl TryFrom<Tokens<'_>> for Instruction {
     type Error = Error;
 
     fn try_from(mut tokens: Tokens<'_>) -> Result<Self> {
+        // special handling for arithmetic instructions since the first token should be forwarded to
+        // arg parsing rather than being consumed
+        if let Some(Token::Register(_)) = tokens.peek() {
+            return Ok(Instruction::Arithmetic { args: tokens.try_into()? });
+        }
         // todo: parse entire token stream
         match tokens.next() {
             Some(Token::Other("exit")) => Ok(Self::Exit),
@@ -17,7 +22,6 @@ impl TryFrom<Tokens<'_>> for Instruction {
             Some(Token::Other("call")) => Ok(Instruction::Flow(Flow::Call { args: tokens.try_into()? })),
             Some(Token::Other("branch")) => Ok(Instruction::Flow(Flow::Branch { args: tokens.try_into()? })),
             Some(Token::Other("index")) => Ok(Instruction::IndexSet { args: tokens.try_into()? }),
-            Some(Token::Other("arithmetic")) => Ok(Instruction::Arithmetic { args: tokens.try_into()? }),
             Some(Token::Other("font")) => Ok(Instruction::Font { args: tokens.try_into()? }),
             Some(Token::Other("key")) => match tokens.next() {
                 Some(Token::Other("await")) => Ok(Instruction::KeyAwait { args: tokens.try_into()? }),

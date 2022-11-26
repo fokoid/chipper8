@@ -11,11 +11,8 @@ impl TryFrom<Tokens<'_>> for Option<Command> {
     fn try_from(mut tokens: Tokens) -> Result<Self> {
         match &tokens.peek() {
             None | Some(Token::None) => Ok(None),
-            Some(token @ Token::Register(_)) => {
-                Err(Error::SyntaxError(format!("unexpected token {:?}", token)))
-            }
             Some(Token::Meta(_)) => Ok(Some(Command::Meta(tokens.try_into()?))),
-            Some(Token::Other(_) | Token::Hex(_)) => Ok(Some(Command::Instruction(tokens.try_into()?))),
+            _ => Ok(Some(Command::Instruction(tokens.try_into()?))),
         }
     }
 }

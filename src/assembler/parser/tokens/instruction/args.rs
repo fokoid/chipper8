@@ -39,14 +39,13 @@ impl TryFrom<Token<'_>> for Target {
     type Error = Error;
 
     fn try_from(token: Token) -> std::result::Result<Self, Self::Error> {
-        match token {
-            Token::Register(_) => Ok(Self::Register(token.try_into()?)),
-            Token::Other("delay") => Ok(Self::Timer(Timer::Delay)),
-            Token::Other("sound") => Ok(Self::Timer(Timer::Sound)),
-            x => {
-                Err(Error::SyntaxError(format!("expected target, found {:?}", x)))
-            }
-        }
+        Ok(match token {
+            Token::Register("T") => Self::Timer(Timer::Delay),
+            Token::Register("S") => Self::Timer(Timer::Sound),
+            Token::Register(_) => Self::Register(token.try_into()?),
+            x =>
+                Err(Error::SyntaxError(format!("expected target, found {:?}", x)))?,
+        })
     }
 }
 
@@ -54,19 +53,13 @@ impl TryFrom<Token<'_>> for Source {
     type Error = Error;
 
     fn try_from(token: Token) -> std::result::Result<Self, Self::Error> {
-        match token {
-            Token::Register(_) => {
-                Ok(Self::Register(token.try_into()?))
-            }
-            Token::Other("delay") => Ok(Self::Timer(Timer::Delay)),
-            Token::Other("sound") => Ok(Self::Timer(Timer::Sound)),
-            token @ (Token::Hex(_) | Token::Other(_)) => {
-                Ok(Self::Byte(token.try_into()?))
-            }
-            x => {
-                Err(Error::SyntaxError(format!("expected register or value, found {:?}", x)))
-            }
-        }
+        Ok(match token {
+            Token::Register("T") => Self::Timer(Timer::Delay),
+            Token::Register("S") => Self::Timer(Timer::Sound),
+            Token::Register(_) => Self::Register(token.try_into()?),
+            token @ (Token::Hex(_) | Token::Other(_)) => Self::Byte(token.try_into()?),
+            x => Err(Error::SyntaxError(format!("expected register or value, found {:?}", x)))?,
+        })
     }
 }
 

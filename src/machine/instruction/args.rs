@@ -11,8 +11,8 @@ pub enum Timer {
 impl Display for Timer {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Delay => write!(f, "delay"),
-            Self::Sound => write!(f, "sound"),
+            Self::Delay => write!(f, "VT"),
+            Self::Sound => write!(f, "VS"),
         }
     }
 }
