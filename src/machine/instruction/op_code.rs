@@ -108,7 +108,9 @@ impl TryFrom<&Instruction> for OpCode {
                                 BinaryOp::BitXor => 0x3,
                                 BinaryOp::Add => 0x4,
                                 BinaryOp::Subtract => 0x5,
+                                BinaryOp::BitShiftRight => 0x6,
                                 BinaryOp::SubtractAlt => 0x7,
+                                BinaryOp::BitShiftLeft => 0xE,
                                 BinaryOp::AddWrapping => Err(Error::NoOpcodeError(instruction.clone()))?,
                             };
                             u16::from_be_bytes([u8::from(vx) | 0x80, u8::from(vy).rotate_left(4) | lowest_nibble])
@@ -219,7 +221,9 @@ impl TryFrom<OpCode> for Instruction {
                         0x3 => BinaryOp::BitXor,
                         0x4 => BinaryOp::Add,
                         0x5 => BinaryOp::Subtract,
+                        0x6 => BinaryOp::BitShiftRight,
                         0x7 => BinaryOp::SubtractAlt,
+                        0xE => BinaryOp::BitShiftLeft,
                         _ => Err(Error::InvalidOpCode(opcode))?,
                     },
                 };

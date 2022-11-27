@@ -1,4 +1,4 @@
-use std::ops::{BitAndAssign, BitOrAssign, BitXorAssign};
+use std::ops::{BitAndAssign, BitOrAssign, BitXorAssign, ShlAssign, ShrAssign};
 
 // todo: everywhere use types from machine::types here
 use serde::{Deserialize, Serialize};
@@ -16,6 +16,19 @@ use super::stack::Stack;
 use super::types::{Address, Timer};
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+pub struct MachineConfig {
+    pub bitshift_ignore_y: bool,
+}
+
+impl MachineConfig {
+    pub fn new() -> Self {
+        Self {
+            bitshift_ignore_y: true,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Machine {
     pub registers: Vec<u8>,
     pub stack: Stack,
@@ -26,6 +39,7 @@ pub struct Machine {
     pub delay_timer: Timer,
     pub sound_timer: Timer,
     pub key_buffer: Option<u8>,
+    pub config: MachineConfig,
 }
 
 impl Machine {
@@ -40,6 +54,7 @@ impl Machine {
             sound_timer: 0,
             registers: vec![0; config::NUM_REGISTERS],
             key_buffer: None,
+            config: MachineConfig::new(),
         };
         machine.memory[config::FONT_RANGE].clone_from_slice(&config::FONT_GLYPHS);
         machine
@@ -147,6 +162,8 @@ impl Machine {
         }
     }
 
+    fn set_flag(&mut self, value: u8) { self.registers[0xF] = value; }
+
     pub fn execute(&mut self, instruction: &Instruction) -> Result<()> {
         match instruction {
             Instruction::Exit => { return Err(Error::MachineExit); }
@@ -219,7 +236,7 @@ impl Machine {
                     BinaryOp::Add => {
                         let (result, carry_flag) = target.overflowing_add(source);
                         *target = result;
-                        self.registers[0xF] = u8::from(carry_flag);
+                        self.set_flag(carry_flag.into());
                     }
                     // todo: deduplicate with BinaryOp::Add?
                     BinaryOp::AddWrapping => {
@@ -229,13 +246,13 @@ impl Machine {
                     BinaryOp::Subtract => {
                         let (result, carry_flag) = target.overflowing_sub(source);
                         *target = result;
-                        self.registers[0xF] = 1 - u8::from(carry_flag);
+                        self.set_flag(1 - u8::from(carry_flag));
                     }
                     // todo: deduplicate with BinaryOp::Subtract?
                     BinaryOp::SubtractAlt => {
                         let (result, carry_flag) = source.overflowing_sub(*target);
                         *target = result;
-                        self.registers[0xF] = 1 - u8::from(carry_flag);
+                        self.set_flag(1 - u8::from(carry_flag));
                     }
                     BinaryOp::BitAnd => {
                         target.bitand_assign(source);
@@ -245,6 +262,22 @@ impl Machine {
                     }
                     BinaryOp::BitXor => {
                         target.bitxor_assign(source);
+                    }
+                    BinaryOp::BitShiftLeft => {
+                        if !self.config.bitshift_ignore_y {
+                            *target = source;
+                        }
+                        let highest_bit: u8 = *target / 128;
+                        target.shl_assign(1);
+                        self.set_flag(highest_bit);
+                    }
+                    BinaryOp::BitShiftRight => {
+                        if !self.config.bitshift_ignore_y {
+                            *target = source;
+                        }
+                        let lowest_bit = *target & 1;
+                        target.shr_assign(1);
+                        self.set_flag(lowest_bit);
                     }
                 }
             }

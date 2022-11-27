@@ -76,6 +76,8 @@ impl TryFrom<Token<'_>> for BinaryOp {
             Token::Other("&=") => Ok(Self::BitAnd),
             Token::Other("|=") => Ok(Self::BitOr),
             Token::Other("^=") => Ok(Self::BitXor),
+            Token::Other("<<=") => Ok(Self::BitShiftLeft),
+            Token::Other(">>=") => Ok(Self::BitShiftRight),
             x => Err(Error::SyntaxError(format!("expected binary operation, found {:?}", x))),
         }
     }

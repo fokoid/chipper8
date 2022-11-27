@@ -60,6 +60,8 @@ pub enum BinaryOp {
     BitAnd,
     BitOr,
     BitXor,
+    BitShiftLeft,
+    BitShiftRight,
 }
 
 impl Display for BinaryOp {
@@ -75,6 +77,8 @@ impl Display for BinaryOp {
             Self::BitAnd => "&=",
             Self::BitOr => "|=",
             Self::BitXor => "^=",
+            Self::BitShiftLeft => "<<=",
+            Self::BitShiftRight => ">>=",
         })
     }
 }

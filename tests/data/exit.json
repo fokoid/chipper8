@@ -6190,5 +6190,8 @@
   "index": 0,
   "delay_timer": 0,
   "sound_timer": 0,
-  "key_buffer": null
+  "key_buffer": null,
+  "config": {
+    "bitshift_ignore_y": true
+  }
 }
