@@ -68,11 +68,14 @@ impl TryFrom<Token<'_>> for BinaryOp {
 
     fn try_from(token: Token<'_>) -> Result<Self> {
         match token {
-            Token::Other("=") => Ok(BinaryOp::Assign),
-            Token::Other("+=") => Ok(BinaryOp::Add),
-            Token::Other("+~") => Ok(BinaryOp::AddWrapping),
-            Token::Other("-=") => Ok(BinaryOp::Subtract),
-            Token::Other("-~") => Ok(BinaryOp::SubtractAlt),
+            Token::Other("=") => Ok(Self::Assign),
+            Token::Other("+=") => Ok(Self::Add),
+            Token::Other("+~") => Ok(Self::AddWrapping),
+            Token::Other("-=") => Ok(Self::Subtract),
+            Token::Other("-~") => Ok(Self::SubtractAlt),
+            Token::Other("&=") => Ok(Self::BitAnd),
+            Token::Other("|=") => Ok(Self::BitOr),
+            Token::Other("^=") => Ok(Self::BitXor),
             x => Err(Error::SyntaxError(format!("expected binary operation, found {:?}", x))),
         }
     }

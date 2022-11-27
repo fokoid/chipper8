@@ -57,6 +57,9 @@ pub enum BinaryOp {
     Subtract,
     // VX = VY - VX (can we think of better name for this?)
     SubtractAlt,
+    BitAnd,
+    BitOr,
+    BitXor,
 }
 
 impl Display for BinaryOp {
@@ -69,6 +72,9 @@ impl Display for BinaryOp {
             Self::Subtract => "-=",
             // todo: nicer syntax
             Self::SubtractAlt => "-~",
+            Self::BitAnd => "&=",
+            Self::BitOr => "|=",
+            Self::BitXor => "^=",
         })
     }
 }

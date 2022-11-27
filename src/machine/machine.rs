@@ -1,3 +1,5 @@
+use std::ops::{BitAndAssign, BitOrAssign, BitXorAssign};
+
 // todo: everywhere use types from machine::types here
 use serde::{Deserialize, Serialize};
 
@@ -234,6 +236,15 @@ impl Machine {
                         let (result, carry_flag) = source.overflowing_sub(*target);
                         *target = result;
                         self.registers[0xF] = 1 - u8::from(carry_flag);
+                    }
+                    BinaryOp::BitAnd => {
+                        target.bitand_assign(source);
+                    }
+                    BinaryOp::BitOr => {
+                        target.bitor_assign(source);
+                    }
+                    BinaryOp::BitXor => {
+                        target.bitxor_assign(source);
                     }
                 }
             }

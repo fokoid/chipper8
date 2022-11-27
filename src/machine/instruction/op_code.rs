@@ -103,6 +103,9 @@ impl TryFrom<&Instruction> for OpCode {
                         Source::Register(vy) => {
                             let lowest_nibble: u8 = match &args.op {
                                 BinaryOp::Assign => 0x0,
+                                BinaryOp::BitOr => 0x1,
+                                BinaryOp::BitAnd => 0x2,
+                                BinaryOp::BitXor => 0x3,
                                 BinaryOp::Add => 0x4,
                                 BinaryOp::Subtract => 0x5,
                                 BinaryOp::SubtractAlt => 0x7,
@@ -211,6 +214,9 @@ impl TryFrom<OpCode> for Instruction {
                     target: Target::Register(vx.try_into()?),
                     op: match lowest {
                         0x0 => BinaryOp::Assign,
+                        0x1 => BinaryOp::BitOr,
+                        0x2 => BinaryOp::BitAnd,
+                        0x3 => BinaryOp::BitXor,
                         0x4 => BinaryOp::Add,
                         0x5 => BinaryOp::Subtract,
                         0x7 => BinaryOp::SubtractAlt,
