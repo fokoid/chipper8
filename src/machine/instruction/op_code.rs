@@ -48,16 +48,16 @@ impl TryFrom<&Instruction> for OpCode {
                     let rest = u16::from(&args.address) & 0x0FFF;
                     match flow {
                         Flow::Sys { args } => match args.register {
-                            Some(_) => panic!("not implemented"),
+                            Some(_) => Err(Error::NoOpcodeError(instruction.clone()))?,
                             None => 0x0000 | rest,
                         }
                         Flow::Jump { args } => match &args.register {
                             None => 0x1000 | rest,
                             Some(Register(x)) if u8::from(x.0) == 0 => 0xB000 | rest,
-                            Some(_) => panic!("jump NNN VX not implemented for VX != 0"),
+                            Some(_) => Err(Error::NoOpcodeError(instruction.clone()))?,
                         }
                         Flow::Call { args } => match args.register {
-                            Some(_) => panic!("not implemented"),
+                            Some(_) => Err(Error::NoOpcodeError(instruction.clone()))?,
                             None => 0x2000 | rest,
                         }
                         Flow::Return | Flow::Branch { args: _ } => {
