@@ -279,6 +279,9 @@ impl Machine {
                         target.shr_assign(1);
                         self.set_flag(lowest_bit);
                     }
+                    BinaryOp::Random => {
+                        *target = source * rand::random::<u8>();
+                    }
                 }
             }
             Instruction::Font { args } => {

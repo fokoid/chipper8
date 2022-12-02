@@ -62,6 +62,7 @@ pub enum BinaryOp {
     BitXor,
     BitShiftLeft,
     BitShiftRight,
+    Random,
 }
 
 impl Display for BinaryOp {
@@ -79,6 +80,7 @@ impl Display for BinaryOp {
             Self::BitXor => "^=",
             Self::BitShiftLeft => "<<=",
             Self::BitShiftRight => ">>=",
+            Self::Random => "?=",
         })
     }
 }

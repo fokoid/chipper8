@@ -98,6 +98,8 @@ impl TryFrom<&Instruction> for OpCode {
                                 0x6000 | u16::from_be_bytes([vx.into(), byte.into()]),
                             BinaryOp::AddWrapping =>
                                 0x7000 | u16::from_be_bytes([vx.into(), byte.into()]),
+                            BinaryOp::Random =>
+                                0xC000 | u16::from_be_bytes([vx.into(), byte.into()]),
                             _ => Err(Error::NoOpcodeError(instruction.clone()))?,
                         },
                         Source::Register(vy) => {
@@ -111,7 +113,7 @@ impl TryFrom<&Instruction> for OpCode {
                                 BinaryOp::BitShiftRight => 0x6,
                                 BinaryOp::SubtractAlt => 0x7,
                                 BinaryOp::BitShiftLeft => 0xE,
-                                BinaryOp::AddWrapping => Err(Error::NoOpcodeError(instruction.clone()))?,
+                                BinaryOp::AddWrapping | BinaryOp::Random => Err(Error::NoOpcodeError(instruction.clone()))?,
                             };
                             u16::from_be_bytes([u8::from(vx) | 0x80, u8::from(vy).rotate_left(4) | lowest_nibble])
                         }
@@ -195,7 +197,7 @@ impl TryFrom<OpCode> for Instruction {
                 };
                 Ok(Instruction::Flow(Flow::Branch { args }))
             }
-            highest @ (0x6 | 0x7) => {
+            highest @ (0x6 | 0x7 | 0xC) => {
                 let [register, lower_byte] = rest.to_be_bytes();
                 let args = BinaryOpArgs {
                     source: Source::Byte(lower_byte.into()),
@@ -203,6 +205,7 @@ impl TryFrom<OpCode> for Instruction {
                     op: match highest {
                         0x6 => Ok(BinaryOp::Assign),
                         0x7 => Ok(BinaryOp::AddWrapping),
+                        0xC => Ok(BinaryOp::Random),
                         _ => Err(Error::InvalidOpCode(opcode))
                     }?,
                 };
