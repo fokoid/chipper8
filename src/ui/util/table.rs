@@ -1,5 +1,5 @@
 use egui::{Ui, WidgetText};
-use egui_extras::{self, Size, TableBuilder, TableRow};
+use egui_extras::{self, Column, TableBuilder, TableRow};
 
 // todo: figure out how to make the outer Vec an Iterator
 pub trait TabularData {
@@ -13,7 +13,7 @@ pub trait TabularData {
 pub struct ColumnSpec {
     pub name: String,
     pub visible: bool,
-    pub size: Size,
+    pub size: f32,
 }
 
 impl ColumnSpec {
@@ -21,7 +21,7 @@ impl ColumnSpec {
         Self {
             name: name.into(),
             visible: true,
-            size: Size::exact(size),
+            size,
         }
     }
 }
@@ -84,7 +84,7 @@ impl TableSpec {
         let draw_spec = self.clone();
         let builder = TableBuilder::new(ui)
             .resizable(false)
-            .scroll(false)
+            .vscroll(false)
             .striped(self.striped)
             .stick_to_bottom(self.stick_to_bottom);
 
@@ -92,7 +92,8 @@ impl TableSpec {
             builder,
             |builder, col_spec| {
                 if col_spec.visible {
-                    builder.column(col_spec.size)
+                    // builder.column(col_spec.size)
+                    builder.column(Column::exact(col_spec.size))
                 } else {
                     builder
                 }
@@ -147,7 +148,7 @@ fn column_header_ui(row: &mut TableRow, table_spec: &mut TableSpec, col_spec: &C
 // todo: should this return a Response? but then need to move the if out of the function
 fn column_cell_ui(row: &mut TableRow, table_spec: &mut TableSpec, col_spec: &ColumnSpec, content: impl Into<WidgetText>) {
     if !&col_spec.visible { return; }
-    let response = row.col(|ui| { ui.label(content); });
+    let (_, response) = row.col(|ui| { ui.label(content); });
     if table_spec.enable_context_menu {
         response.context_menu(|ui| {
             column_toggle_menu_ui(ui, table_spec);

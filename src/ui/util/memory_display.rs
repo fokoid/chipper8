@@ -1,4 +1,4 @@
-use egui::{Response, RichText, TextureFilter, TextureHandle, Ui};
+use egui::{Response, RichText, TextureHandle, TextureOptions, Ui};
 
 use crate::ui::util::image_builder::ImageBuilder;
 
@@ -20,12 +20,12 @@ impl MemoryDisplay {
             ui.ctx().load_texture(
                 "display",
                 self.image_builder.build_empty(),
-                TextureFilter::Linear,
+                TextureOptions::LINEAR,
             )
         });
         texture.set(
             self.image_builder.build_from_memory(memory, force_on),
-            TextureFilter::Linear,
+            TextureOptions::LINEAR,
         );
         let size = texture.size_vec2();
         let response = ui.image(texture, size);
