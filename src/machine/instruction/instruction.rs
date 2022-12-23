@@ -1,13 +1,13 @@
 use std::fmt::{Debug, Display, Formatter};
 
-use super::args::{BinaryOpArgs, BranchArgs, DrawArgs, JumpArgs, RegisterArgs};
+use super::args::{BinaryOpArgs, BranchArgs, DrawArgs, IndexOpArgs, JumpArgs, RegisterArgs};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Instruction {
     Exit,
     Graphics(Graphics),
     Flow(Flow),
-    IndexSet { args: JumpArgs },
+    Index { args: IndexOpArgs },
     Arithmetic { args: BinaryOpArgs },
     Font { args: RegisterArgs },
     KeyAwait { args: RegisterArgs },
@@ -34,7 +34,7 @@ impl Display for Instruction {
             Self::Exit => write!(f, "exit"),
             Self::Graphics(graphics) => write!(f, "graphics {}", graphics),
             Self::Flow(flow) => write!(f, "{}", flow),
-            Self::IndexSet { args } => write!(f, "index {}", args),
+            Self::Index { args } => write!(f, "VI {} {}", args.op, args.source),
             Self::Arithmetic { args } => write!(f, "{} {} {}", args.target, args.op, args.source),
             Self::Font { args } => write!(f, "font {}", args.register),
             Self::KeyAwait { args } => write!(f, "key await {}", args.register),

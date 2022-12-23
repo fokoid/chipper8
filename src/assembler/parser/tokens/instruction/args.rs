@@ -1,5 +1,5 @@
 use crate::{Error, Result};
-use crate::machine::instruction::args::{BinaryOp, BinaryOpArgs, BranchArgs, Comparator, DrawArgs, JumpArgs, RegisterArgs, Source, Target, Timer};
+use crate::machine::instruction::args::{BinaryOp, BinaryOpArgs, BranchArgs, Comparator, DrawArgs, IndexOp, IndexOpArgs, IndexSource, JumpArgs, RegisterArgs, Source, Target, Timer};
 use crate::machine::types::{Address, Nibble, Register};
 
 use super::{Token, Tokens};
@@ -35,6 +35,20 @@ impl TryFrom<Tokens<'_>> for BinaryOpArgs {
     }
 }
 
+impl TryFrom<Tokens<'_>> for IndexOpArgs {
+    type Error = Error;
+
+    fn try_from(mut tokens: Tokens<'_>) -> Result<Self> {
+        let op = IndexOp::try_from(tokens.next().ok_or(
+            Error::SyntaxError(String::from("index arithmetic requires an operation"))
+        )?)?;
+        let source = IndexSource::try_from(tokens.next().ok_or(
+            Error::SyntaxError(String::from("index arithmetic requires a source"))
+        )?)?;
+        Ok(Self { op, source })
+    }
+}
+
 impl TryFrom<Token<'_>> for Target {
     type Error = Error;
 
@@ -56,9 +70,22 @@ impl TryFrom<Token<'_>> for Source {
         Ok(match token {
             Token::Register("T") => Self::Timer(Timer::Delay),
             Token::Register("S") => Self::Timer(Timer::Sound),
+            Token::Register("I") => Err(Error::SyntaxError(String::from("index VI not a valid arithmetic RHS")))?,
             Token::Register(_) => Self::Register(token.try_into()?),
             token @ (Token::Hex(_) | Token::Other(_)) => Self::Byte(token.try_into()?),
             x => Err(Error::SyntaxError(format!("expected register or value, found {:?}", x)))?,
+        })
+    }
+}
+
+impl TryFrom<Token<'_>> for IndexSource {
+    type Error = Error;
+
+    fn try_from(token: Token<'_>) -> Result<Self> {
+        Ok(match token {
+            Token::Register(_) => Self::Register(token.try_into()?),
+            token @ (Token::Hex(_) | Token::Other(_)) => Self::Value(token.try_into()?),
+            x => Err(Error::SyntaxError(format!("expected register or address value, found {:?}", x)))?,
         })
     }
 }
@@ -80,6 +107,18 @@ impl TryFrom<Token<'_>> for BinaryOp {
             Token::Other(">>=") => Ok(Self::BitShiftRight),
             Token::Other("?=") => Ok(Self::Random),
             x => Err(Error::SyntaxError(format!("expected binary operation, found {:?}", x))),
+        }
+    }
+}
+
+impl TryFrom<Token<'_>> for IndexOp {
+    type Error = Error;
+
+    fn try_from(token: Token<'_>) -> Result<Self> {
+        match token {
+            Token::Other("=") => Ok(Self::Assign),
+            Token::Other("+=") => Ok(Self::Add),
+            x => Err(Error::SyntaxError(format!("expected index operation, found {:?}", x))),
         }
     }
 }

@@ -93,6 +93,58 @@ pub struct BinaryOpArgs {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
+pub enum IndexSource {
+    Value(Address),
+    Register(Register),
+}
+
+impl Display for IndexSource {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Value(x) => write!(f, "{}", x),
+            Self::Register(vx) => write!(f, "{}", vx),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum IndexOp {
+    Assign,
+    Add,
+}
+
+impl Display for IndexOp {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", match self {
+            Self::Assign => "=",
+            Self::Add => "+=",
+        })
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct IndexOpArgs {
+    pub source: IndexSource,
+    pub op: IndexOp,
+}
+
+impl IndexOpArgs {
+    pub fn assign(address: Address) -> Self {
+        Self {
+            source: IndexSource::Value(address),
+            op: IndexOp::Assign,
+        }
+    }
+
+    pub fn add(register: Register) -> Self {
+        Self {
+            source: IndexSource::Register(register),
+            op: IndexOp::Add,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct DrawArgs {
     pub x: Register,
     pub y: Register,

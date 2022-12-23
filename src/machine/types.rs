@@ -117,6 +117,12 @@ impl Display for Address {
     }
 }
 
+impl From<u8> for Address {
+    fn from(value: u8) -> Self {
+        Self(value.into())
+    }
+}
+
 impl TryFrom<u16> for Address {
     type Error = Error;
 

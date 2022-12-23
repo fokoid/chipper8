@@ -5,13 +5,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Error, Result};
 use crate::assembler::Tokens;
-use crate::machine::instruction::args::{BinaryOp, Comparator};
 use crate::ui::Rom;
 
 use super::config;
 use super::draw_options::DrawOptions;
 use super::instruction::{Flow, Graphics, Instruction, OpCode};
-use super::instruction::args::{self, Source, Target};
+use super::instruction::args::{self, BinaryOp, Comparator, IndexOp, IndexSource, Source, Target};
 use super::stack::Stack;
 use super::types::{Address, Timer};
 
@@ -218,9 +217,16 @@ impl Machine {
                     };
                 }
             }
-            Instruction::IndexSet { args } => {
-                // todo: can we take ownership of args here to avoid the copy?
-                self.index = args.address.clone();
+            Instruction::Index { args } => {
+                let source = match &args.source {
+                    // todo: can we take ownership of args here to avoid the copy?
+                    IndexSource::Value(address) => address.clone(),
+                    IndexSource::Register(vx) => self.registers[usize::from(vx)].into(),
+                };
+                match &args.op {
+                    IndexOp::Assign => { self.index = source; }
+                    IndexOp::Add => { self.index.advance(source.0); }
+                }
             }
             Instruction::Arithmetic { args } => {
                 let source = self.read_source(&args.source);

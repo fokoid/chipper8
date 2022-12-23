@@ -2,7 +2,7 @@ use std::fmt::{Debug, Display, Formatter};
 
 use crate::{Error, Result};
 use crate::machine::instruction::{Flow, Graphics};
-use crate::machine::instruction::args::{BinaryOp, BinaryOpArgs, BranchArgs, Comparator, DrawArgs, JumpArgs, RegisterArgs, Source, Target, Timer};
+use crate::machine::instruction::args::{BinaryOp, BinaryOpArgs, BranchArgs, Comparator, DrawArgs, IndexOp, IndexOpArgs, IndexSource, JumpArgs, RegisterArgs, Source, Target, Timer};
 use crate::machine::types::{Register, Word};
 
 use super::Instruction;
@@ -89,7 +89,22 @@ impl TryFrom<&Instruction> for OpCode {
                     u16::from_be_bytes([upper_byte, lower_byte])
                 }
             }
-            Instruction::IndexSet { args } => 0xA000 | (u16::from(&args.address) & 0x0FFF),
+            Instruction::Index { args } => {
+                match &args.op {
+                    IndexOp::Assign => {
+                        match &args.source {
+                            IndexSource::Value(address) => 0xA000 | (u16::from(address) & 0x0FFF),
+                            IndexSource::Register(_) => Err(Error::NoOpcodeError(instruction.clone()))?,
+                        }
+                    }
+                    IndexOp::Add => {
+                        match &args.source {
+                            IndexSource::Value(_) => Err(Error::NoOpcodeError(instruction.clone()))?,
+                            IndexSource::Register(vx) => 0xF01E | u16::from_be_bytes([vx.into(), 0]),
+                        }
+                    }
+                }
+            }
             Instruction::Arithmetic { args } => {
                 match &args.target {
                     Target::Register(vx) => match &args.source {
@@ -172,7 +187,7 @@ impl TryFrom<OpCode> for Instruction {
                 Ok(match highest {
                     0x1 | 0xB => Instruction::Flow(Flow::Jump { args }),
                     0x2 => Instruction::Flow(Flow::Call { args }),
-                    0xA => Instruction::IndexSet { args },
+                    0xA => Instruction::Index { args: IndexOpArgs::assign(args.address) },
                     _ => panic!("how did we get here?!"),
                 })
             }
@@ -255,6 +270,7 @@ impl TryFrom<OpCode> for Instruction {
                             target: Target::Register(register),
                         }
                     }),
+                    0x1E => Ok(Instruction::Index { args: IndexOpArgs::add(register) }),
                     0x29 => Ok(Instruction::Font { args: RegisterArgs { register } }),
                     byte @ (0x15 | 0x18) => {
                         let target = Target::Timer(if byte == 0x15 { Timer::Delay } else { Timer::Sound });
