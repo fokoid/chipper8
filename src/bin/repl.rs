@@ -107,7 +107,7 @@ impl ReplApp {
         Ok(())
     }
 
-    fn tick(&mut self) -> crate::Result<()> {
+    fn tick(&mut self) -> Result<()> {
         let instruction = self.machine.next_instruction()?;
         self.state.command_history.append(&Command::Instruction(instruction), false);
         self.machine.tick()?;

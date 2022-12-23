@@ -2,7 +2,7 @@ use std::fmt::{Debug, Display, Formatter};
 
 use crate::{Error, Result};
 use crate::machine::instruction::{Flow, Graphics};
-use crate::machine::instruction::args::{self, BinaryOp, BinaryOpArgs, BranchArgs, Comparator, DrawArgs, JumpArgs, RegisterArgs, Source, Target, Timer};
+use crate::machine::instruction::args::{BinaryOp, BinaryOpArgs, BranchArgs, Comparator, DrawArgs, JumpArgs, RegisterArgs, Source, Target, Timer};
 use crate::machine::types::{Register, Word};
 
 use super::Instruction;
@@ -127,8 +127,8 @@ impl TryFrom<&Instruction> for OpCode {
                             Err(Error::NoOpcodeError(instruction.clone()))
                         } else {
                             let lower_byte: u8 = match timer {
-                                args::Timer::Delay => 0x15,
-                                args::Timer::Sound => 0x18,
+                                Timer::Delay => 0x15,
+                                Timer::Sound => 0x18,
                             };
                             let upper_byte: u8 = match &args.source {
                                 // todo: replace panics with this elsewhere
@@ -257,7 +257,7 @@ impl TryFrom<OpCode> for Instruction {
                     }),
                     0x29 => Ok(Instruction::Font { args: RegisterArgs { register } }),
                     byte @ (0x15 | 0x18) => {
-                        let target = Target::Timer(if byte == 0x15 { args::Timer::Delay } else { args::Timer::Sound });
+                        let target = Target::Timer(if byte == 0x15 { Timer::Delay } else { Timer::Sound });
                         let source = Source::Register(register);
                         // todo: different args for this? presence of carry flag here is confusing
                         Ok(Instruction::Arithmetic { args: BinaryOpArgs { target, source, op: BinaryOp::Assign } })
