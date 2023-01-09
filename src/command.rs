@@ -10,12 +10,12 @@ pub enum Command {
 }
 
 impl Command {
-    pub fn opcode(&self) -> Option<OpCode> {
-        match self {
-            Self::Meta(_) => None,
-            Self::Instruction(instruction) => Some(instruction.try_into().ok()?),
-        }
-    }
+    // pub fn opcode(&self) -> Option<OpCode> {
+    //     match self {
+    //         Self::Meta(_) => None,
+    //         Self::Instruction(instruction) => Some(instruction.try_into().ok()?),
+    //     }
+    // }
 
     pub fn is_meta(&self) -> bool {
         match self {

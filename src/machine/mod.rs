@@ -1,3 +1,4 @@
+pub use assembler::{Assembler, AssemblerConfig};
 pub use draw_options::DrawOptions;
 pub use instruction::{Instruction, OpCode};
 pub use machine::Machine;
@@ -9,4 +10,5 @@ mod stack;
 mod machine;
 pub mod instruction;
 pub(crate) mod types;
+pub mod assembler;
 

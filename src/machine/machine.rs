@@ -4,10 +4,11 @@ use std::ops::{BitAndAssign, BitOrAssign, BitXorAssign, ShlAssign, ShrAssign};
 use serde::{Deserialize, Serialize};
 
 use crate::{Error, Result};
-use crate::assembler::Tokens;
+use crate::parser::Tokens;
 use crate::ui::Rom;
 
 use super::config;
+use super::assembler::Assembler;
 use super::draw_options::DrawOptions;
 use super::instruction::{Flow, Graphics, Instruction, OpCode};
 use super::instruction::args::{self, BinaryOp, Comparator, IndexOp, IndexSource, Source, Target};
@@ -39,6 +40,7 @@ pub struct Machine {
     pub sound_timer: Timer,
     pub key_buffer: Option<u8>,
     pub config: MachineConfig,
+    pub translator: Assembler,
 }
 
 impl Machine {
@@ -54,6 +56,7 @@ impl Machine {
             registers: vec![0; config::NUM_REGISTERS],
             key_buffer: None,
             config: MachineConfig::new(),
+            translator: Assembler::new(),
         };
         machine.memory[config::FONT_RANGE].clone_from_slice(&config::FONT_GLYPHS);
         machine
@@ -129,11 +132,11 @@ impl Machine {
 
     pub fn instruction_at_address(&self, address: &Address) -> Result<Instruction> {
         let opcode = OpCode(self.word_at_address(address).unwrap_or(0).into());
-        Instruction::try_from(opcode)
+        self.translator.disassemble(opcode)
     }
 
     fn set_instruction_at_address(&mut self, address: &Address, instruction: &Instruction) -> Result<()> {
-        let opcode: OpCode = instruction.try_into()?;
+        let opcode: OpCode = self.translator.assemble(instruction)?;
         self.memory[address.as_range(2)].clone_from_slice(&opcode.bytes());
         Ok(())
     }

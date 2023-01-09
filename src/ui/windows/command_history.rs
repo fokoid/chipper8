@@ -20,7 +20,7 @@ impl CommandHistory {
                 ColumnSpec::fixed("Opcode", 60.0),
                 ColumnSpec::fixed("Command", 160.0),
                 ColumnSpec::fixed("Count", 50.0),
-            ]).striped(true)
+            ]).striped(true),
         }
     }
 }
@@ -47,7 +47,7 @@ impl TabularData for &crate::ui::command_history::CommandHistory {
                         " "
                     },
                 ).into(),
-                match item.command.opcode() {
+                match &item.opcode {
                     None => String::from(""),
                     Some(opcode) => format!("{}", opcode),
                 }.into(),

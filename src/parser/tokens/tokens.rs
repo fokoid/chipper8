@@ -1,6 +1,6 @@
 use std::str::SplitWhitespace;
 
-use crate::assembler::parser::Token;
+use crate::parser::Token;
 
 #[derive(Debug)]
 pub struct Tokens<'a> {

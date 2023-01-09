@@ -7,4 +7,4 @@ pub mod command;
 pub mod errors;
 pub mod ui;
 pub mod emulator;
-mod assembler;
+mod parser;
