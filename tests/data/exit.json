@@ -6192,6 +6192,6 @@
   "sound_timer": 0,
   "key_buffer": null,
   "config": {
-    "bitshift_ignore_y": true
+    "bitshift_ignore_y": false
   }
 }

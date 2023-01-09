@@ -22,7 +22,7 @@ pub struct MachineConfig {
 impl MachineConfig {
     pub fn new() -> Self {
         Self {
-            bitshift_ignore_y: true,
+            bitshift_ignore_y: false,
         }
     }
 }
