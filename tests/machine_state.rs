@@ -9,6 +9,7 @@ fn test_state(name: &str) {
         fps: 1000,
         dump_path: None,
     }).unwrap();
+    emulator.machine.config.auto_exit = true;
     emulator.run().unwrap();
 
     let expected_path = format!("tests/data/{}.json", name);
@@ -19,4 +20,14 @@ fn test_state(name: &str) {
 #[test]
 fn test_state_init() {
     test_state("exit");
+}
+
+#[test]
+fn test_state_bc() {
+    test_state("bc");
+}
+
+#[test]
+fn test_state_corax89() {
+    test_state("corax89");
 }

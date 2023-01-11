@@ -19,6 +19,7 @@ pub struct MachineConfig {
     pub bitshift_ignore_y: bool,
     pub jump_xnn: bool,
     pub load_increment_index: bool,
+    pub auto_exit: bool,
 }
 
 impl MachineConfig {
@@ -28,6 +29,9 @@ impl MachineConfig {
             bitshift_ignore_y: true,
             jump_xnn: false,
             load_increment_index: false,
+            // terminate execution when an infinite loop is hit (useful e.g. for integration tests
+            // where we want to stop and check output when the test ROM hits its infinite loop)
+            auto_exit: false,
         }
     }
 }
@@ -333,6 +337,13 @@ impl Machine {
 
     pub fn tick(&mut self) -> Result<()> {
         let instruction = self.next_instruction().unwrap();
+        if self.config.auto_exit {
+            if let Instruction::Flow(Flow::Jump { args }) = &instruction {
+                if args.address == self.program_counter && args.register.is_none() {
+                    return Err(Error::MachineExit);
+                }
+            }
+        }
         self.sound_timer -= if self.sound_timer > 0 { 1 } else { 0 };
         self.delay_timer -= if self.delay_timer > 0 { 1 } else { 0 };
         self.program_counter.step();
