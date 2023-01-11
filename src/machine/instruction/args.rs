@@ -156,6 +156,12 @@ pub struct RegisterArgs {
     pub register: Register,
 }
 
+impl Display for RegisterArgs {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.register)
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct JumpArgs {
     pub address: Address,

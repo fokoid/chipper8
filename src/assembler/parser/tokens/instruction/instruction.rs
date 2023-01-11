@@ -31,6 +31,7 @@ impl TryFrom<Tokens<'_>> for Instruction {
                 Some(x) => Err(Error::SyntaxError(format!("key requires a subcommand, but got {:?}; allowed: await", x))),
                 None => Err(Error::SyntaxError(format!("key requires a subcommand; allowed: await"))),
             }
+            Some(Token::Other("bcd")) => Ok(Instruction::BinaryCodedDecimal { args: tokens.try_into()? }),
             Some(token @ Token::Hex(_)) => {
                 let opcode = OpCode::try_from(token)?;
                 Ok(opcode.try_into()?)

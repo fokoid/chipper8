@@ -159,6 +159,7 @@ impl TryFrom<&Instruction> for OpCode {
             // todo: deduplicate
             Instruction::Font { args } => 0xF029 | u16::from_be_bytes([u8::from(&args.register), 0]),
             Instruction::KeyAwait { args } => 0xF00A | u16::from_be_bytes([u8::from(&args.register), 0]),
+            Instruction::BinaryCodedDecimal { args } => 0xF033 | u16::from_be_bytes([u8::from(&args.register), 0]),
         };
         Ok(OpCode(op_code.into()))
     }
@@ -272,6 +273,7 @@ impl TryFrom<OpCode> for Instruction {
                     }),
                     0x1E => Ok(Instruction::Index { args: IndexOpArgs::add(register) }),
                     0x29 => Ok(Instruction::Font { args: RegisterArgs { register } }),
+                    0x33 => Ok(Instruction::BinaryCodedDecimal { args: RegisterArgs { register } }),
                     byte @ (0x15 | 0x18) => {
                         let target = Target::Timer(if byte == 0x15 { Timer::Delay } else { Timer::Sound });
                         let source = Source::Register(register);

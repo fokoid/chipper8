@@ -308,6 +308,11 @@ impl Machine {
                     self.program_counter.step_back();
                 }
             }
+            Instruction::BinaryCodedDecimal { args } => {
+                let value = self.registers[usize::from(&args.register)];
+                let digits = [value / 100 % 10, value / 10 % 10, value % 10];
+                self.memory[self.index.as_range(3)].clone_from_slice(&digits);
+            }
         };
         Ok(())
     }

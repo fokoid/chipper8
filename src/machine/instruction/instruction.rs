@@ -11,6 +11,7 @@ pub enum Instruction {
     Arithmetic { args: BinaryOpArgs },
     Font { args: RegisterArgs },
     KeyAwait { args: RegisterArgs },
+    BinaryCodedDecimal { args: RegisterArgs },
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -36,8 +37,9 @@ impl Display for Instruction {
             Self::Flow(flow) => write!(f, "{}", flow),
             Self::Index { args } => write!(f, "VI {} {}", args.op, args.source),
             Self::Arithmetic { args } => write!(f, "{} {} {}", args.target, args.op, args.source),
-            Self::Font { args } => write!(f, "font {}", args.register),
-            Self::KeyAwait { args } => write!(f, "key await {}", args.register),
+            Self::Font { args } => write!(f, "font {}", args),
+            Self::KeyAwait { args } => write!(f, "key await {}", args),
+            Self::BinaryCodedDecimal { args } => write!(f, "bcd {}", args),
         }
     }
 }
