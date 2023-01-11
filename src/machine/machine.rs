@@ -12,17 +12,19 @@ use super::draw_options::DrawOptions;
 use super::instruction::{Flow, Graphics, Instruction, OpCode};
 use super::instruction::args::{self, BinaryOp, Comparator, IndexOp, IndexSource, Source, Target};
 use super::stack::Stack;
-use super::types::{Address, Timer};
+use super::types::{Address, Register, Timer};
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub struct MachineConfig {
     pub bitshift_ignore_y: bool,
+    pub jump_xnn: bool,
 }
 
 impl MachineConfig {
     pub fn new() -> Self {
         Self {
             bitshift_ignore_y: false,
+            jump_xnn: false,
         }
     }
 }
@@ -186,7 +188,11 @@ impl Machine {
                 }
                 Flow::Jump { args } | Flow::Call { args } | Flow::Sys { args } => {
                     let mut address = args.address.clone();
-                    if let Some(register) = &args.register {
+                    if let Some(register) = &args.register.as_ref().map(|register| if self.config.jump_xnn {
+                        let [upper, _] = u16::from(&args.address).to_be_bytes();
+                        // we know upper byte of a u12 is only a single nibble
+                        Register::try_from(upper).unwrap()
+                    } else { register.clone() }) {
                         address.advance(self.registers[usize::from(register)].into());
                     }
                     match flow {
