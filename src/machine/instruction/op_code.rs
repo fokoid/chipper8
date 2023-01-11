@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display, Formatter};
 
 use crate::{Error, Result};
-use crate::machine::instruction::{Flow, Graphics};
+use crate::machine::instruction::{Flow, Graphics, Memory};
 use crate::machine::instruction::args::{BinaryOp, BinaryOpArgs, BranchArgs, Comparator, DrawArgs, IndexOp, IndexOpArgs, IndexSource, JumpArgs, RegisterArgs, Source, Target, Timer};
 use crate::machine::types::{Register, Word};
 
@@ -160,6 +160,13 @@ impl TryFrom<&Instruction> for OpCode {
             Instruction::Font { args } => 0xF029 | u16::from_be_bytes([u8::from(&args.register), 0]),
             Instruction::KeyAwait { args } => 0xF00A | u16::from_be_bytes([u8::from(&args.register), 0]),
             Instruction::BinaryCodedDecimal { args } => 0xF033 | u16::from_be_bytes([u8::from(&args.register), 0]),
+            Instruction::Memory(memory_instruction @ (Memory::Save { args } | Memory::Load { args })) => {
+                let lower: u8 = match memory_instruction {
+                    Memory::Save { args: _ } => 0x55,
+                    Memory::Load { args: _ } => 0x65,
+                };
+                0xF000 | u16::from_be_bytes([u8::from(&args.register), lower])
+            }
         };
         Ok(OpCode(op_code.into()))
     }
@@ -279,6 +286,10 @@ impl TryFrom<OpCode> for Instruction {
                         let source = Source::Register(register);
                         // todo: different args for this? presence of carry flag here is confusing
                         Ok(Instruction::Arithmetic { args: BinaryOpArgs { target, source, op: BinaryOp::Assign } })
+                    }
+                    byte @ (0x55 | 0x65) => {
+                        let args = RegisterArgs { register };
+                        Ok(Instruction::Memory(if byte == 0x55 { Memory::Save { args } } else { Memory::Load { args } }))
                     }
                     _ => Err(Error::InvalidOpCode(opcode)),
                 }

@@ -1,5 +1,5 @@
 pub use args::{BinaryOpArgs, DrawArgs, JumpArgs};
-pub use instruction::{Flow, Graphics, Instruction};
+pub use instruction::{Flow, Graphics, Instruction, Memory};
 pub use op_code::OpCode;
 
 pub mod args;

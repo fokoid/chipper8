@@ -6193,6 +6193,7 @@
   "key_buffer": null,
   "config": {
     "bitshift_ignore_y": false,
-    "jump_xnn": false
+    "jump_xnn": false,
+    "load_increment_index": false
   }
 }

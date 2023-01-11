@@ -1,5 +1,5 @@
 use crate::{Error, Result};
-use crate::machine::instruction::{Flow, Graphics, Instruction, OpCode};
+use crate::machine::instruction::{Flow, Graphics, Instruction, Memory, OpCode};
 
 use super::{Token, Tokens};
 
@@ -32,6 +32,8 @@ impl TryFrom<Tokens<'_>> for Instruction {
                 None => Err(Error::SyntaxError(format!("key requires a subcommand; allowed: await"))),
             }
             Some(Token::Other("bcd")) => Ok(Instruction::BinaryCodedDecimal { args: tokens.try_into()? }),
+            Some(Token::Other("load")) => Ok(Instruction::Memory(Memory::Load { args: tokens.try_into()? })),
+            Some(Token::Other("save")) => Ok(Instruction::Memory(Memory::Save { args: tokens.try_into()? })),
             Some(token @ Token::Hex(_)) => {
                 let opcode = OpCode::try_from(token)?;
                 Ok(opcode.try_into()?)
