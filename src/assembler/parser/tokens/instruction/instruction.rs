@@ -1,5 +1,5 @@
 use crate::{Error, Result};
-use crate::machine::instruction::{Flow, Graphics, Instruction, Memory, OpCode};
+use crate::machine::instruction::{Flow, Graphics, Index, Instruction, Memory, OpCode};
 
 use super::{Token, Tokens};
 
@@ -17,7 +17,7 @@ impl TryFrom<Tokens<'_>> for Instruction {
         }
         // todo: parse entire token stream
         match tokens.next() {
-            Some(Token::Register("I")) => Ok(Instruction::Index { args: tokens.try_into()? }),
+            Some(Token::Register("I")) => Ok(Instruction::Index(Index::Arithmetic { args: tokens.try_into()? })),
             Some(Token::Other("exit")) => Ok(Self::Exit),
             Some(Token::Other("graphics")) => Ok(Self::Graphics(tokens.try_into()?)),
             Some(Token::Other("return")) => Ok(Instruction::Flow(Flow::Return)),
@@ -25,7 +25,7 @@ impl TryFrom<Tokens<'_>> for Instruction {
             Some(Token::Other("jump")) => Ok(Instruction::Flow(Flow::Jump { args: tokens.try_into()? })),
             Some(Token::Other("call")) => Ok(Instruction::Flow(Flow::Call { args: tokens.try_into()? })),
             Some(Token::Other("branch")) => Ok(Instruction::Flow(Flow::Branch { args: tokens.try_into()? })),
-            Some(Token::Other("font")) => Ok(Instruction::Font { args: tokens.try_into()? }),
+            Some(Token::Other("font")) => Ok(Instruction::Index(Index::Font { args: tokens.try_into()? })),
             Some(Token::Other("key")) => match tokens.next() {
                 Some(Token::Other("await")) => Ok(Instruction::KeyAwait { args: tokens.try_into()? }),
                 Some(x) => Err(Error::SyntaxError(format!("key requires a subcommand, but got {:?}; allowed: await", x))),

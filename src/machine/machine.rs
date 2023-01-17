@@ -9,8 +9,8 @@ use crate::ui::Rom;
 
 use super::config;
 use super::draw_options::DrawOptions;
-use super::instruction::{Flow, Graphics, Instruction, Memory, OpCode};
-use super::instruction::args::{self, BinaryOp, Comparator, IndexOp, IndexSource, Source, Target};
+use super::instruction::{Flow, Graphics, Index, Instruction, Memory, OpCode};
+use super::instruction::args::{self, BinaryOp, BinaryOpArgs, Comparator, IndexOp, IndexSource, Source, Target};
 use super::stack::Stack;
 use super::types::{Address, Register, Timer};
 
@@ -172,65 +172,154 @@ impl Machine {
 
     fn set_flag(&mut self, value: u8) { self.registers[0xF] = value; }
 
-    pub fn execute(&mut self, instruction: &Instruction) -> Result<()> {
-        match instruction {
-            Instruction::Exit => { return Err(Error::MachineExit); }
-            Instruction::Graphics(graphics) => match graphics {
-                Graphics::Clear => { self.display.fill(0); }
-                Graphics::Draw { args } => {
-                    let x = self.registers[usize::from(&args.x)] as usize % config::DISPLAY_WIDTH;
-                    let y = self.registers[usize::from(&args.y)] as usize % config::DISPLAY_HEIGHT;
-                    let index_start = usize::from(&self.index);
-                    let index_end = index_start + usize::from(&args.height);
-                    DrawOptions::new(
-                        &self.memory[index_start..index_end],
-                        &mut self.display,
-                        [config::DISPLAY_WIDTH, config::DISPLAY_HEIGHT],
-                    ).at([x, y]).draw();
+    fn execute_graphics(&mut self, graphics: &Graphics) -> Result<()> {
+        match graphics {
+            Graphics::Clear => { self.display.fill(0); }
+            Graphics::Draw { args } => {
+                let x = self.registers[usize::from(&args.x)] as usize % config::DISPLAY_WIDTH;
+                let y = self.registers[usize::from(&args.y)] as usize % config::DISPLAY_HEIGHT;
+                let index_start = usize::from(&self.index);
+                let index_end = index_start + usize::from(&args.height);
+                DrawOptions::new(
+                    &self.memory[index_start..index_end],
+                    &mut self.display,
+                    [config::DISPLAY_WIDTH, config::DISPLAY_HEIGHT],
+                ).at([x, y]).draw();
+            }
+        };
+        Ok(())
+    }
+
+    fn execute_flow(&mut self, flow: &Flow) -> Result<()> {
+        match flow {
+            Flow::Return => {
+                self.program_counter = self.stack.pop().into();
+            }
+            Flow::Jump { args } | Flow::Call { args } | Flow::Sys { args } => {
+                let mut address = args.address.clone();
+                if let Some(register) = &args.register.as_ref().map(|register| if self.config.jump_xnn {
+                    let [upper, _] = u16::from(&args.address).to_be_bytes();
+                    // we know upper byte of a u12 is only a single nibble
+                    Register::try_from(upper).unwrap()
+                } else { register.clone() }) {
+                    address.advance(self.registers[usize::from(register)].into());
+                }
+                match flow {
+                    Flow::Jump { args: _ } => { self.program_counter = address; }
+                    Flow::Call { args: _ } => {
+                        // todo: can we swap here?
+                        self.stack.push(self.program_counter.clone());
+                        self.program_counter = address;
+                    }
+                    Flow::Sys { args: _ } => {
+                        panic!("not implemented: sys call");
+                    }
+                    Flow::Return | Flow::Branch { args: _ } => {
+                        // todo: can we avoid this?
+                        panic!("how did we get here?");
+                    }
                 }
             }
-            Instruction::Flow(flow) => match flow {
-                Flow::Return => {
-                    self.program_counter = self.stack.pop().into();
+            Flow::Branch { args } => {
+                // todo extract logic for 'get value of Source'
+                let lhs: u8 = self.read_source(&args.lhs);
+                let rhs: u8 = self.read_source(&args.rhs);
+                if match &args.comparator {
+                    Comparator::Equal => lhs == rhs,
+                    Comparator::NotEqual => lhs != rhs,
+                } {
+                    self.program_counter.step();
+                };
+            }
+        };
+        Ok(())
+    }
+
+    fn execute_arithmetic(&mut self, args: &BinaryOpArgs) -> Result<()> {
+        {
+            let source = self.read_source(&args.source);
+            let target = match &args.target {
+                Target::Timer(args::Timer::Delay) => &mut self.delay_timer,
+                Target::Timer(args::Timer::Sound) => &mut self.sound_timer,
+                Target::Register(r) => &mut self.registers[usize::from(r)],
+            };
+            match &args.op {
+                BinaryOp::Assign => {
+                    *target = source;
                 }
-                Flow::Jump { args } | Flow::Call { args } | Flow::Sys { args } => {
-                    let mut address = args.address.clone();
-                    if let Some(register) = &args.register.as_ref().map(|register| if self.config.jump_xnn {
-                        let [upper, _] = u16::from(&args.address).to_be_bytes();
-                        // we know upper byte of a u12 is only a single nibble
-                        Register::try_from(upper).unwrap()
-                    } else { register.clone() }) {
-                        address.advance(self.registers[usize::from(register)].into());
-                    }
-                    match flow {
-                        Flow::Jump { args: _ } => { self.program_counter = address; }
-                        Flow::Call { args: _ } => {
-                            // todo: can we swap here?
-                            self.stack.push(self.program_counter.clone());
-                            self.program_counter = address;
-                        }
-                        Flow::Sys { args: _ } => {
-                            panic!("not implemented: sys call");
-                        }
-                        Flow::Return | Flow::Branch { args: _ } => {
-                            // todo: can we avoid this?
-                            panic!("how did we get here?");
-                        }
-                    }
+                BinaryOp::Add => {
+                    let (result, carry_flag) = target.overflowing_add(source);
+                    *target = result;
+                    self.set_flag(carry_flag.into());
                 }
-                Flow::Branch { args } => {
-                    // todo extract logic for 'get value of Source'
-                    let lhs: u8 = self.read_source(&args.lhs);
-                    let rhs: u8 = self.read_source(&args.rhs);
-                    if match &args.comparator {
-                        Comparator::Equal => lhs == rhs,
-                        Comparator::NotEqual => lhs != rhs,
-                    } {
-                        self.program_counter.step();
-                    };
+                // todo: deduplicate with BinaryOp::Add?
+                BinaryOp::AddWrapping => {
+                    let (result, _carry_flag) = target.overflowing_add(source);
+                    *target = result;
+                }
+                BinaryOp::Subtract => {
+                    let (result, carry_flag) = target.overflowing_sub(source);
+                    *target = result;
+                    self.set_flag(1 - u8::from(carry_flag));
+                }
+                // todo: deduplicate with BinaryOp::Subtract?
+                BinaryOp::SubtractAlt => {
+                    let (result, carry_flag) = source.overflowing_sub(*target);
+                    *target = result;
+                    self.set_flag(1 - u8::from(carry_flag));
+                }
+                BinaryOp::BitAnd => {
+                    target.bitand_assign(source);
+                }
+                BinaryOp::BitOr => {
+                    target.bitor_assign(source);
+                }
+                BinaryOp::BitXor => {
+                    target.bitxor_assign(source);
+                }
+                BinaryOp::BitShiftLeft => {
+                    if !self.config.bitshift_ignore_y {
+                        *target = source;
+                    }
+                    let highest_bit: u8 = *target / 128;
+                    target.shl_assign(1);
+                    self.set_flag(highest_bit);
+                }
+                BinaryOp::BitShiftRight => {
+                    if !self.config.bitshift_ignore_y {
+                        *target = source;
+                    }
+                    let lowest_bit = *target & 1;
+                    target.shr_assign(1);
+                    self.set_flag(lowest_bit);
+                }
+                BinaryOp::Random => {
+                    *target = source * rand::random::<u8>();
                 }
             }
-            Instruction::Index { args } => {
+        };
+        Ok(())
+    }
+
+    fn execute_memory(&mut self, memory: &Memory) -> Result<()> {
+        let args = match memory {
+            Memory::Load { args } | Memory::Save { args } => args
+        };
+        let last = usize::from(&args.register) + 1;
+        let (source, target) = match memory {
+            Memory::Load { args: _ } => (&self.memory[self.index.as_range(last)], &mut self.registers[..last]),
+            Memory::Save { args: _ } => (&self.registers[..last], &mut self.memory[self.index.as_range(last)]),
+        };
+        target.clone_from_slice(source);
+        if self.config.load_increment_index {
+            self.index.advance(last.try_into().unwrap());
+        };
+        Ok(())
+    }
+
+    fn execute_index(&mut self, index: &Index) -> Result<()> {
+        match index {
+            Index::Arithmetic { args } => {
                 let source = match &args.source {
                     // todo: can we take ownership of args here to avoid the copy?
                     IndexSource::Value(address) => address.clone(),
@@ -241,73 +330,23 @@ impl Machine {
                     IndexOp::Add => { self.index.advance(source.0); }
                 }
             }
-            Instruction::Arithmetic { args } => {
-                let source = self.read_source(&args.source);
-                let target = match &args.target {
-                    Target::Timer(args::Timer::Delay) => &mut self.delay_timer,
-                    Target::Timer(args::Timer::Sound) => &mut self.sound_timer,
-                    Target::Register(r) => &mut self.registers[usize::from(r)],
-                };
-                match &args.op {
-                    BinaryOp::Assign => {
-                        *target = source;
-                    }
-                    BinaryOp::Add => {
-                        let (result, carry_flag) = target.overflowing_add(source);
-                        *target = result;
-                        self.set_flag(carry_flag.into());
-                    }
-                    // todo: deduplicate with BinaryOp::Add?
-                    BinaryOp::AddWrapping => {
-                        let (result, _carry_flag) = target.overflowing_add(source);
-                        *target = result;
-                    }
-                    BinaryOp::Subtract => {
-                        let (result, carry_flag) = target.overflowing_sub(source);
-                        *target = result;
-                        self.set_flag(1 - u8::from(carry_flag));
-                    }
-                    // todo: deduplicate with BinaryOp::Subtract?
-                    BinaryOp::SubtractAlt => {
-                        let (result, carry_flag) = source.overflowing_sub(*target);
-                        *target = result;
-                        self.set_flag(1 - u8::from(carry_flag));
-                    }
-                    BinaryOp::BitAnd => {
-                        target.bitand_assign(source);
-                    }
-                    BinaryOp::BitOr => {
-                        target.bitor_assign(source);
-                    }
-                    BinaryOp::BitXor => {
-                        target.bitxor_assign(source);
-                    }
-                    BinaryOp::BitShiftLeft => {
-                        if !self.config.bitshift_ignore_y {
-                            *target = source;
-                        }
-                        let highest_bit: u8 = *target / 128;
-                        target.shl_assign(1);
-                        self.set_flag(highest_bit);
-                    }
-                    BinaryOp::BitShiftRight => {
-                        if !self.config.bitshift_ignore_y {
-                            *target = source;
-                        }
-                        let lowest_bit = *target & 1;
-                        target.shr_assign(1);
-                        self.set_flag(lowest_bit);
-                    }
-                    BinaryOp::Random => {
-                        *target = source * rand::random::<u8>();
-                    }
-                }
-            }
-            Instruction::Font { args } => {
+            Index::Font { args } => {
                 let char = self.registers[usize::from(&args.register)] as usize & 0x0F;
                 let index = config::FONT_RANGE.start + config::FONT_SPRITE_HEIGHT * char;
                 self.index = Address::try_from(index)?;
             }
+        };
+        Ok(())
+    }
+
+    pub fn execute(&mut self, instruction: &Instruction) -> Result<()> {
+        match instruction {
+            Instruction::Exit => { return Err(Error::MachineExit); }
+            Instruction::Graphics(graphics) => self.execute_graphics(graphics)?,
+            Instruction::Flow(flow) => self.execute_flow(flow)?,
+            Instruction::Arithmetic { args } => self.execute_arithmetic(args)?,
+            Instruction::Memory(memory) => self.execute_memory(memory)?,
+            Instruction::Index(index) => self.execute_index(index)?,
             Instruction::KeyAwait { args } => {
                 if let Some(key) = self.key_buffer {
                     self.registers[usize::from(&args.register)] = key;
@@ -319,17 +358,6 @@ impl Machine {
                 let value = self.registers[usize::from(&args.register)];
                 let digits = [value / 100 % 10, value / 10 % 10, value % 10];
                 self.memory[self.index.as_range(3)].clone_from_slice(&digits);
-            }
-            Instruction::Memory(memory_instruction @ (Memory::Load { args } | Memory::Save { args })) => {
-                let last = usize::from(&args.register) + 1;
-                let (source, target) = match memory_instruction {
-                    Memory::Load { args: _ } => (&self.memory[self.index.as_range(last)], &mut self.registers[..last]),
-                    Memory::Save { args: _ } => (&self.registers[..last], &mut self.memory[self.index.as_range(last)]),
-                };
-                target.clone_from_slice(source);
-                if self.config.load_increment_index {
-                    self.index.advance(last.try_into().unwrap());
-                }
             }
         };
         Ok(())
