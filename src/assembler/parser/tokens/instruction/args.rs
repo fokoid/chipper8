@@ -171,7 +171,7 @@ impl TryFrom<Tokens<'_>> for BranchArgs {
             Error::SyntaxError(String::from("conditional requires a LHS expression"))
         )?)?;
         let rhs = Source::try_from(tokens.next().ok_or(
-            Error::SyntaxError(String::from("conditional requires a LHS expression"))
+            Error::SyntaxError(String::from("conditional requires a RHS expression"))
         )?)?;
         let comparator = Comparator::try_from(tokens.next())?;
         Ok(Self { lhs, rhs, comparator })
