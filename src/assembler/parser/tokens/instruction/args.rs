@@ -1,5 +1,5 @@
 use crate::{Error, Result};
-use crate::machine::instruction::args::{BinaryOp, BinaryOpArgs, BranchArgs, Comparator, DrawArgs, IndexOp, IndexOpArgs, IndexSource, JumpArgs, RegisterArgs, Source, Target, Timer};
+use crate::machine::instruction::args::{BinaryOp, BinaryOpArgs, BranchArgs, Comparator, DrawArgs, IndexOp, IndexOpArgs, IndexSource, InputBranchArgs, JumpArgs, RegisterArgs, Source, Target, Timer};
 use crate::machine::types::{Address, Nibble, Register};
 
 use super::{Token, Tokens};
@@ -176,5 +176,17 @@ impl TryFrom<Tokens<'_>> for BranchArgs {
         )?)?;
         let comparator = Comparator::try_from(tokens.next())?;
         Ok(Self { lhs, rhs, comparator })
+    }
+}
+
+impl TryFrom<Tokens<'_>> for InputBranchArgs {
+    type Error = Error;
+
+    fn try_from(mut tokens: Tokens<'_>) -> Result<Self> {
+        let key = Source::try_from(tokens.next().ok_or(
+            Error::SyntaxError(String::from("branch requires a key"))
+        )?)?;
+        let comparator = Comparator::try_from(tokens.next())?;
+        Ok(Self { key, comparator })
     }
 }

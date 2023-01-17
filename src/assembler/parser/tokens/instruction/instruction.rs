@@ -80,6 +80,7 @@ impl TryFrom<Tokens<'_>> for Input {
     fn try_from(mut tokens: Tokens<'_>) -> Result<Self> {
         match tokens.next() {
             Some(Token::Other("await")) => Ok(Input::Await { args: tokens.try_into()? }),
+            Some(Token::Other("branch")) => Ok(Input::Branch { args: tokens.try_into()? }),
             Some(Token::Other(s)) => Err(Error::SyntaxError(format!(
                 "unrecognized input instruction {}", s
             ))),

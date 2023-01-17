@@ -345,6 +345,15 @@ impl Machine {
                     self.program_counter.step_back();
                 }
             }
+            Input::Branch { args } => {
+                let result = Some(self.read_source(&args.key)) == self.key_buffer;
+                if match &args.comparator {
+                    Comparator::Equal => result,
+                    Comparator::NotEqual => !result,
+                } {
+                    self.program_counter.step();
+                }
+            }
         }
         Ok(())
     }

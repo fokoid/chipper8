@@ -1,6 +1,6 @@
 use std::fmt::{Debug, Display, Formatter};
 
-use super::args::{BinaryOpArgs, BranchArgs, DrawArgs, IndexOpArgs, JumpArgs, RegisterArgs};
+use super::args::{BinaryOpArgs, BranchArgs, DrawArgs, IndexOpArgs, InputBranchArgs, JumpArgs, RegisterArgs};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Instruction {
@@ -38,6 +38,7 @@ pub enum Memory {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Input {
     Await { args: RegisterArgs },
+    Branch { args: InputBranchArgs },
 }
 
 impl Display for Instruction {
@@ -89,6 +90,7 @@ impl Display for Input {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Await { args } => write!(f, "await {}", args),
+            Self::Branch { args } => write!(f, "branch {}", args),
         }
     }
 }

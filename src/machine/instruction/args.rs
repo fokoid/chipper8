@@ -193,6 +193,15 @@ pub enum Comparator {
     NotEqual,
 }
 
+impl Display for Comparator {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", match self {
+            Self::Equal => "",
+            Self::NotEqual => "!",
+        })
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct BranchArgs {
     pub lhs: Source,
@@ -202,9 +211,18 @@ pub struct BranchArgs {
 
 impl Display for BranchArgs {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {}{}", self.lhs, self.rhs, match self.comparator {
-            Comparator::Equal => "",
-            Comparator::NotEqual => " !",
-        })
+        write!(f, "{} {} {}", self.lhs, self.rhs, self.comparator)
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct InputBranchArgs {
+    pub key: Source,
+    pub comparator: Comparator,
+}
+
+impl Display for InputBranchArgs {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} {}", self.key, self.comparator)
     }
 }

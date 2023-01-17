@@ -2,7 +2,7 @@ use std::fmt::{Debug, Display, Formatter};
 
 use crate::{Error, Result};
 use crate::machine::instruction::{Flow, Graphics, Input, Memory};
-use crate::machine::instruction::args::{BinaryOp, BinaryOpArgs, BranchArgs, Comparator, DrawArgs, IndexOp, IndexOpArgs, IndexSource, JumpArgs, RegisterArgs, Source, Target, Timer};
+use crate::machine::instruction::args::{BinaryOp, BinaryOpArgs, BranchArgs, Comparator, DrawArgs, IndexOp, IndexOpArgs, IndexSource, InputBranchArgs, JumpArgs, RegisterArgs, Source, Target, Timer};
 use crate::machine::types::{Register, Word};
 
 use super::Instruction;
@@ -163,7 +163,20 @@ impl TryFrom<&Instruction> for OpCode {
                 }
             }
             // todo: deduplicate
-            Instruction::Input(Input::Await { args }) => 0xF00A | u16::from_be_bytes([u8::from(&args.register), 0]),
+            Instruction::Input(input) => match input {
+                Input::Await { args } => 0xF00A | u16::from_be_bytes([u8::from(&args.register), 0]),
+                Input::Branch { args } => 0xE000 | {
+                    let lower: u8 = match &args.comparator {
+                        Comparator::Equal => 0x9E,
+                        Comparator::NotEqual => 0xA1,
+                    };
+                    let upper = match &args.key {
+                        Source::Register(vx) => u8::from(vx),
+                        _ => Err(Error::NoOpcodeError(instruction.clone()))?,
+                    };
+                    u16::from_be_bytes([upper, lower])
+                }
+            }
             Instruction::BinaryCodedDecimal { args } => 0xF033 | u16::from_be_bytes([u8::from(&args.register), 0]),
             Instruction::Memory(memory_instruction @ (Memory::Save { args } | Memory::Load { args })) => {
                 let lower: u8 = match memory_instruction {
@@ -271,6 +284,19 @@ impl TryFrom<OpCode> for Instruction {
                         height: height.try_into()?,
                     }
                 }))
+            }
+            0xE => {
+                let register = Register::try_from((rest & 0x0F00).to_be_bytes()[0])?;
+                let comparator = match rest & 0x00FF {
+                    0x9E => Comparator::Equal,
+                    0xA1 => Comparator::NotEqual,
+                    _ => Err(Error::InvalidOpCode(opcode))?,
+                };
+                let args = InputBranchArgs {
+                    comparator,
+                    key: Source::Register(register),
+                };
+                Ok(Instruction::Input(Input::Branch { args }))
             }
             0xF => {
                 let register = Register::try_from((rest & 0x0F00).to_be_bytes()[0])?;
