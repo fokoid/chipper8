@@ -7,7 +7,7 @@ pub enum Instruction {
     Exit,
     Graphics(Graphics),
     Flow(Flow),
-    Index(Index),
+    Index { args: IndexOpArgs },
     Arithmetic { args: BinaryOpArgs },
     Input(Input),
     BinaryCodedDecimal { args: RegisterArgs },
@@ -30,12 +30,6 @@ pub enum Flow {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Index {
-    Arithmetic { args: IndexOpArgs },
-    Font { args: RegisterArgs },
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Memory {
     Load { args: RegisterArgs },
     Save { args: RegisterArgs },
@@ -52,7 +46,7 @@ impl Display for Instruction {
             Self::Exit => write!(f, "exit"),
             Self::Graphics(graphics) => write!(f, "graphics {}", graphics),
             Self::Flow(flow) => write!(f, "{}", flow),
-            Self::Index(index) => write!(f, "{}", index),
+            Self::Index { args } => write!(f, "VI {} {}", args.op, args.source),
             Self::Arithmetic { args } => write!(f, "{} {} {}", args.target, args.op, args.source),
             Self::Input(input) => write!(f, "input {}", input),
             Self::Memory(memory) => write!(f, "mem {}", memory),
@@ -78,15 +72,6 @@ impl Display for Flow {
             Self::Call { args } => write!(f, "call {}", args),
             Self::Return => write!(f, "return"),
             Self::Branch { args } => write!(f, "branch {}", args),
-        }
-    }
-}
-
-impl Display for Index {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Arithmetic { args } => write!(f, "VI {} {}", args.op, args.source),
-            Self::Font { args } => write!(f, "font {}", args),
         }
     }
 }

@@ -10,8 +10,8 @@ use crate::ui::Rom;
 
 use super::config;
 use super::draw_options::DrawOptions;
-use super::instruction::{Flow, Graphics, Index, Instruction, Memory, OpCode};
-use super::instruction::args::{self, BinaryOp, BinaryOpArgs, Comparator, IndexOp, IndexSource, Source, Target};
+use super::instruction::{Flow, Graphics, Instruction, Memory, OpCode};
+use super::instruction::args::{self, BinaryOp, BinaryOpArgs, Comparator, IndexOp, IndexOpArgs, IndexSource, Source, Target};
 use super::stack::Stack;
 use super::types::{Address, Register, Timer};
 
@@ -318,21 +318,17 @@ impl Machine {
         Ok(())
     }
 
-    fn execute_index(&mut self, index: &Index) -> Result<()> {
-        match index {
-            Index::Arithmetic { args } => {
-                let source = match &args.source {
-                    // todo: can we take ownership of args here to avoid the copy?
-                    IndexSource::Value(address) => address.clone(),
-                    IndexSource::Register(vx) => self.registers[usize::from(vx)].into(),
-                };
-                match &args.op {
-                    IndexOp::Assign => { self.index = source; }
-                    IndexOp::Add => { self.index.advance(source.0); }
-                }
-            }
-            Index::Font { args } => {
-                let char = self.registers[usize::from(&args.register)] as usize & 0x0F;
+    fn execute_index(&mut self, args: &IndexOpArgs) -> Result<()> {
+        let source = match &args.source {
+            // todo: can we take ownership of args here to avoid the copy?
+            IndexSource::Value(address) => address.clone(),
+            IndexSource::Register(vx) => self.registers[usize::from(vx)].into(),
+        };
+        match &args.op {
+            IndexOp::Assign => { self.index = source; }
+            IndexOp::Add => { self.index.advance(source.0); }
+            IndexOp::AssignFont => {
+                let char = usize::from(&source) & 0x0F;
                 let index = config::FONT_RANGE.start + config::FONT_SPRITE_HEIGHT * char;
                 self.index = Address::try_from(index)?;
             }
@@ -360,7 +356,7 @@ impl Machine {
             Instruction::Flow(flow) => self.execute_flow(flow)?,
             Instruction::Arithmetic { args } => self.execute_arithmetic(args)?,
             Instruction::Memory(memory) => self.execute_memory(memory)?,
-            Instruction::Index(index) => self.execute_index(index)?,
+            Instruction::Index { args } => self.execute_index(args)?,
             Instruction::Input(input) => self.execute_input(input)?,
             Instruction::BinaryCodedDecimal { args } => {
                 let value = self.registers[usize::from(&args.register)];

@@ -32,7 +32,10 @@ impl<'a> From<Token<'a>> for &'a str {
     fn from(token: Token<'a>) -> Self {
         match token {
             Token::None => "",
-            Token::Hex(s) | Token::Meta(s) | Token::Other(s) | Token::Register(s) => s,
+            Token::Hex(s)
+            | Token::Meta(s)
+            | Token::Other(s)
+            | Token::Register(s) => s,
         }
     }
 }

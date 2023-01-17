@@ -1,5 +1,5 @@
 use crate::{Error, Result};
-use crate::machine::instruction::{Flow, Graphics, Index, Input, Instruction, Memory, OpCode};
+use crate::machine::instruction::{Flow, Graphics, Input, Instruction, Memory, OpCode};
 
 use super::{Token, Tokens};
 
@@ -17,8 +17,7 @@ impl TryFrom<Tokens<'_>> for Instruction {
         }
         // todo: parse entire token stream
         match tokens.next() {
-            Some(Token::Register("I")) => Ok(Instruction::Index(Index::Arithmetic { args: tokens.try_into()? })),
-            Some(Token::Other("font")) => Ok(Instruction::Index(Index::Font { args: tokens.try_into()? })),
+            Some(Token::Register("I")) => Ok(Instruction::Index { args: tokens.try_into()? }),
             Some(Token::Other("exit")) => Ok(Self::Exit),
             Some(Token::Other("graphics")) => Ok(Self::Graphics(tokens.try_into()?)),
             Some(Token::Other("mem")) => Ok(Self::Memory(tokens.try_into()?)),

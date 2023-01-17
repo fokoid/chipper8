@@ -111,6 +111,7 @@ impl Display for IndexSource {
 pub enum IndexOp {
     Assign,
     Add,
+    AssignFont,
 }
 
 impl Display for IndexOp {
@@ -118,6 +119,7 @@ impl Display for IndexOp {
         write!(f, "{}", match self {
             Self::Assign => "=",
             Self::Add => "+=",
+            Self::AssignFont => "=f",
         })
     }
 }
@@ -140,6 +142,13 @@ impl IndexOpArgs {
         Self {
             source: IndexSource::Register(register),
             op: IndexOp::Add,
+        }
+    }
+
+    pub fn font(register: Register) -> Self {
+        Self {
+            source: IndexSource::Register(register),
+            op: IndexOp::AssignFont,
         }
     }
 }

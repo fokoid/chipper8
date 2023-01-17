@@ -118,6 +118,7 @@ impl TryFrom<Token<'_>> for IndexOp {
         match token {
             Token::Other("=") => Ok(Self::Assign),
             Token::Other("+=") => Ok(Self::Add),
+            Token::Other("=f") => Ok(Self::AssignFont),
             x => Err(Error::SyntaxError(format!("expected index operation, found {:?}", x))),
         }
     }

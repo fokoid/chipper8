@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display, Formatter};
 
 use crate::{Error, Result};
-use crate::machine::instruction::{Flow, Graphics, Index, Input, Memory};
+use crate::machine::instruction::{Flow, Graphics, Input, Memory};
 use crate::machine::instruction::args::{BinaryOp, BinaryOpArgs, BranchArgs, Comparator, DrawArgs, IndexOp, IndexOpArgs, IndexSource, JumpArgs, RegisterArgs, Source, Target, Timer};
 use crate::machine::types::{Register, Word};
 
@@ -89,7 +89,7 @@ impl TryFrom<&Instruction> for OpCode {
                     u16::from_be_bytes([upper_byte, lower_byte])
                 }
             }
-            Instruction::Index(Index::Arithmetic { args }) => {
+            Instruction::Index { args } => {
                 match &args.op {
                     IndexOp::Assign => {
                         match &args.source {
@@ -101,6 +101,12 @@ impl TryFrom<&Instruction> for OpCode {
                         match &args.source {
                             IndexSource::Value(_) => Err(Error::NoOpcodeError(instruction.clone()))?,
                             IndexSource::Register(vx) => 0xF01E | u16::from_be_bytes([vx.into(), 0]),
+                        }
+                    }
+                    IndexOp::AssignFont => {
+                        match &args.source {
+                            IndexSource::Value(_) => Err(Error::NoOpcodeError(instruction.clone()))?,
+                            IndexSource::Register(vx) => 0xF029 | u16::from_be_bytes([u8::from(vx), 0]),
                         }
                     }
                 }
@@ -157,7 +163,6 @@ impl TryFrom<&Instruction> for OpCode {
                 }
             }
             // todo: deduplicate
-            Instruction::Index(Index::Font { args }) => 0xF029 | u16::from_be_bytes([u8::from(&args.register), 0]),
             Instruction::Input(Input::Await { args }) => 0xF00A | u16::from_be_bytes([u8::from(&args.register), 0]),
             Instruction::BinaryCodedDecimal { args } => 0xF033 | u16::from_be_bytes([u8::from(&args.register), 0]),
             Instruction::Memory(memory_instruction @ (Memory::Save { args } | Memory::Load { args })) => {
@@ -195,7 +200,7 @@ impl TryFrom<OpCode> for Instruction {
                 Ok(match highest {
                     0x1 | 0xB => Instruction::Flow(Flow::Jump { args }),
                     0x2 => Instruction::Flow(Flow::Call { args }),
-                    0xA => Instruction::Index(Index::Arithmetic { args: IndexOpArgs::assign(args.address) }),
+                    0xA => Instruction::Index { args: IndexOpArgs::assign(args.address) },
                     _ => panic!("how did we get here?!"),
                 })
             }
@@ -278,8 +283,8 @@ impl TryFrom<OpCode> for Instruction {
                             target: Target::Register(register),
                         }
                     }),
-                    0x1E => Ok(Instruction::Index(Index::Arithmetic { args: IndexOpArgs::add(register) })),
-                    0x29 => Ok(Instruction::Index(Index::Font { args: RegisterArgs { register } })),
+                    0x1E => Ok(Instruction::Index { args: IndexOpArgs::add(register) }),
+                    0x29 => Ok(Instruction::Index { args: IndexOpArgs::font(register) }),
                     0x33 => Ok(Instruction::BinaryCodedDecimal { args: RegisterArgs { register } }),
                     byte @ (0x15 | 0x18) => {
                         let target = Target::Timer(if byte == 0x15 { Timer::Delay } else { Timer::Sound });
