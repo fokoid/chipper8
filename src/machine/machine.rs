@@ -181,11 +181,11 @@ impl Machine {
                 let y = self.registers[usize::from(&args.y)] as usize % config::DISPLAY_HEIGHT;
                 let index_start = usize::from(&self.index);
                 let index_end = index_start + usize::from(&args.height);
-                DrawOptions::new(
+                self.registers[0xF] = if DrawOptions::new(
                     &self.memory[index_start..index_end],
                     &mut self.display,
                     [config::DISPLAY_WIDTH, config::DISPLAY_HEIGHT],
-                ).at([x, y]).draw();
+                ).at([x, y]).draw() { 1 } else { 0 };
             }
         };
         Ok(())
