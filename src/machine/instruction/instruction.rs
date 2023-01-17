@@ -9,7 +9,7 @@ pub enum Instruction {
     Flow(Flow),
     Index(Index),
     Arithmetic { args: BinaryOpArgs },
-    KeyAwait { args: RegisterArgs },
+    Input(Input),
     BinaryCodedDecimal { args: RegisterArgs },
     Memory(Memory),
 }
@@ -41,6 +41,11 @@ pub enum Memory {
     Save { args: RegisterArgs },
 }
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum Input {
+    Await { args: RegisterArgs },
+}
+
 impl Display for Instruction {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -49,9 +54,9 @@ impl Display for Instruction {
             Self::Flow(flow) => write!(f, "{}", flow),
             Self::Index(index) => write!(f, "{}", index),
             Self::Arithmetic { args } => write!(f, "{} {} {}", args.target, args.op, args.source),
-            Self::KeyAwait { args } => write!(f, "key await {}", args),
+            Self::Input(input) => write!(f, "input {}", input),
+            Self::Memory(memory) => write!(f, "mem {}", memory),
             Self::BinaryCodedDecimal { args } => write!(f, "bcd {}", args),
-            Self::Memory(memory) => write!(f, "{}", memory),
         }
     }
 }
@@ -91,6 +96,14 @@ impl Display for Memory {
         match self {
             Self::Load { args } => write!(f, "load {}", args),
             Self::Save { args } => write!(f, "save {}", args),
+        }
+    }
+}
+
+impl Display for Input {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Await { args } => write!(f, "await {}", args),
         }
     }
 }

@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Error, Result};
 use crate::assembler::Tokens;
+use crate::machine::instruction::Input;
 use crate::ui::Rom;
 
 use super::config;
@@ -339,6 +340,19 @@ impl Machine {
         Ok(())
     }
 
+    fn execute_input(&mut self, input: &Input) -> Result<()> {
+        match input {
+            Input::Await { args } => {
+                if let Some(key) = self.key_buffer {
+                    self.registers[usize::from(&args.register)] = key;
+                } else {
+                    self.program_counter.step_back();
+                }
+            }
+        }
+        Ok(())
+    }
+
     pub fn execute(&mut self, instruction: &Instruction) -> Result<()> {
         match instruction {
             Instruction::Exit => { return Err(Error::MachineExit); }
@@ -347,13 +361,7 @@ impl Machine {
             Instruction::Arithmetic { args } => self.execute_arithmetic(args)?,
             Instruction::Memory(memory) => self.execute_memory(memory)?,
             Instruction::Index(index) => self.execute_index(index)?,
-            Instruction::KeyAwait { args } => {
-                if let Some(key) = self.key_buffer {
-                    self.registers[usize::from(&args.register)] = key;
-                } else {
-                    self.program_counter.step_back();
-                }
-            }
+            Instruction::Input(input) => self.execute_input(input)?,
             Instruction::BinaryCodedDecimal { args } => {
                 let value = self.registers[usize::from(&args.register)];
                 let digits = [value / 100 % 10, value / 10 % 10, value % 10];

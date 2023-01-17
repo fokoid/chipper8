@@ -1,5 +1,5 @@
 use crate::{Error, Result};
-use crate::machine::instruction::{Flow, Graphics, Index, Instruction, Memory, OpCode};
+use crate::machine::instruction::{Flow, Graphics, Index, Input, Instruction, Memory, OpCode};
 
 use super::{Token, Tokens};
 
@@ -18,22 +18,17 @@ impl TryFrom<Tokens<'_>> for Instruction {
         // todo: parse entire token stream
         match tokens.next() {
             Some(Token::Register("I")) => Ok(Instruction::Index(Index::Arithmetic { args: tokens.try_into()? })),
+            Some(Token::Other("font")) => Ok(Instruction::Index(Index::Font { args: tokens.try_into()? })),
             Some(Token::Other("exit")) => Ok(Self::Exit),
             Some(Token::Other("graphics")) => Ok(Self::Graphics(tokens.try_into()?)),
+            Some(Token::Other("mem")) => Ok(Self::Memory(tokens.try_into()?)),
+            Some(Token::Other("input")) => Ok(Instruction::Input(tokens.try_into()?)),
             Some(Token::Other("return")) => Ok(Instruction::Flow(Flow::Return)),
             Some(Token::Other("sys")) => Ok(Instruction::Flow(Flow::Sys { args: tokens.try_into()? })),
             Some(Token::Other("jump")) => Ok(Instruction::Flow(Flow::Jump { args: tokens.try_into()? })),
             Some(Token::Other("call")) => Ok(Instruction::Flow(Flow::Call { args: tokens.try_into()? })),
             Some(Token::Other("branch")) => Ok(Instruction::Flow(Flow::Branch { args: tokens.try_into()? })),
-            Some(Token::Other("font")) => Ok(Instruction::Index(Index::Font { args: tokens.try_into()? })),
-            Some(Token::Other("key")) => match tokens.next() {
-                Some(Token::Other("await")) => Ok(Instruction::KeyAwait { args: tokens.try_into()? }),
-                Some(x) => Err(Error::SyntaxError(format!("key requires a subcommand, but got {:?}; allowed: await", x))),
-                None => Err(Error::SyntaxError(format!("key requires a subcommand; allowed: await"))),
-            }
             Some(Token::Other("bcd")) => Ok(Instruction::BinaryCodedDecimal { args: tokens.try_into()? }),
-            Some(Token::Other("load")) => Ok(Instruction::Memory(Memory::Load { args: tokens.try_into()? })),
-            Some(Token::Other("save")) => Ok(Instruction::Memory(Memory::Save { args: tokens.try_into()? })),
             Some(token @ Token::Hex(_)) => {
                 let opcode = OpCode::try_from(token)?;
                 Ok(opcode.try_into()?)
@@ -50,13 +45,49 @@ impl TryFrom<Tokens<'_>> for Graphics {
         match tokens.next() {
             Some(Token::Other("clear")) => Ok(Graphics::Clear),
             Some(Token::Other("draw")) => Ok(Graphics::Draw { args: tokens.try_into()? }),
+            // todo: deduplicate with other instruction parsers
             Some(Token::Other(s)) => Err(Error::SyntaxError(format!(
-                "unrecognized graphics system instruction {}", s
+                "unrecognized graphics instruction {}", s
             ))),
             Some(x) => Err(Error::SyntaxError(format!(
-                "expected graphics system instruction, got {:?}", x
+                "expected graphics instruction, got {:?}", x
             ))),
-            None => Err(Error::SyntaxError(format!("expected graphics system instruction"))),
+            None => Err(Error::SyntaxError(format!("expected graphics instruction"))),
+        }
+    }
+}
+
+impl TryFrom<Tokens<'_>> for Memory {
+    type Error = Error;
+
+    fn try_from(mut tokens: Tokens<'_>) -> Result<Self> {
+        match tokens.next() {
+            Some(Token::Other("load")) => Ok(Memory::Load { args: tokens.try_into()? }),
+            Some(Token::Other("save")) => Ok(Memory::Save { args: tokens.try_into()? }),
+            Some(Token::Other(s)) => Err(Error::SyntaxError(format!(
+                "unrecognized memory instruction {}", s
+            ))),
+            Some(x) => Err(Error::SyntaxError(format!(
+                "expected memory instruction, got {:?}", x
+            ))),
+            None => Err(Error::SyntaxError(format!("expected memory instruction"))),
+        }
+    }
+}
+
+impl TryFrom<Tokens<'_>> for Input {
+    type Error = Error;
+
+    fn try_from(mut tokens: Tokens<'_>) -> Result<Self> {
+        match tokens.next() {
+            Some(Token::Other("await")) => Ok(Input::Await { args: tokens.try_into()? }),
+            Some(Token::Other(s)) => Err(Error::SyntaxError(format!(
+                "unrecognized input instruction {}", s
+            ))),
+            Some(x) => Err(Error::SyntaxError(format!(
+                "expected input instruction, got {:?}", x
+            ))),
+            None => Err(Error::SyntaxError(format!("expected input instruction"))),
         }
     }
 }

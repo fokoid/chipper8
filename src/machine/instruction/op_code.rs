@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display, Formatter};
 
 use crate::{Error, Result};
-use crate::machine::instruction::{Flow, Graphics, Index, Memory};
+use crate::machine::instruction::{Flow, Graphics, Index, Input, Memory};
 use crate::machine::instruction::args::{BinaryOp, BinaryOpArgs, BranchArgs, Comparator, DrawArgs, IndexOp, IndexOpArgs, IndexSource, JumpArgs, RegisterArgs, Source, Target, Timer};
 use crate::machine::types::{Register, Word};
 
@@ -158,7 +158,7 @@ impl TryFrom<&Instruction> for OpCode {
             }
             // todo: deduplicate
             Instruction::Index(Index::Font { args }) => 0xF029 | u16::from_be_bytes([u8::from(&args.register), 0]),
-            Instruction::KeyAwait { args } => 0xF00A | u16::from_be_bytes([u8::from(&args.register), 0]),
+            Instruction::Input(Input::Await { args }) => 0xF00A | u16::from_be_bytes([u8::from(&args.register), 0]),
             Instruction::BinaryCodedDecimal { args } => 0xF033 | u16::from_be_bytes([u8::from(&args.register), 0]),
             Instruction::Memory(memory_instruction @ (Memory::Save { args } | Memory::Load { args })) => {
                 let lower: u8 = match memory_instruction {
@@ -270,7 +270,7 @@ impl TryFrom<OpCode> for Instruction {
             0xF => {
                 let register = Register::try_from((rest & 0x0F00).to_be_bytes()[0])?;
                 match rest & 0x00FF {
-                    0x0A => Ok(Instruction::KeyAwait { args: RegisterArgs { register } }),
+                    0x0A => Ok(Instruction::Input(Input::Await { args: RegisterArgs { register } })),
                     0x07 => Ok(Instruction::Arithmetic {
                         args: BinaryOpArgs {
                             op: BinaryOp::Assign,
