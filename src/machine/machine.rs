@@ -295,7 +295,7 @@ impl Machine {
                     self.set_flag(lowest_bit);
                 }
                 BinaryOp::Random => {
-                    *target = source * rand::random::<u8>();
+                    *target = source & rand::random::<u8>();
                 }
             }
         };
