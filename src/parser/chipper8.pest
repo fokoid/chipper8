@@ -1,0 +1,66 @@
+WHITESPACE = _{" " | "\t" | "\n" | "\r"}
+
+register = @{"V" ~ ASCII_HEX_DIGIT}
+timer = { "T" ~ (timer_delay | timer_sound) }
+timer_delay = { "D" }
+timer_sound = { "S" }
+index = { "I" }
+pc = { "PC" }
+
+integer = @{integer_decimal | integer_hex}
+integer_decimal = { ASCII_DIGIT+ }
+integer_hex = @{ "0x" ~ ASCII_HEX_DIGIT+ }
+
+comparator = { equal | not_equal }
+equal = { "==" }
+not_equal = { "!=" }
+
+lvalue = { register | index | timer | pc }
+rvalue = @{ lvalue | integer | font_char }
+font_char = @{ "F" ~ ASCII_HEX_DIGIT }
+
+instruction = _{ exit | arithmetic | graphics | flow | input | mem }
+
+exit = { "exit" }
+
+arithmetic = { lvalue ~ operator ~ rvalue }
+operator = {
+    assign
+    | add | add_wrapping
+    | subtract | subtract_alt
+    | bitand | bitor | bitxor
+    | shift_left | shift_right
+    | random
+}
+assign = { ":=" }
+add = { "+=" }
+add_wrapping = { "+~" }
+subtract = { "-=" }
+subtract_alt = { "-~" }
+bitand = { "&=" }
+bitor = { "|=" }
+bitxor = { "^=" }
+shift_left = { ">>=" }
+shift_right = { "<<=" }
+random = { "?=" }
+
+graphics = { clear | draw }
+clear = { "clear" }
+draw = { "draw" ~ register ~ register ~ integer }
+
+flow = { ret | call | jump | sys | branch }
+ret = { "return" }
+call = { "call" ~ jump_args }
+jump = { "jump" ~ jump_args }
+sys = { "sys" ~ jump_args }
+jump_args = { integer ~ register? }
+branch = { "branch" ~ rvalue ~ comparator ~ rvalue }
+
+input = { "input" ~ ( input_await | input_branch)}
+input_await = { "await" ~ register }
+input_branch = { "branch" ~ comparator ~ rvalue }
+
+mem = { save | load | bcd }
+bcd = { "bcd" ~ register }
+save = {"save" ~ register}
+load = {"load" ~ register}

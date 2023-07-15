@@ -1,3 +1,7 @@
+extern crate pest;
+#[macro_use]
+extern crate pest_derive;
+
 pub use emulator::{Emulator, EmulatorConfig};
 pub use errors::{Error, Result};
 pub use machine::Machine;
@@ -8,3 +12,4 @@ pub mod errors;
 pub mod ui;
 pub mod emulator;
 mod assembler;
+pub mod parser;
